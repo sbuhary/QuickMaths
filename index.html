@@ -9,7 +9,7 @@
       content="QuickMaths is a playful mobile whiteboard app for children to practice arithmetic."
     >
     <title>QuickMaths</title>
-    <link rel="stylesheet" href="styles.css?v=20260829-10">
+    <link rel="stylesheet" href="styles.css?v=20260829-11">
   </head>
   <body>
     <main class="app-shell">
@@ -35,6 +35,8 @@
           </select>
           <p id="stage-summary" class="stage-summary">Stage 1: Tiny sums</p>
           <p id="session-summary" class="session-summary">0 right / 0 missed</p>
+          <p id="session-detail" class="session-detail">0:00 practiced / 0 stars earned</p>
+          <p id="session-detail" class="session-detail">0:00 practiced / 0 stars earned</p>
           <div class="level-path" aria-label="Candy path levels">
             <button class="level-node active" type="button" data-stage="1" data-level="starter"><span>1</span><small>Starter</small></button>
             <button class="level-node" type="button" data-stage="2" data-level="starter"><span>2</span><small>Starter</small></button>
@@ -52,6 +54,7 @@
         </div>
         <div class="start-overlay">
           <button id="start-practice" class="action-button primary wide" type="button">Start stage 1</button>
+          <button id="retry-missed" class="circle-button reset-button" type="button" aria-label="Retry missed questions" disabled><i data-lucide="repeat-2"></i></button>
           <button id="reset-progress" class="circle-button reset-button" type="button" aria-label="Reset progress"><i data-lucide="rotate-ccw"></i></button>
         </div>
       </section>
@@ -82,6 +85,12 @@
           <button class="circle-button color" style="--swatch:#00b894" type="button" data-color="#00b894" aria-label="Green pen"></button>
         </section>
 
+        <section class="pen-sizes" aria-label="Pen thickness">
+          <button class="circle-button size selected-size" style="--dot:8px" type="button" data-size="5" aria-label="Thin pen"></button>
+          <button class="circle-button size" style="--dot:12px" type="button" data-size="8" aria-label="Medium pen"></button>
+          <button class="circle-button size" style="--dot:16px" type="button" data-size="11" aria-label="Thick pen"></button>
+        </section>
+
         <section class="problem-card" aria-live="polite">
           <div id="question" class="question">Tap Start</div>
         </section>
@@ -104,8 +113,10 @@
 
         <section class="tool-rail" aria-label="Whiteboard tools">
           <button id="eraser" class="circle-button tool-button" type="button" aria-label="Eraser"><i data-lucide="eraser"></i></button>
+          <button id="clear-answer" class="circle-button tool-button" type="button" aria-label="Clear answer only"><i data-lucide="badge-x"></i></button>
           <button id="undo" class="circle-button tool-button" type="button" aria-label="Undo"><i data-lucide="undo-2"></i></button>
-          <button id="clear" class="circle-button tool-button" type="button" aria-label="Clear board"><i data-lucide="trash-2"></i></button>
+          <button id="clear" class="circle-button tool-button" type="button" aria-label="Clear whole board"><i data-lucide="trash-2"></i></button>
+          <button id="hand-toggle" class="circle-button tool-button" type="button" aria-label="Move controls to left or right"><i data-lucide="panel-left"></i></button>
         </section>
 
         <section class="action-stack" aria-label="Question actions">
@@ -116,6 +127,6 @@
     </main>
 
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=20260829-10"></script>
+    <script src="app.js?v=20260829-11"></script>
   </body>
 </html>

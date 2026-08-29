@@ -17,17 +17,22 @@ const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
 const stageSummaryEl = document.querySelector("#stage-summary");
 const sessionSummaryEl = document.querySelector("#session-summary");
+const sessionDetailEl = document.querySelector("#session-detail");
 const startPracticeButton = document.querySelector("#start-practice");
 const resetProgressButton = document.querySelector("#reset-progress");
+const retryMissedButton = document.querySelector("#retry-missed");
 const backToLevelsButton = document.querySelector("#back-to-levels");
 const retryFeedbackButton = document.querySelector("#retry-feedback");
 const nextFeedbackButton = document.querySelector("#next-feedback");
 const checkButton = document.querySelector("#check");
 const nextMainButton = document.querySelector("#next-main");
 const clearButton = document.querySelector("#clear");
+const clearAnswerButton = document.querySelector("#clear-answer");
+const handToggleButton = document.querySelector("#hand-toggle");
 const undoButton = document.querySelector("#undo");
 const eraserButton = document.querySelector("#eraser");
 const colorButtons = [...document.querySelectorAll(".color")];
+const sizeButtons = [...document.querySelectorAll(".size")];
 const levelButtons = [...document.querySelectorAll(".level-node")];
 
 const settings = {
@@ -69,6 +74,7 @@ const timerStyles = ["digital", "analog", "hourglass"];
 const state = {
   current: null,
   currentColor: "#1f2937",
+  currentSize: 5,
   erasing: false,
   drawing: false,
   activePointerId: null,
@@ -82,10 +88,26 @@ const state = {
   timerId: null,
   timerStyle: 0,
   progress: loadProgress(),
-  session: { correct: 0, missed: 0, startedAt: Date.now() },
+  session: { correct: 0, missed: 0, starsEarned: 0, missedQuestions: [], startedAt: Date.now() },
   pendingReview: null,
+  handedness: localStorage.getItem("quickmaths-handedness") || "right",
 };
 
+function formatElapsed(milliseconds) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function updateHandedness() {
+  practiceBoard.dataset.controls = state.handedness;
+  handToggleButton.setAttribute("aria-label", state.handedness === "right" ? "Move controls to left" : "Move controls to right");
+  const icon = handToggleButton.querySelector("i");
+  if (icon) icon.setAttribute("data-lucide", state.handedness === "right" ? "panel-left" : "panel-right");
+  localStorage.setItem("quickmaths-handedness", state.handedness);
+  if (window.lucide) window.lucide.createIcons();
+}
 function loadProgress() {
   const fallback = { stars: 0, streak: 0, answered: 0, unlockedStages: 1, currentStage: 1 };
   try {
@@ -110,6 +132,8 @@ function updateProgressUi() {
   streakEl.textContent = `${state.progress.streak} streak`;
   if (stageSummaryEl) stageSummaryEl.textContent = `Stage ${plan.stage}: ${plan.title}`;
   if (sessionSummaryEl) sessionSummaryEl.textContent = `${state.session.correct} right / ${state.session.missed} missed`;
+  if (sessionDetailEl) sessionDetailEl.textContent = `${formatElapsed(Date.now() - state.session.startedAt)} practiced / ${state.session.starsEarned} stars earned`;
+  if (retryMissedButton) retryMissedButton.disabled = state.session.missedQuestions.length === 0;
   startPracticeButton.textContent = `Start stage ${plan.stage}`;
   levelButtons.forEach((button) => {
     const stage = Number(button.dataset.stage || 1);
@@ -133,7 +157,7 @@ function resetProgress() {
   localStorage.removeItem("quickmaths-progress");
   localStorage.removeItem("mathsprout-progress");
   state.progress = loadProgress();
-  state.session = { correct: 0, missed: 0, startedAt: Date.now() };
+  state.session = { correct: 0, missed: 0, starsEarned: 0, missedQuestions: [], startedAt: Date.now() };
   updateProgressUi();
 }
 
@@ -228,8 +252,8 @@ function startPractice() {
   });
 }
 
-function showQuestion() {
-  state.current = makeQuestion();
+function showQuestion(question = null) {
+  state.current = question || makeQuestion();
   difficultyEl.value = state.current.plan.level;
   questionEl.innerHTML = renderStackedQuestion(state.current);
   hideFeedback();
@@ -321,6 +345,7 @@ function pointInsideAnswer(point) {
 function updateAnswerHighlight(point) {
   answerBox.classList.toggle("active", Boolean(point && pointInsideAnswer(point)));
 }
+
 function drawSegment(from, to, color, size, erase) {
   ctx.globalCompositeOperation = erase ? "destination-out" : "source-over";
   ctx.strokeStyle = color;
@@ -360,7 +385,7 @@ function startDrawing(event) {
   state.currentPath = {
     color: state.currentColor,
     erase: state.erasing,
-    size: state.erasing ? 24 : 5,
+    size: state.erasing ? 24 : state.currentSize,
     points: [state.lastPoint],
   };
 }
@@ -401,6 +426,18 @@ function redrawBoard() {
 function clearBoard() {
   state.paths = [];
   ctx.clearRect(0, 0, board.clientWidth, board.clientHeight);
+  updateAnswerHighlight(null);
+}
+
+function pathTouchesAnswer(path) {
+  const rect = getAnswerRect();
+  return path.points.some((point) => point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom);
+}
+
+function clearAnswerOnly() {
+  state.paths = state.paths.filter((path) => !pathTouchesAnswer(path));
+  redrawBoard();
+  updateAnswerHighlight(null);
 }
 
 function clearBoardWithConfirmation() {
@@ -666,12 +703,21 @@ function recordMissOnce() {
   if (!state.current || state.current.missedRecorded) return;
   state.current.missedRecorded = true;
   state.session.missed += 1;
+  state.session.missedQuestions.push({
+    a: state.current.a,
+    b: state.current.b,
+    answer: state.current.answer,
+    symbol: state.current.symbol,
+    plan: state.current.plan,
+  });
 }
 
 function awardCorrectAnswer(readText) {
   state.progress.streak += 1;
   const streakBonus = state.progress.streak % 3 === 0 ? 2 : 0;
-  state.progress.stars += 1 + streakBonus;
+  const earnedStars = 1 + streakBonus;
+  state.progress.stars += earnedStars;
+  state.session.starsEarned += earnedStars;
   state.progress.answered += 1;
   state.session.correct += 1;
   state.pendingReview = null;
@@ -717,6 +763,27 @@ async function checkAnswer() {
   checkButton.disabled = false;
 }
 
+function retryMissedQuestions() {
+  const missed = state.session.missedQuestions.shift();
+  if (!missed) return;
+  startScreen.hidden = true;
+  practiceBoard.hidden = false;
+  requestAnimationFrame(() => {
+    resizeBoard();
+    showQuestion({ ...missed, missedRecorded: false });
+    updateProgressUi();
+  });
+}
+
+function selectSize(button) {
+  state.currentSize = Number(button.dataset.size || 5);
+  sizeButtons.forEach((item) => item.classList.toggle("selected-size", item === button));
+}
+
+function toggleHandedness() {
+  state.handedness = state.handedness === "right" ? "left" : "right";
+  updateHandedness();
+}
 function selectColor(button) {
   state.currentColor = button.dataset.color;
   state.erasing = false;
@@ -733,6 +800,7 @@ window.addEventListener("resize", resizeBoard);
 timerControl.addEventListener("click", cycleTimerStyle);
 startPracticeButton.addEventListener("click", startPractice);
 resetProgressButton.addEventListener("click", resetProgress);
+retryMissedButton.addEventListener("click", retryMissedQuestions);
 backToLevelsButton.addEventListener("click", showStartScreen);
 closeFeedbackButton.addEventListener("click", hideFeedback);
 retryFeedbackButton.addEventListener("click", () => {
@@ -752,6 +820,7 @@ markWrongButton.addEventListener("click", () => {
 });
 nextMainButton.addEventListener("click", showQuestion);
 colorButtons.forEach((button) => button.addEventListener("click", () => selectColor(button)));
+sizeButtons.forEach((button) => button.addEventListener("click", () => selectSize(button)));
 eraserButton.addEventListener("click", () => {
   state.erasing = true;
   eraserButton.classList.add("selected-tool");
@@ -761,7 +830,9 @@ undoButton.addEventListener("click", () => {
   state.paths.pop();
   redrawBoard();
 });
+clearAnswerButton.addEventListener("click", clearAnswerOnly);
 clearButton.addEventListener("click", clearBoardWithConfirmation);
+handToggleButton.addEventListener("click", toggleHandedness);
 checkButton.addEventListener("click", checkAnswer);
 operationEl.addEventListener("change", () => {
   if (!practiceBoard.hidden) showQuestion();
@@ -775,6 +846,7 @@ levelButtons.forEach((button) => {
   });
 });
 
+updateHandedness();
 updateProgressUi();
 if (window.lucide) window.lucide.createIcons();
 showStartScreen();

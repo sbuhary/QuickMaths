@@ -13,6 +13,7 @@
 - [x] Separate level/options start screen with Candy Crush-style stage path.
 - [x] Start action stays as an overlay while the currently active level remains visible.
 - [x] Show a session summary with right and missed counts.
+- [x] Show full session details with practice time and stars earned.
 - [x] Mobile-first layout with touch and pen support.
 - [x] Writing works with one finger or pen only; two-finger gestures do not draw and remain available for browser zoom.
 - [x] Practice modes: addition, subtraction, multiplication, and division.
@@ -35,6 +36,9 @@
 - [x] Circular tool buttons.
 - [x] Lucide icon buttons for back, eraser, undo, clear, and feedback.
 - [x] Tool buttons moved away from the primary Check/Next action stack.
+- [x] Separate answer-only clear from whole-board clear.
+- [x] Add pen thickness controls.
+- [x] Add left/right handed layout toggle.
 
 ### Feedback And Timer
 - [x] Visible timer for the current question.
@@ -94,17 +98,17 @@
 - [x] Add Candy Crush-style stage path with progressive unlocks.
 - [x] Add operation-specific stage tuning for first addition, subtraction, multiplication, and division progressions.
 - [x] Add a session summary with correct count and missed questions.
-- [ ] Add full session summary screen with time and stars earned.
-- [ ] Add retry missed question flow.
+- [x] Add full session summary with time and stars earned.
+- [x] Add retry missed question flow.
 - [ ] Add optional sound effects with mute control.
 - [x] Add optional parent reset for local progress.
 
 ### P2: Whiteboard Improvements
-- [ ] Add pen thickness control.
-- [ ] Add answer-box-only clear button.
-- [ ] Add full-board clear button separate from answer clear.
+- [x] Add pen thickness control.
+- [x] Add answer-box-only clear button.
+- [x] Add full-board clear button separate from answer clear.
 - [x] Add visual answer-box highlight while writing inside it.
-- [ ] Add left/right handed layout option for controls.
+- [x] Add left/right handed layout option for controls.
 
 ### P3: Install And Share
 - [ ] Add PWA manifest and service worker for offline install.
@@ -129,4 +133,5 @@
 - [x] Move feedback below the answer box and restore main Next.
 - [x] Restrict drawing to one active touch pointer and allow two-finger browser zoom.
 - [x] Add confidence review, session summary, parent reset, and smoke test harness.
+- [x] Add retry missed flow, pen thickness, answer-only clear, whole-board clear, and handedness toggle.
 - [x] Add visual answer-box highlight while writing inside it.
