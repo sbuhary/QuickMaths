@@ -279,7 +279,7 @@ select {
 .feedback {
   left: 16px;
   right: 16px;
-  bottom: 112px;
+  bottom: 120px;
   min-height: 42px;
   margin: 0;
   padding: 10px 12px;
@@ -426,7 +426,7 @@ select {
   }
 
   .feedback {
-    bottom: 106px;
+    bottom: 114px;
   }
 
   .tool-dock {
@@ -472,16 +472,17 @@ select {
   }
 
   .answer-box {
-    top: 324px;
+    top: 318px;
     height: 100px;
   }
 
   .feedback {
-    bottom: 108px;
+    bottom: 118px;
     min-height: 38px;
     padding: 8px 10px;
   }
 }
+
 
 
 

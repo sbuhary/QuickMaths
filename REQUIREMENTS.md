@@ -20,8 +20,8 @@
 - [x] Visible timer for the current question.
 - [x] Next question button.
 - [x] Check answer button.
-- [x] Browser handwriting recognition reads only strokes inside the final-answer box when supported.
-- [x] No typed answer field; final answers are read from the answer box when handwriting recognition is available.
+- [x] Local canvas-based digit recognition reads only ink inside the final-answer box across modern browsers, including Safari.
+- [x] No typed answer field; final answers are read from the answer box.
 - [x] Feedback after checking: correct/incorrect, correct answer, and time taken.
 - [x] Gamified level map.
 - [x] Stars and score.
@@ -49,4 +49,5 @@
 - [x] Simplify to one main whiteboard with a large stacked question.
 - [x] Add license, checklist requirements, and JavaScript cache versioning.
 - [x] Run local verification and commit the final implementation.
+
 

@@ -24,6 +24,19 @@ const settings = {
   wizard: { label: "Wizard", max: 250, multiplicationMax: 12, divisionMax: 12, unlockAt: 15 },
 };
 
+const digitTemplates = {
+  0: ["111", "101", "101", "101", "101", "101", "111"],
+  1: ["010", "110", "010", "010", "010", "010", "111"],
+  2: ["111", "001", "001", "111", "100", "100", "111"],
+  3: ["111", "001", "001", "111", "001", "001", "111"],
+  4: ["101", "101", "101", "111", "001", "001", "001"],
+  5: ["111", "100", "100", "111", "001", "001", "111"],
+  6: ["111", "100", "100", "111", "101", "101", "111"],
+  7: ["111", "001", "001", "010", "010", "100", "100"],
+  8: ["111", "101", "101", "111", "101", "101", "111"],
+  9: ["111", "101", "101", "111", "001", "001", "111"],
+};
+
 const state = {
   current: null,
   currentColor: "#1f2937",
@@ -270,13 +283,138 @@ function normalizeAnswer(value) {
   return match ? Number(match[0]) : NaN;
 }
 
-async function recognizeWriting() {
-  const paths = pathsInsideAnswerBox();
-  const Recognizer = window.HandwritingRecognizer || window.webkitHandwritingRecognizer;
+function scoreTemplate(grid, template) {
+  let hits = 0;
+  let expected = 0;
+  let extras = 0;
+  let ink = 0;
 
-  if (!paths.length) return { text: "", status: "empty" };
+  for (let row = 0; row < 7; row += 1) {
+    for (let col = 0; col < 3; col += 1) {
+      const hasInk = grid[row][col] === 1;
+      const wantsInk = template[row][col] === "1";
+      if (wantsInk) expected += 1;
+      if (hasInk) ink += 1;
+      if (hasInk && wantsInk) hits += 1;
+      if (hasInk && !wantsInk) extras += 1;
+    }
+  }
+
+  return hits / Math.max(1, expected) - extras / Math.max(1, ink) * 0.38;
+}
+
+function answerInkComponents() {
+  const rect = getAnswerRect();
+  const scaleX = board.width / board.clientWidth;
+  const scaleY = board.height / board.clientHeight;
+  const sx = Math.max(0, Math.round(rect.left * scaleX));
+  const sy = Math.max(0, Math.round(rect.top * scaleY));
+  const sw = Math.min(board.width - sx, Math.round((rect.right - rect.left) * scaleX));
+  const sh = Math.min(board.height - sy, Math.round((rect.bottom - rect.top) * scaleY));
+  if (sw <= 0 || sh <= 0) return [];
+
+  const image = ctx.getImageData(sx, sy, sw, sh);
+  const columnInk = Array(sw).fill(0);
+  const alphaAt = (x, y) => image.data[(y * sw + x) * 4 + 3];
+
+  for (let y = 0; y < sh; y += 1) {
+    for (let x = 0; x < sw; x += 1) {
+      if (alphaAt(x, y) > 24) columnInk[x] += 1;
+    }
+  }
+
+  const threshold = Math.max(2, Math.round(sh * 0.01));
+  const ranges = [];
+  let start = null;
+  let lastInk = -1;
+  let blankRun = 0;
+  const splitGap = Math.max(12, Math.round(sw * 0.045));
+
+  columnInk.forEach((count, x) => {
+    if (count > threshold) {
+      if (start === null) start = x;
+      lastInk = x;
+      blankRun = 0;
+      return;
+    }
+
+    if (start !== null) {
+      blankRun += 1;
+      if (blankRun >= splitGap) {
+        ranges.push({ minX: start, maxX: lastInk });
+        start = null;
+        blankRun = 0;
+      }
+    }
+  });
+
+  if (start !== null) ranges.push({ minX: start, maxX: lastInk });
+
+  return ranges.map((range) => {
+    let minY = sh;
+    let maxY = 0;
+    for (let y = 0; y < sh; y += 1) {
+      for (let x = range.minX; x <= range.maxX; x += 1) {
+        if (alphaAt(x, y) > 24) {
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+        }
+      }
+    }
+    return { ...range, minY, maxY, image, width: sw, height: sh };
+  }).filter((box) => box.maxX - box.minX > 2 && box.maxY - box.minY > 8);
+}
+
+function rasterizeInkComponent(component) {
+  const grid = Array.from({ length: 7 }, () => Array(3).fill(0));
+  const width = Math.max(1, component.maxX - component.minX);
+  const height = Math.max(1, component.maxY - component.minY);
+  const alphaAt = (x, y) => component.image.data[(y * component.width + x) * 4 + 3];
+
+  for (let y = component.minY; y <= component.maxY; y += 1) {
+    for (let x = component.minX; x <= component.maxX; x += 1) {
+      if (alphaAt(x, y) <= 24) continue;
+      const col = Math.max(0, Math.min(2, Math.round(((x - component.minX) / width) * 2)));
+      const row = Math.max(0, Math.min(6, Math.round(((y - component.minY) / height) * 6)));
+      grid[row][col] = 1;
+    }
+  }
+
+  return grid;
+}
+
+function recognizeInkComponent(component) {
+  const width = Math.max(1, component.maxX - component.minX);
+  const height = Math.max(1, component.maxY - component.minY);
+  const aspect = width / height;
+
+  if (aspect < 0.42) {
+    return { digit: "1", confidence: 0.98 };
+  }
+
+  const grid = rasterizeInkComponent(component);
+  const ranked = Object.entries(digitTemplates)
+    .map(([digit, template]) => ({ digit, score: scoreTemplate(grid, template) }))
+    .sort((a, b) => b.score - a.score);
+  const top = ranked[0];
+  const next = ranked[1] || { score: 0 };
+  return { digit: top.digit, confidence: Math.max(0, Math.min(1, top.score - next.score + 0.55)) };
+}
+
+function recognizeDigitsLocally() {
+  const components = answerInkComponents();
+  if (!components.length) return { text: "", status: "empty", confidence: 0 };
+
+  const recognized = components.map(recognizeInkComponent);
+  const text = recognized.map((item) => item.digit).join("");
+  const confidence = recognized.reduce((sum, item) => sum + item.confidence, 0) / Math.max(1, recognized.length);
+
+  return { text, status: text ? "local" : "unreadable", confidence };
+}
+async function recognizeWithBrowserApi(paths) {
+  const Recognizer = window.HandwritingRecognizer || window.webkitHandwritingRecognizer;
   if (!Recognizer || !window.HandwritingDrawing || !window.HandwritingStroke) {
-    return { text: "", status: "unsupported" };
+    return { text: "", status: "unsupported", confidence: 0 };
   }
 
   try {
@@ -288,10 +426,22 @@ async function recognizeWriting() {
       drawing.addStroke(stroke);
     });
     const predictions = await recognizer.recognize(drawing);
-    return { text: predictions?.[0]?.text || "", status: "ok" };
+    return { text: predictions?.[0]?.text || "", status: "browser", confidence: 0.7 };
   } catch {
-    return { text: "", status: "unsupported" };
+    return { text: "", status: "unsupported", confidence: 0 };
   }
+}
+
+async function recognizeWriting() {
+  const paths = pathsInsideAnswerBox();
+  if (!paths.length) return { text: "", status: "empty", confidence: 0 };
+
+  const local = recognizeDigitsLocally();
+  if (local.text && local.confidence >= 0.48) return local;
+
+  const browser = await recognizeWithBrowserApi(paths);
+  if (browser.text) return browser;
+  return local.text ? local : { text: "", status: "unreadable", confidence: 0 };
 }
 
 async function checkAnswer() {
@@ -308,15 +458,15 @@ async function checkAnswer() {
     const streakBonus = state.progress.streak % 3 === 0 ? 2 : 0;
     state.progress.stars += 1 + streakBonus;
     state.progress.answered += 1;
-    feedbackEl.textContent = `Correct. Answer ${state.current.answer}. Time ${formatTime(state.seconds)}.`;
+    feedbackEl.textContent = `Correct. I read ${recognized.text}. Time ${formatTime(state.seconds)}.`;
     feedbackEl.className = "feedback correct";
     unlockEligibleLevels();
   } else {
     state.progress.streak = 0;
     if (recognized.status === "empty") {
       feedbackEl.textContent = `Write the final answer inside the box. Correct answer: ${state.current.answer}.`;
-    } else if (recognized.status === "unsupported") {
-      feedbackEl.textContent = `This browser cannot read handwriting yet. Correct answer: ${state.current.answer}.`;
+    } else if (recognized.status === "unreadable") {
+      feedbackEl.textContent = `I could not read it clearly. Correct answer: ${state.current.answer}.`;
     } else {
       feedbackEl.textContent = `I read ${recognized.text || "nothing"}. Correct answer: ${state.current.answer}.`;
     }
@@ -384,3 +534,5 @@ levelButtons.forEach((button) => {
 resizeBoard();
 updateProgressUi();
 showQuestion();
+
+
