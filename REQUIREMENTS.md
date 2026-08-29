@@ -18,12 +18,13 @@
 - [x] Clear writing.
 - [x] Undo.
 - [x] Visible timer for the current question.
+- [x] Timer style cycling: digital, analog, and hourglass.
 - [x] Next question button.
 - [x] Check answer button.
 - [x] Local canvas-based digit recognition reads only ink inside the final-answer box across modern browsers, including Safari.
 - [x] No typed answer field; final answers are read from the answer box.
-- [x] Feedback after checking: correct/incorrect, correct answer, and time taken.
-- [x] Gamified level map.
+- [x] Feedback popup after checking: correct/incorrect, correct answer, and time taken.
+- [x] Separate level/options start screen.
 - [x] Stars and score.
 - [x] Streak reward.
 - [x] Unlock levels by completing questions.
@@ -49,5 +50,6 @@
 - [x] Simplify to one main whiteboard with a large stacked question.
 - [x] Add license, checklist requirements, and JavaScript cache versioning.
 - [x] Run local verification and commit the final implementation.
+
 
 

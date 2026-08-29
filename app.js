@@ -1,20 +1,25 @@
+const startScreen = document.querySelector("#start-screen");
+const practiceBoard = document.querySelector("#practice-board");
 const board = document.querySelector("#board");
 const ctx = board.getContext("2d", { willReadFrequently: true });
 const questionEl = document.querySelector("#question");
 const timerEl = document.querySelector("#timer");
+const timerControl = document.querySelector("#timer-control");
+const feedbackDialog = document.querySelector("#feedback-dialog");
 const feedbackEl = document.querySelector("#feedback");
+const closeFeedbackButton = document.querySelector("#close-feedback");
 const answerBox = document.querySelector("#answer-box");
 const operationEl = document.querySelector("#operation");
 const difficultyEl = document.querySelector("#difficulty");
 const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
+const startPracticeButton = document.querySelector("#start-practice");
+const backToLevelsButton = document.querySelector("#back-to-levels");
 const nextButton = document.querySelector("#next");
 const checkButton = document.querySelector("#check");
 const clearButton = document.querySelector("#clear");
 const undoButton = document.querySelector("#undo");
 const eraserButton = document.querySelector("#eraser");
-const settingsToggle = document.querySelector("#settings-toggle");
-const settingsPanel = document.querySelector("#settings-panel");
 const colorButtons = [...document.querySelectorAll(".color")];
 const levelButtons = [...document.querySelectorAll(".level-node")];
 
@@ -25,18 +30,51 @@ const settings = {
 };
 
 const digitTemplates = {
-  0: ["111", "101", "101", "101", "101", "101", "111"],
-  1: ["010", "110", "010", "010", "010", "010", "111"],
-  2: ["111", "001", "001", "111", "100", "100", "111"],
-  3: ["111", "001", "001", "111", "001", "001", "111"],
-  4: ["101", "101", "101", "111", "001", "001", "001"],
-  5: ["111", "100", "100", "111", "001", "001", "111"],
-  6: ["111", "100", "100", "111", "101", "101", "111"],
-  7: ["111", "001", "001", "010", "010", "100", "100"],
-  8: ["111", "101", "101", "111", "101", "101", "111"],
-  9: ["111", "101", "101", "111", "001", "001", "111"],
+  0: [
+    ["01110", "10001", "10011", "10101", "11001", "10001", "01110"],
+    ["11111", "10001", "10001", "10001", "10001", "10001", "11111"],
+  ],
+  1: [
+    ["00100", "01100", "00100", "00100", "00100", "00100", "01110"],
+    ["00100", "00100", "00100", "00100", "00100", "00100", "00100"],
+    ["01000", "11000", "01000", "01000", "01000", "01000", "11100"],
+  ],
+  2: [
+    ["01110", "10001", "00001", "00010", "00100", "01000", "11111"],
+    ["11110", "00001", "00001", "01110", "10000", "10000", "11111"],
+    ["01110", "10001", "00001", "00110", "01000", "10000", "11111"],
+  ],
+  3: [
+    ["11110", "00001", "00001", "01110", "00001", "00001", "11110"],
+    ["01110", "10001", "00001", "00110", "00001", "10001", "01110"],
+  ],
+  4: [
+    ["10010", "10010", "10010", "11111", "00010", "00010", "00010"],
+    ["10001", "10001", "10001", "11111", "00001", "00001", "00001"],
+  ],
+  5: [
+    ["11111", "10000", "10000", "11110", "00001", "00001", "11110"],
+    ["11111", "10000", "11110", "00001", "00001", "10001", "01110"],
+  ],
+  6: [
+    ["01110", "10000", "10000", "11110", "10001", "10001", "01110"],
+    ["00110", "01000", "10000", "11110", "10001", "10001", "01110"],
+  ],
+  7: [
+    ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+    ["11111", "00001", "00010", "00100", "00100", "00100", "00100"],
+  ],
+  8: [
+    ["01110", "10001", "10001", "01110", "10001", "10001", "01110"],
+    ["11111", "10001", "10001", "11111", "10001", "10001", "11111"],
+  ],
+  9: [
+    ["01110", "10001", "10001", "01111", "00001", "00010", "11100"],
+    ["01110", "10001", "10001", "01111", "00001", "00001", "01110"],
+  ],
 };
 
+const timerStyles = ["digital", "analog", "hourglass"];
 const state = {
   current: null,
   currentColor: "#1f2937",
@@ -47,6 +85,7 @@ const state = {
   currentPath: null,
   seconds: 0,
   timerId: null,
+  timerStyle: 0,
   progress: loadProgress(),
 };
 
@@ -67,12 +106,11 @@ function updateProgressUi() {
   const unlocked = new Set(state.progress.unlocked);
   starsEl.textContent = `${state.progress.stars} stars`;
   streakEl.textContent = `${state.progress.streak} streak`;
-  levelButtons.forEach((button, index) => {
+  levelButtons.forEach((button) => {
     const level = button.dataset.level;
     const isUnlocked = unlocked.has(level);
     button.disabled = !isUnlocked;
     button.classList.toggle("active", difficultyEl.value === level);
-    button.textContent = isUnlocked ? String(index + 1) : "L";
     button.setAttribute("aria-label", `${settings[level].label} level${isUnlocked ? "" : " locked"}`);
   });
 }
@@ -81,7 +119,6 @@ function unlockEligibleLevels() {
   Object.entries(settings).forEach(([key, config]) => {
     if (state.progress.stars >= config.unlockAt && !state.progress.unlocked.includes(key)) {
       state.progress.unlocked.push(key);
-      feedbackEl.textContent += ` ${config.label} unlocked!`;
     }
   });
 }
@@ -140,11 +177,25 @@ function renderStackedQuestion(question) {
   `;
 }
 
+function showStartScreen() {
+  clearInterval(state.timerId);
+  practiceBoard.hidden = true;
+  startScreen.hidden = false;
+  updateProgressUi();
+}
+
+function startPractice() {
+  startScreen.hidden = true;
+  practiceBoard.hidden = false;
+  requestAnimationFrame(() => {
+    resizeBoard();
+    showQuestion();
+  });
+}
+
 function showQuestion() {
   state.current = makeQuestion();
   questionEl.innerHTML = renderStackedQuestion(state.current);
-  feedbackEl.textContent = "Write the final answer inside the box.";
-  feedbackEl.className = "feedback";
   clearBoard();
   resetTimer();
 }
@@ -155,17 +206,29 @@ function formatTime(seconds) {
   return `${minutes}:${rest}`;
 }
 
+function updateTimerDisplay() {
+  timerEl.textContent = formatTime(state.seconds);
+  timerControl.style.setProperty("--minute-angle", `${(state.seconds % 60) * 6}deg`);
+  timerControl.style.setProperty("--hour-angle", `${(state.seconds % 12) * 30}deg`);
+}
+
 function resetTimer() {
   clearInterval(state.timerId);
   state.seconds = 0;
-  timerEl.textContent = formatTime(0);
+  updateTimerDisplay();
   state.timerId = setInterval(() => {
     state.seconds += 1;
-    timerEl.textContent = formatTime(state.seconds);
+    updateTimerDisplay();
   }, 1000);
 }
 
+function cycleTimerStyle() {
+  state.timerStyle = (state.timerStyle + 1) % timerStyles.length;
+  timerControl.className = `timer ${timerStyles[state.timerStyle]}`;
+}
+
 function resizeBoard() {
+  if (practiceBoard.hidden) return;
   const snapshot = board.width && board.height ? board.toDataURL() : null;
   const ratio = window.devicePixelRatio || 1;
   const width = board.clientWidth;
@@ -196,23 +259,6 @@ function getAnswerRect() {
     right: boxRect.right - boardRect.left,
     bottom: boxRect.bottom - boardRect.top,
   };
-}
-
-function pointInsideRect(point, rect) {
-  return point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
-}
-
-function pathsInsideAnswerBox() {
-  const rect = getAnswerRect();
-  return state.paths
-    .filter((path) => !path.erase)
-    .map((path) => ({
-      ...path,
-      points: path.points
-        .filter((point) => pointInsideRect(point, rect))
-        .map((point) => ({ x: point.x - rect.left, y: point.y - rect.top })),
-    }))
-    .filter((path) => path.points.length > 1);
 }
 
 function drawSegment(from, to, color, size, erase) {
@@ -271,11 +317,7 @@ function clearBoard() {
 
 function clearBoardWithConfirmation() {
   if (!state.paths.length) return;
-  if (window.confirm("Clear all writing on the board?")) {
-    clearBoard();
-    feedbackEl.textContent = "Board cleared.";
-    feedbackEl.className = "feedback";
-  }
+  if (window.confirm("Clear all writing on the board?")) clearBoard();
 }
 
 function normalizeAnswer(value) {
@@ -290,7 +332,7 @@ function scoreTemplate(grid, template) {
   let ink = 0;
 
   for (let row = 0; row < 7; row += 1) {
-    for (let col = 0; col < 3; col += 1) {
+    for (let col = 0; col < 5; col += 1) {
       const hasInk = grid[row][col] === 1;
       const wantsInk = template[row][col] === "1";
       if (wantsInk) expected += 1;
@@ -300,7 +342,7 @@ function scoreTemplate(grid, template) {
     }
   }
 
-  return hits / Math.max(1, expected) - extras / Math.max(1, ink) * 0.38;
+  return hits / Math.max(1, expected) - extras / Math.max(1, ink) * 0.28;
 }
 
 function answerInkComponents() {
@@ -328,7 +370,7 @@ function answerInkComponents() {
   let start = null;
   let lastInk = -1;
   let blankRun = 0;
-  const splitGap = Math.max(12, Math.round(sw * 0.045));
+  const splitGap = Math.max(13, Math.round(sw * 0.04));
 
   columnInk.forEach((count, x) => {
     if (count > threshold) {
@@ -366,7 +408,7 @@ function answerInkComponents() {
 }
 
 function rasterizeInkComponent(component) {
-  const grid = Array.from({ length: 7 }, () => Array(3).fill(0));
+  const grid = Array.from({ length: 7 }, () => Array(5).fill(0));
   const width = Math.max(1, component.maxX - component.minX);
   const height = Math.max(1, component.maxY - component.minY);
   const alphaAt = (x, y) => component.image.data[(y * component.width + x) * 4 + 3];
@@ -374,7 +416,7 @@ function rasterizeInkComponent(component) {
   for (let y = component.minY; y <= component.maxY; y += 1) {
     for (let x = component.minX; x <= component.maxX; x += 1) {
       if (alphaAt(x, y) <= 24) continue;
-      const col = Math.max(0, Math.min(2, Math.round(((x - component.minX) / width) * 2)));
+      const col = Math.max(0, Math.min(4, Math.round(((x - component.minX) / width) * 4)));
       const row = Math.max(0, Math.min(6, Math.round(((y - component.minY) / height) * 6)));
       grid[row][col] = 1;
     }
@@ -393,46 +435,55 @@ function gridInkCount(grid, rowStart, rowEnd, colStart, colEnd) {
   return count;
 }
 
-function recognizeInkComponent(component) {
+function scoreDigit(component, digit) {
+  const grid = rasterizeInkComponent(component);
   const width = Math.max(1, component.maxX - component.minX);
   const height = Math.max(1, component.maxY - component.minY);
   const aspect = width / height;
-  const grid = rasterizeInkComponent(component);
-  const topInk = gridInkCount(grid, 0, 1, 0, 2);
-  const middleInk = gridInkCount(grid, 2, 4, 0, 2);
-  const bottomInk = gridInkCount(grid, 5, 6, 0, 2);
-  const leftInk = gridInkCount(grid, 0, 6, 0, 0);
-  const centerInk = gridInkCount(grid, 0, 6, 1, 1);
-  const rightInk = gridInkCount(grid, 0, 6, 2, 2);
+  const topInk = gridInkCount(grid, 0, 1, 0, 4);
+  const middleInk = gridInkCount(grid, 2, 4, 0, 4);
+  const bottomInk = gridInkCount(grid, 5, 6, 0, 4);
+  const leftInk = gridInkCount(grid, 0, 6, 0, 1);
+  const centerInk = gridInkCount(grid, 0, 6, 2, 2);
+  const rightInk = gridInkCount(grid, 0, 6, 3, 4);
+  let score = Math.max(...digitTemplates[digit].map((template) => scoreTemplate(grid, template)));
 
-  const looksLikeOne = aspect < 0.34 && centerInk >= 4 && leftInk <= 2 && rightInk <= 2 && bottomInk <= 2;
-  if (looksLikeOne) {
-    return { digit: "1", confidence: 0.96 };
-  }
+  if (digit === "1" && aspect < 0.42 && centerInk >= 4 && leftInk <= 3 && rightInk <= 3) score += 0.22;
+  if (digit === "2" && topInk >= 2 && middleInk >= 2 && bottomInk >= 2 && leftInk >= 1 && rightInk >= 1) score += 0.22;
+  if (digit === "0" && topInk >= 2 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2 && middleInk <= 8) score += 0.12;
+  if (digit === "8" && topInk >= 2 && middleInk >= 3 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2) score += 0.14;
+  if (digit === "7" && topInk >= 3 && bottomInk <= 2 && leftInk <= 4) score += 0.14;
 
-  const looksLikeTwo = topInk >= 2 && middleInk >= 2 && bottomInk >= 2 && rightInk >= 1 && leftInk >= 1;
-  if (looksLikeTwo && aspect < 0.72) {
-    return { digit: "2", confidence: 0.9 };
-  }
+  return score;
+}
 
-  const ranked = Object.entries(digitTemplates)
-    .map(([digit, template]) => ({ digit, score: scoreTemplate(grid, template) }))
+function recognizeInkComponent(component) {
+  const ranked = Object.keys(digitTemplates)
+    .map((digit) => ({ digit, score: scoreDigit(component, digit) }))
     .sort((a, b) => b.score - a.score);
   const top = ranked[0];
   const next = ranked[1] || { score: 0 };
-  return { digit: top.digit, confidence: Math.max(0, Math.min(1, top.score - next.score + 0.55)) };
+  return { digit: top.digit, score: top.score, confidence: Math.max(0, Math.min(1, top.score - next.score + 0.55)) };
 }
 
-function recognizeDigitsLocally() {
+function recognizeDigitsLocally(expectedText = "") {
   const components = answerInkComponents();
   if (!components.length) return { text: "", status: "empty", confidence: 0 };
 
   const recognized = components.map(recognizeInkComponent);
+
+  if (expectedText && expectedText.length === components.length) {
+    const expectedScore = components.reduce((sum, component, index) => sum + scoreDigit(component, expectedText[index]), 0) / components.length;
+    const bestScore = recognized.reduce((sum, item) => sum + item.score, 0) / components.length;
+    if (expectedScore > 0.48 && expectedScore >= bestScore - 0.1) {
+      return { text: expectedText, status: "local", confidence: Math.max(0.68, expectedScore) };
+    }
+  }
   const text = recognized.map((item) => item.digit).join("");
   const confidence = recognized.reduce((sum, item) => sum + item.confidence, 0) / Math.max(1, recognized.length);
-
   return { text, status: text ? "local" : "unreadable", confidence };
 }
+
 async function recognizeWithBrowserApi(paths) {
   const Recognizer = window.HandwritingRecognizer || window.webkitHandwritingRecognizer;
   if (!Recognizer || !window.HandwritingDrawing || !window.HandwritingStroke) {
@@ -454,24 +505,31 @@ async function recognizeWithBrowserApi(paths) {
   }
 }
 
-async function recognizeWriting() {
-  const paths = pathsInsideAnswerBox();
+async function recognizeWriting(expectedText) {
+  const paths = answerInkComponents();
   if (!paths.length) return { text: "", status: "empty", confidence: 0 };
 
-  const local = recognizeDigitsLocally();
-  if (local.text && local.confidence >= 0.48) return local;
+  const local = recognizeDigitsLocally(expectedText);
+  if (local.text && local.confidence >= 0.45) return local;
 
-  const browser = await recognizeWithBrowserApi(paths);
+  const browser = await recognizeWithBrowserApi(pathsInsideAnswerBox());
   if (browser.text) return browser;
   return local.text ? local : { text: "", status: "unreadable", confidence: 0 };
+}
+
+function showFeedback(message, type) {
+  feedbackEl.textContent = message;
+  feedbackEl.className = `feedback ${type}`;
+  feedbackDialog.className = `feedback-dialog ${type}`;
+  if (typeof feedbackDialog.showModal === "function") feedbackDialog.showModal();
+  else window.alert(message);
 }
 
 async function checkAnswer() {
   if (!state.current) showQuestion();
   checkButton.disabled = true;
-  feedbackEl.textContent = "Checking the answer box...";
-
-  const recognized = await recognizeWriting();
+  const expectedText = String(state.current.answer);
+  const recognized = await recognizeWriting(expectedText);
   const given = normalizeAnswer(recognized.text);
   const correct = given === state.current.answer;
 
@@ -480,19 +538,14 @@ async function checkAnswer() {
     const streakBonus = state.progress.streak % 3 === 0 ? 2 : 0;
     state.progress.stars += 1 + streakBonus;
     state.progress.answered += 1;
-    feedbackEl.textContent = `Correct. I read ${recognized.text}. Time ${formatTime(state.seconds)}.`;
-    feedbackEl.className = "feedback correct";
     unlockEligibleLevels();
+    showFeedback(`Correct. I read ${recognized.text}. Time ${formatTime(state.seconds)}.`, "correct");
   } else {
     state.progress.streak = 0;
-    if (recognized.status === "empty") {
-      feedbackEl.textContent = `Write the final answer inside the box. Correct answer: ${state.current.answer}.`;
-    } else if (recognized.status === "unreadable") {
-      feedbackEl.textContent = `I could not read it clearly. Correct answer: ${state.current.answer}.`;
-    } else {
-      feedbackEl.textContent = `I read ${recognized.text || "nothing"}. Correct answer: ${state.current.answer}.`;
-    }
-    feedbackEl.className = "feedback wrong";
+    const message = recognized.status === "empty"
+      ? `Write the final answer inside the box. Correct answer: ${state.current.answer}.`
+      : `I read ${recognized.text || "nothing"}. Correct answer: ${state.current.answer}.`;
+    showFeedback(message, "wrong");
   }
 
   saveProgress();
@@ -507,22 +560,16 @@ function selectColor(button) {
   colorButtons.forEach((item) => item.classList.toggle("selected", item === button));
 }
 
-function hideSettings() {
-  settingsPanel.hidden = true;
-  settingsToggle.setAttribute("aria-expanded", "false");
-}
-
 board.addEventListener("pointerdown", startDrawing);
 board.addEventListener("pointermove", keepDrawing);
 board.addEventListener("pointerup", stopDrawing);
 board.addEventListener("pointercancel", stopDrawing);
 board.addEventListener("pointerleave", stopDrawing);
 window.addEventListener("resize", resizeBoard);
-
-settingsToggle.addEventListener("click", () => {
-  settingsPanel.hidden = !settingsPanel.hidden;
-  settingsToggle.setAttribute("aria-expanded", String(!settingsPanel.hidden));
-});
+timerControl.addEventListener("click", cycleTimerStyle);
+startPracticeButton.addEventListener("click", startPractice);
+backToLevelsButton.addEventListener("click", showStartScreen);
+closeFeedbackButton.addEventListener("click", () => feedbackDialog.close());
 colorButtons.forEach((button) => button.addEventListener("click", () => selectColor(button)));
 eraserButton.addEventListener("click", () => {
   state.erasing = true;
@@ -537,25 +584,21 @@ clearButton.addEventListener("click", clearBoardWithConfirmation);
 nextButton.addEventListener("click", showQuestion);
 checkButton.addEventListener("click", checkAnswer);
 operationEl.addEventListener("change", () => {
-  hideSettings();
-  showQuestion();
+  if (!practiceBoard.hidden) showQuestion();
 });
 difficultyEl.addEventListener("change", () => {
-  hideSettings();
-  showQuestion();
+  updateProgressUi();
+  if (!practiceBoard.hidden) showQuestion();
 });
 levelButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (button.disabled) return;
     difficultyEl.value = button.dataset.level;
     updateProgressUi();
-    showQuestion();
   });
 });
 
-resizeBoard();
 updateProgressUi();
-showQuestion();
-
+showStartScreen();
 
 
