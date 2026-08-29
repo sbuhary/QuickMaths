@@ -135,7 +135,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 .topbar, .palette, .problem-card, .answer-box, .tool-rail, .action-stack, .feedback-panel { position: absolute; z-index: 2; }
 .topbar {
   top: 12px; left: 14px; right: 14px;
-  display: grid; grid-template-columns: 46px 1fr auto; gap: 10px; align-items: start;
+  display: grid; grid-template-columns: 46px 1fr 42px auto; gap: 8px; align-items: start;
   pointer-events: none;
 }
 .brand-mark, .timer {
@@ -194,6 +194,8 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 }
 .circle-button svg { width: 24px; height: 24px; stroke-width: 3; }
 .back-button { background: var(--purple); }
+.sound-button { width: 42px; height: 42px; margin-top: 8px; background: #eef2ff; color: var(--ink); }
+.sound-button.muted { color: #7b8494; }
 .reset-button { background: #eef2ff; color: var(--ink); }
 .palette { top: 80px; left: 50%; display: flex; gap: 12px; transform: translateX(-50%); }
 .pen-sizes { top: 130px; left: 50%; display: flex; gap: 8px; transform: translateX(-50%); }
@@ -275,8 +277,9 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   .level-node:nth-child(4n+2), .level-node:nth-child(4n+3) { transform: none; }
   .level-node:nth-child(3n+2) { transform: translateY(10px); }
   .start-overlay { left: 28px; right: 28px; bottom: 20px; width: auto; }
-  .topbar { grid-template-columns: 42px 1fr auto; }
+  .topbar { grid-template-columns: 42px 1fr 40px auto; gap: 7px; }
   .circle-button { width: 42px; height: 42px; }
+  .sound-button { width: 40px; height: 40px; }
   .palette { top: 78px; gap: 10px; }
   .pen-sizes { top: 124px; }
   .problem-card { top: 160px; width: 86vw; }
@@ -299,7 +302,9 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 }
 
 @media (max-width: 360px) {
-  .brand-mark { min-width: 116px; }
+  .brand-mark { min-width: 108px; padding-inline: 8px; }
+  .topbar { gap: 6px; }
+  .sound-button { width: 38px; height: 38px; }
   .timer { min-width: 74px; }
   .palette { gap: 8px; }
   .circle-button { width: 40px; height: 40px; }

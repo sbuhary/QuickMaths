@@ -1,0 +1,19 @@
+{
+  "name": "QuickMaths",
+  "short_name": "QuickMaths",
+  "description": "A playful mobile whiteboard app for children to practice arithmetic.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fffef8",
+  "theme_color": "#6c5ce7",
+  "icons": [
+    {
+      "src": "icons/quickmaths-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -5,6 +5,7 @@ const ctx = board.getContext("2d", { willReadFrequently: true });
 const questionEl = document.querySelector("#question");
 const timerEl = document.querySelector("#timer");
 const timerControl = document.querySelector("#timer-control");
+const soundToggleButton = document.querySelector("#sound-toggle");
 const feedbackPanel = document.querySelector("#feedback-panel");
 const feedbackEl = document.querySelector("#feedback");
 const closeFeedbackButton = document.querySelector("#close-feedback");
@@ -91,8 +92,52 @@ const state = {
   session: { correct: 0, missed: 0, starsEarned: 0, missedQuestions: [], startedAt: Date.now() },
   pendingReview: null,
   handedness: localStorage.getItem("quickmaths-handedness") || "right",
+  soundEnabled: localStorage.getItem("quickmaths-sound") !== "off",
+  audioContext: null,
 };
 
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+  navigator.serviceWorker.register("./sw.js").catch(() => {});
+}
+
+function updateSoundButton() {
+  soundToggleButton.classList.toggle("muted", !state.soundEnabled);
+  soundToggleButton.setAttribute("aria-label", state.soundEnabled ? "Mute sounds" : "Turn sounds on");
+  const icon = soundToggleButton.querySelector("i");
+  if (icon) icon.setAttribute("data-lucide", state.soundEnabled ? "volume-2" : "volume-x");
+  localStorage.setItem("quickmaths-sound", state.soundEnabled ? "on" : "off");
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function playTone(type) {
+  if (!state.soundEnabled || !(window.AudioContext || window.webkitAudioContext)) return;
+  const AudioEngine = window.AudioContext || window.webkitAudioContext;
+  if (!state.audioContext) state.audioContext = new AudioEngine();
+  const now = state.audioContext.currentTime;
+  const tones = {
+    correct: [523, 659, 784],
+    wrong: [220, 180],
+    timeout: [160, 140],
+  }[type] || [440];
+  tones.forEach((frequency, index) => {
+    const oscillator = state.audioContext.createOscillator();
+    const gain = state.audioContext.createGain();
+    oscillator.frequency.value = frequency;
+    oscillator.type = "sine";
+    gain.gain.setValueAtTime(0.001, now + index * 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.08, now + index * 0.08 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.16);
+    oscillator.connect(gain).connect(state.audioContext.destination);
+    oscillator.start(now + index * 0.08);
+    oscillator.stop(now + index * 0.08 + 0.18);
+  });
+}
+
+function toggleSound() {
+  state.soundEnabled = !state.soundEnabled;
+  updateSoundButton();
+}
 function formatElapsed(milliseconds) {
   const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
   const minutes = Math.floor(totalSeconds / 60);
@@ -292,6 +337,7 @@ function resetTimer() {
       clearInterval(state.timerId);
       recordMissOnce();
       updateProgressUi();
+      playTone("timeout");
       showFeedback("Time is up. Try this one again.", "timeout");
     }
   }, 1000);
@@ -725,6 +771,7 @@ function awardCorrectAnswer(readText) {
   clearInterval(state.timerId);
   saveProgress();
   updateProgressUi();
+  playTone("correct");
   showFeedback(`Correct. I read ${readText}. ${formatTime(state.timeLeft)} left.`, "correct");
 }
 
@@ -755,6 +802,7 @@ async function checkAnswer() {
     const message = recognized.status === "empty"
       ? "Write the final answer inside the box, then try again."
       : `I read ${recognized.text || "nothing"}. Try this one again.`;
+    playTone("wrong");
     showFeedback(message, "wrong");
   }
 
@@ -798,6 +846,7 @@ board.addEventListener("pointercancel", stopDrawing);
 board.addEventListener("pointerleave", stopDrawing);
 window.addEventListener("resize", resizeBoard);
 timerControl.addEventListener("click", cycleTimerStyle);
+soundToggleButton.addEventListener("click", toggleSound);
 startPracticeButton.addEventListener("click", startPractice);
 resetProgressButton.addEventListener("click", resetProgress);
 retryMissedButton.addEventListener("click", retryMissedQuestions);
@@ -816,6 +865,7 @@ markWrongButton.addEventListener("click", () => {
   recordMissOnce();
   saveProgress();
   updateProgressUi();
+  playTone("wrong");
   showFeedback("Try this one again.", "wrong");
 });
 nextMainButton.addEventListener("click", showQuestion);
@@ -846,7 +896,9 @@ levelButtons.forEach((button) => {
   });
 });
 
+registerServiceWorker();
 updateHandedness();
+updateSoundButton();
 updateProgressUi();
 if (window.lucide) window.lucide.createIcons();
 showStartScreen();

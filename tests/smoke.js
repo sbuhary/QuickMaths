@@ -6,6 +6,9 @@ const html = fs.readFileSync("index.html", "utf8");
 const css = fs.readFileSync("styles.css", "utf8");
 const js = fs.readFileSync("app.js", "utf8");
 const samples = JSON.parse(fs.readFileSync("tests/recognition-samples.json", "utf8"));
+const manifest = JSON.parse(fs.readFileSync("manifest.webmanifest", "utf8"));
+const serviceWorker = fs.readFileSync("sw.js", "utf8");
+const version = fs.readFileSync("version.js", "utf8").match(/QUICKMATHS_RELEASE = "([^"]+)"/)?.[1];
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -48,9 +51,15 @@ const digitTemplates = extractConst("digitTemplates");
 assert(stagePlans.length === 12, "Expected 12 stages");
 assert(stagePlans[0].operation === "addition" && stagePlans[0].sumMax === 5, "Stage 1 should be tiny addition");
 assert(stagePlans[10].operation === "division", "Stage 11 should introduce division");
-assert(html.includes("styles.css?v=20260829-11"), "CSS cache version missing");
-assert(html.includes("app.js?v=20260829-11"), "JS cache version missing");
+assert(version, "Release version constant missing");
+assert(html.includes(`styles.css?v=${version}`), "CSS cache version does not match release version");
+assert(html.includes(`app.js?v=${version}`), "JS cache version does not match release version");
+assert(serviceWorker.includes(`quickmaths-${version}`), "Service worker cache version does not match release version");
 assert(css.includes("touch-action: pinch-zoom"), "Canvas must allow pinch zoom");
+assert(html.includes("manifest.webmanifest"), "PWA manifest link missing");
+assert(manifest.icons?.some((icon) => icon.src.includes("quickmaths-icon.svg")), "PWA icon missing from manifest");
+assert(serviceWorker.includes("self.addEventListener(\"fetch\"") && js.includes("registerServiceWorker"), "Service worker wiring missing");
+assert(html.includes("id=\"sound-toggle\"") && js.includes("playTone") && js.includes("toggleSound"), "Sound toggle behavior missing");
 assert(css.includes(".answer-box.active"), "Answer box highlight style missing");
 assert(html.includes("id=\"clear-answer\""), "Answer-only clear control missing");
 assert(html.includes("id=\"hand-toggle\""), "Handedness toggle missing");

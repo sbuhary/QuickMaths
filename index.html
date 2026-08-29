@@ -4,12 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#6c5ce7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="QuickMaths">
     <meta
       name="description"
       content="QuickMaths is a playful mobile whiteboard app for children to practice arithmetic."
     >
     <title>QuickMaths</title>
-    <link rel="stylesheet" href="styles.css?v=20260829-11">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icons/quickmaths-icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/quickmaths-icon.svg">
+    <link rel="stylesheet" href="styles.css?v=20260829-12">
   </head>
   <body>
     <main class="app-shell">
@@ -71,6 +76,7 @@
               <span id="streak">0 streak</span>
             </div>
           </div>
+          <button id="sound-toggle" class="circle-button sound-button" type="button" aria-label="Mute sounds"><i data-lucide="volume-2"></i></button>
           <button id="timer-control" class="timer digital" type="button" aria-label="Change timer style">
             <span>Time</span>
             <strong id="timer">01:00</strong>
@@ -126,7 +132,8 @@
       </section>
     </main>
 
+    <script src="version.js"></script>
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=20260829-11"></script>
+    <script src="app.js?v=20260829-12"></script>
   </body>
 </html>

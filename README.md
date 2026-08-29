@@ -9,11 +9,13 @@ QuickMaths is a mobile-first arithmetic practice app for children. It runs as a 
 - Writable whiteboard with pen colors, pen thickness, eraser, undo, answer-only clear, and whole-board clear. Writing uses one finger or pen; two-finger gestures stay available for browser zoom.
 - A dedicated final-answer box, while the rest of the board remains open for working. The box highlights while writing inside it.
 - Countdown timer per question. Tap the timer to cycle between digital, analog, and hourglass styles.
+- Optional sound effects with a mute toggle.
 - Main Check and Next buttons, plus feedback actions near the answer box.
 - Confidence review when handwriting recognition is unsure, so an adult can mark the read as correct or wrong.
 - Full session summary with practice time and stars earned, retry missed questions, and parent reset for local progress.
 - Written-answer checking from the answer box using local canvas-based digit recognition, with browser handwriting recognition as an optional fallback.
 - Candy Crush-style level path with stars, streaks, and locked progression saved on the device.
+- PWA metadata, app icon, and service worker for installable/offline-friendly use after first hosted load.
 
 ## Level Plan
 1. Tiny sums: addition with totals up to 5.
@@ -37,3 +39,5 @@ Open `index.html` in a browser.
 2. In the repository settings, open Pages.
 3. Set the source to the default branch and root folder.
 4. Save and open the published Pages URL.
+
+See `docs/GITHUB_PAGES.md` for the deployment guide and official screenshot references.

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="QuickMaths icon">
+  <rect width="512" height="512" rx="112" fill="#6c5ce7"/>
+  <circle cx="146" cy="142" r="54" fill="#ff5f9e"/>
+  <circle cx="366" cy="142" r="54" fill="#ffd166"/>
+  <circle cx="146" cy="370" r="54" fill="#00b894"/>
+  <circle cx="366" cy="370" r="54" fill="#0984e3"/>
+  <path d="M179 257h154M256 180v154" stroke="#fffef8" stroke-width="42" stroke-linecap="round"/>
+  <path d="M178 430h156" stroke="#fffef8" stroke-width="28" stroke-linecap="round" opacity=".9"/>
+</svg>

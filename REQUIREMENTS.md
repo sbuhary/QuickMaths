@@ -76,13 +76,15 @@
 - [x] Uses local recognition fallback for Safari and browsers without handwriting APIs.
 - [x] Version JavaScript and CSS file references to avoid browser cache issues after updates.
 - [x] Include MIT license.
+- [x] Add PWA manifest, service worker, and app icon metadata.
+- [x] Add release version constant checked against CSS/JS cache versions.
 
 ## Known Limitations
 - [ ] Local digit recognition is heuristic and cannot guarantee every handwriting style.
 - [ ] Multi-digit segmentation can still fail when digits touch or overlap heavily.
 - [x] Static smoke test covers layout breakpoints and app wiring.
 - [ ] No automated visual regression tests with screenshots yet.
-- [ ] No offline install/PWA behavior yet.
+- [x] PWA install/offline app-shell behavior is available after first hosted load.
 - [ ] Progress is device-local only and does not sync across browsers or devices.
 
 ## Next Priority Features
@@ -92,7 +94,7 @@
 - [x] Add a small on-device recognition test harness with saved synthetic digit samples for regression checks.
 - [x] Add a low-height mobile layout smoke test for 320px, 375px, and 430px wide screens.
 - [x] Add static smoke-test script for syntax, layout hooks, drawing policy, asset versions, and level progression.
-- [ ] Add browser smoke-test script for interactive drawing, checking, timer cycling, and level navigation.
+- [x] Add optional browser smoke-test script for interactive drawing, checking, timer cycling, and level navigation.
 
 ### P1: Better Learning Experience
 - [x] Add Candy Crush-style stage path with progressive unlocks.
@@ -100,7 +102,7 @@
 - [x] Add a session summary with correct count and missed questions.
 - [x] Add full session summary with time and stars earned.
 - [x] Add retry missed question flow.
-- [ ] Add optional sound effects with mute control.
+- [x] Add optional sound effects with mute control.
 - [x] Add optional parent reset for local progress.
 
 ### P2: Whiteboard Improvements
@@ -111,10 +113,10 @@
 - [x] Add left/right handed layout option for controls.
 
 ### P3: Install And Share
-- [ ] Add PWA manifest and service worker for offline install.
-- [ ] Add app icons for home-screen install.
-- [ ] Add GitHub Pages deployment instructions with screenshots.
-- [ ] Add simple release version constant so CSS/JS cache versions are updated from one place.
+- [x] Add PWA manifest and service worker for offline install.
+- [x] Add app icons for home-screen install.
+- [x] Add GitHub Pages deployment instructions with official screenshot references.
+- [x] Add simple release version constant so CSS/JS cache versions are updated from one place.
 
 ## Implementation History
 - [x] Create requirements document and commit it.
@@ -134,4 +136,6 @@
 - [x] Restrict drawing to one active touch pointer and allow two-finger browser zoom.
 - [x] Add confidence review, session summary, parent reset, and smoke test harness.
 - [x] Add retry missed flow, pen thickness, answer-only clear, whole-board clear, and handedness toggle.
+- [x] Add muteable sounds, PWA shell, app icon, version checks, and optional browser smoke test.
+- [x] Add GitHub Pages deployment guide and `.nojekyll`.
 - [x] Add visual answer-box highlight while writing inside it.
