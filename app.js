@@ -114,9 +114,17 @@ function makeQuestion() {
   return { a, b, answer, symbol };
 }
 
+function renderStackedQuestion(question) {
+  return `
+    <span class="row top">${question.a}</span>
+    <span class="row bottom"><span>${question.symbol}</span><span>${question.b}</span></span>
+    <span class="bar"></span>
+    <span class="equals">= ?</span>
+  `;
+}
 function showQuestion() {
   state.current = makeQuestion();
-  questionEl.textContent = `${state.current.a} ${state.current.symbol} ${state.current.b} = ?`;
+  questionEl.innerHTML = renderStackedQuestion(state.current);
   feedbackEl.textContent = "Use the board for your working, then check.";
   feedbackEl.className = "feedback";
   answerEl.value = "";
@@ -313,3 +321,4 @@ levelButtons.forEach((button) => {
 resizeBoard();
 updateProgressUi();
 showQuestion();
+
