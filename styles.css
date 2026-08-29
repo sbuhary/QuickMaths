@@ -236,3 +236,21 @@ canvas {
     padding: 24px;
   }
 }
+
+.level-node:disabled {
+  background: #a3aab8;
+  color: #ffffff;
+  opacity: 0.72;
+}
+
+.toolbar .selected-tool {
+  background: var(--yellow);
+}
+
+.feedback.correct {
+  color: #047857;
+}
+
+.feedback.wrong {
+  color: #be123c;
+}
