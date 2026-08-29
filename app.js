@@ -5,7 +5,7 @@ const ctx = board.getContext("2d", { willReadFrequently: true });
 const questionEl = document.querySelector("#question");
 const timerEl = document.querySelector("#timer");
 const timerControl = document.querySelector("#timer-control");
-const feedbackDialog = document.querySelector("#feedback-dialog");
+const feedbackPanel = document.querySelector("#feedback-panel");
 const feedbackEl = document.querySelector("#feedback");
 const closeFeedbackButton = document.querySelector("#close-feedback");
 const answerBox = document.querySelector("#answer-box");
@@ -13,11 +13,13 @@ const operationEl = document.querySelector("#operation");
 const difficultyEl = document.querySelector("#difficulty");
 const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
+const stageSummaryEl = document.querySelector("#stage-summary");
 const startPracticeButton = document.querySelector("#start-practice");
 const backToLevelsButton = document.querySelector("#back-to-levels");
 const retryFeedbackButton = document.querySelector("#retry-feedback");
 const nextFeedbackButton = document.querySelector("#next-feedback");
 const checkButton = document.querySelector("#check");
+const nextMainButton = document.querySelector("#next-main");
 const clearButton = document.querySelector("#clear");
 const undoButton = document.querySelector("#undo");
 const eraserButton = document.querySelector("#eraser");
@@ -25,54 +27,38 @@ const colorButtons = [...document.querySelectorAll(".color")];
 const levelButtons = [...document.querySelectorAll(".level-node")];
 
 const settings = {
-  starter: { label: "Starter", max: 10, multiplicationMax: 5, divisionMax: 5, unlockAt: 0, seconds: 60 },
-  explorer: { label: "Explorer", max: 60, multiplicationMax: 10, divisionMax: 10, unlockAt: 4, seconds: 75 },
-  wizard: { label: "Wizard", max: 250, multiplicationMax: 12, divisionMax: 12, unlockAt: 8, seconds: 90 },
+  starter: { label: "Starter", unlockAt: 0 },
+  explorer: { label: "Explorer", unlockAt: 4 },
+  builder: { label: "Builder", unlockAt: 8 },
+  wizard: { label: "Wizard", unlockAt: 12 },
 };
 
+const stagePlans = [
+  { stage: 1, level: "starter", title: "Tiny sums", operation: "addition", max: 5, sumMax: 5, seconds: 60 },
+  { stage: 2, level: "starter", title: "Facts to 10", operation: "addition", max: 9, sumMax: 10, seconds: 60 },
+  { stage: 3, level: "starter", title: "Take away", operation: "subtraction", max: 10, seconds: 60 },
+  { stage: 4, level: "starter", title: "Add or subtract", operation: "add-sub", max: 10, sumMax: 10, seconds: 65 },
+  { stage: 5, level: "explorer", title: "Teen sums", operation: "addition", max: 12, sumMax: 20, seconds: 70 },
+  { stage: 6, level: "explorer", title: "Teen subtraction", operation: "subtraction", max: 20, seconds: 70 },
+  { stage: 7, level: "explorer", title: "Two-digit plus ones", operation: "addition", max: 89, addendMax: 9, seconds: 75 },
+  { stage: 8, level: "explorer", title: "Two-digit take away", operation: "subtraction", max: 99, subtractMax: 9, seconds: 75 },
+  { stage: 9, level: "builder", title: "Times 2, 5, 10", operation: "multiplication", factors: [2, 5, 10], max: 10, seconds: 80 },
+  { stage: 10, level: "builder", title: "Small times tables", operation: "multiplication", multiplicationMax: 6, seconds: 85 },
+  { stage: 11, level: "wizard", title: "Exact sharing", operation: "division", divisionMax: 6, seconds: 90 },
+  { stage: 12, level: "wizard", title: "Mixed challenge", operation: "mixed", multiplicationMax: 10, divisionMax: 10, max: 30, seconds: 90 },
+];
+
 const digitTemplates = {
-  0: [
-    ["01110", "10001", "10011", "10101", "11001", "10001", "01110"],
-    ["11111", "10001", "10001", "10001", "10001", "10001", "11111"],
-  ],
-  1: [
-    ["00100", "01100", "00100", "00100", "00100", "00100", "01110"],
-    ["00100", "00100", "00100", "00100", "00100", "00100", "00100"],
-    ["01000", "11000", "01000", "01000", "01000", "01000", "11100"],
-  ],
-  2: [
-    ["01110", "10001", "00001", "00010", "00100", "01000", "11111"],
-    ["11110", "00001", "00001", "01110", "10000", "10000", "11111"],
-    ["01110", "10001", "00001", "00110", "01000", "10000", "11111"],
-  ],
-  3: [
-    ["11110", "00001", "00001", "01110", "00001", "00001", "11110"],
-    ["01110", "10001", "00001", "00110", "00001", "10001", "01110"],
-  ],
-  4: [
-    ["10010", "10010", "10010", "11111", "00010", "00010", "00010"],
-    ["10001", "10001", "10001", "11111", "00001", "00001", "00001"],
-  ],
-  5: [
-    ["11111", "10000", "10000", "11110", "00001", "00001", "11110"],
-    ["11111", "10000", "11110", "00001", "00001", "10001", "01110"],
-  ],
-  6: [
-    ["01110", "10000", "10000", "11110", "10001", "10001", "01110"],
-    ["00110", "01000", "10000", "11110", "10001", "10001", "01110"],
-  ],
-  7: [
-    ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
-    ["11111", "00001", "00010", "00100", "00100", "00100", "00100"],
-  ],
-  8: [
-    ["01110", "10001", "10001", "01110", "10001", "10001", "01110"],
-    ["11111", "10001", "10001", "11111", "10001", "10001", "11111"],
-  ],
-  9: [
-    ["01110", "10001", "10001", "01111", "00001", "00010", "11100"],
-    ["01110", "10001", "10001", "01111", "00001", "00001", "01110"],
-  ],
+  0: [["01110", "10001", "10011", "10101", "11001", "10001", "01110"], ["11111", "10001", "10001", "10001", "10001", "10001", "11111"], ["01110", "10001", "10001", "10001", "10001", "10001", "01110"]],
+  1: [["00100", "01100", "00100", "00100", "00100", "00100", "01110"], ["00100", "00100", "00100", "00100", "00100", "00100", "00100"], ["01000", "11000", "01000", "01000", "01000", "01000", "11100"], ["00010", "00110", "00010", "00010", "00010", "00010", "00111"]],
+  2: [["01110", "10001", "00001", "00010", "00100", "01000", "11111"], ["11110", "00001", "00001", "01110", "10000", "10000", "11111"], ["01110", "10001", "00001", "00110", "01000", "10000", "11111"], ["00110", "01001", "00001", "00010", "00100", "01000", "01111"]],
+  3: [["11110", "00001", "00001", "01110", "00001", "00001", "11110"], ["01110", "10001", "00001", "00110", "00001", "10001", "01110"], ["11110", "00001", "00010", "00110", "00001", "00001", "11110"]],
+  4: [["10010", "10010", "10010", "11111", "00010", "00010", "00010"], ["10001", "10001", "10001", "11111", "00001", "00001", "00001"], ["00100", "01100", "10100", "11111", "00100", "00100", "00100"]],
+  5: [["11111", "10000", "10000", "11110", "00001", "00001", "11110"], ["11111", "10000", "11110", "00001", "00001", "10001", "01110"]],
+  6: [["01110", "10000", "10000", "11110", "10001", "10001", "01110"], ["00110", "01000", "10000", "11110", "10001", "10001", "01110"], ["01110", "10000", "10000", "11110", "10001", "10001", "11110"]],
+  7: [["11111", "00001", "00010", "00100", "01000", "01000", "01000"], ["11111", "00001", "00010", "00100", "00100", "00100", "00100"], ["11111", "00010", "00010", "00100", "00100", "01000", "01000"]],
+  8: [["01110", "10001", "10001", "01110", "10001", "10001", "01110"], ["11111", "10001", "10001", "11111", "10001", "10001", "11111"]],
+  9: [["01110", "10001", "10001", "01111", "00001", "00010", "11100"], ["01110", "10001", "10001", "01111", "00001", "00001", "01110"], ["01111", "10001", "10001", "01111", "00001", "00001", "01110"]],
 };
 
 const timerStyles = ["digital", "analog", "hourglass"];
@@ -84,7 +70,6 @@ const state = {
   lastPoint: null,
   paths: [],
   currentPath: null,
-  seconds: 0,
   timeLeft: 60,
   duration: 60,
   timerId: null,
@@ -93,82 +78,103 @@ const state = {
 };
 
 function loadProgress() {
-  const fallback = { stars: 0, streak: 0, answered: 0, unlocked: ["starter"], unlockedStages: 1, currentStage: 1 };
+  const fallback = { stars: 0, streak: 0, answered: 0, unlockedStages: 1, currentStage: 1 };
   try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem("mathsprout-progress")) };
+    const stored = localStorage.getItem("quickmaths-progress") || localStorage.getItem("mathsprout-progress");
+    return { ...fallback, ...JSON.parse(stored || "{}") };
   } catch {
     return fallback;
   }
 }
 
 function saveProgress() {
-  localStorage.setItem("mathsprout-progress", JSON.stringify(state.progress));
+  localStorage.setItem("quickmaths-progress", JSON.stringify(state.progress));
+}
+
+function currentPlan() {
+  return stagePlans[Math.max(0, Math.min(stagePlans.length - 1, state.progress.currentStage - 1))];
 }
 
 function updateProgressUi() {
-  const unlocked = new Set(state.progress.unlocked);
+  const plan = currentPlan();
   starsEl.textContent = `${state.progress.stars} stars`;
   streakEl.textContent = `${state.progress.streak} streak`;
+  if (stageSummaryEl) stageSummaryEl.textContent = `Stage ${plan.stage}: ${plan.title}`;
+  startPracticeButton.textContent = `Start stage ${plan.stage}`;
   levelButtons.forEach((button) => {
-    const level = button.dataset.level;
     const stage = Number(button.dataset.stage || 1);
-    const isUnlocked = unlocked.has(level) && stage <= state.progress.unlockedStages;
+    const stagePlan = stagePlans[stage - 1];
+    const isUnlocked = stage <= state.progress.unlockedStages;
     button.disabled = !isUnlocked;
+    button.dataset.level = stagePlan.level;
     button.classList.toggle("active", state.progress.currentStage === stage);
-    button.setAttribute("aria-label", `${settings[level].label} stage ${stage}${isUnlocked ? "" : " locked"}`);
+    button.setAttribute("aria-label", `Stage ${stage}, ${stagePlan.title}${isUnlocked ? "" : " locked"}`);
+    const small = button.querySelector("small");
+    if (small) small.textContent = settings[stagePlan.level].label;
   });
 }
 
 function unlockEligibleLevels() {
-  state.progress.unlockedStages = Math.min(12, Math.max(state.progress.unlockedStages, state.progress.currentStage + 1));
-  Object.entries(settings).forEach(([key, config]) => {
-    if (state.progress.stars >= config.unlockAt && !state.progress.unlocked.includes(key)) {
-      state.progress.unlocked.push(key);
-    }
-  });
+  state.progress.unlockedStages = Math.min(stagePlans.length, Math.max(state.progress.unlockedStages, state.progress.currentStage + 1));
 }
 
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function chooseOperation(plan) {
+  const selected = operationEl.value;
+  if (selected !== "stage") return selected;
+  if (plan.operation === "mixed") return Math.random() > 0.5 ? "multiplication" : "division";
+  if (plan.operation === "add-sub") return Math.random() > 0.5 ? "addition" : "subtraction";
+  return plan.operation;
+}
+
 function makeQuestion() {
-  const difficulty = settings[difficultyEl.value];
-  const operation = operationEl.value;
+  const plan = currentPlan();
+  const operation = chooseOperation(plan);
   let a;
   let b;
   let answer;
   let symbol;
 
   if (operation === "addition") {
-    a = randomInt(1, difficulty.max);
-    b = randomInt(1, difficulty.max);
+    const max = plan.max || 10;
+    a = randomInt(1, max);
+    b = randomInt(1, plan.addendMax || max);
+    if (plan.sumMax) {
+      a = randomInt(1, Math.max(1, plan.sumMax - 1));
+      b = randomInt(1, Math.max(1, plan.sumMax - a));
+    }
     answer = a + b;
     symbol = "+";
   }
 
   if (operation === "subtraction") {
-    a = randomInt(Math.ceil(difficulty.max / 2), difficulty.max);
-    b = randomInt(1, a);
+    const max = plan.max || 10;
+    const subtractMax = plan.subtractMax || max;
+    a = randomInt(2, max);
+    b = randomInt(1, Math.min(a, subtractMax));
     answer = a - b;
     symbol = "-";
   }
 
   if (operation === "multiplication") {
-    a = randomInt(1, difficulty.multiplicationMax);
-    b = randomInt(1, difficulty.multiplicationMax);
+    const factors = plan.factors || null;
+    a = factors ? factors[randomInt(0, factors.length - 1)] : randomInt(1, plan.multiplicationMax || 10);
+    b = randomInt(1, plan.max || plan.multiplicationMax || 10);
     answer = a * b;
     symbol = "x";
   }
 
   if (operation === "division") {
-    b = randomInt(1, difficulty.divisionMax);
-    answer = randomInt(1, difficulty.divisionMax);
+    b = randomInt(1, plan.divisionMax || 10);
+    answer = randomInt(1, plan.divisionMax || 10);
     a = b * answer;
     symbol = "/";
   }
 
-  return { a, b, answer, symbol };
+  return { a, b, answer, symbol, plan };
 }
 
 function renderStackedQuestion(question) {
@@ -182,8 +188,13 @@ function renderStackedQuestion(question) {
   `;
 }
 
+function hideFeedback() {
+  feedbackPanel.hidden = true;
+}
+
 function showStartScreen() {
   clearInterval(state.timerId);
+  hideFeedback();
   practiceBoard.hidden = true;
   startScreen.hidden = false;
   updateProgressUi();
@@ -200,7 +211,9 @@ function startPractice() {
 
 function showQuestion() {
   state.current = makeQuestion();
+  difficultyEl.value = state.current.plan.level;
   questionEl.innerHTML = renderStackedQuestion(state.current);
+  hideFeedback();
   clearBoard();
   resetTimer();
 }
@@ -213,25 +226,24 @@ function formatTime(seconds) {
 
 function updateTimerDisplay() {
   const progress = state.duration > 0 ? state.timeLeft / state.duration : 0;
+  const bounded = Math.max(0, Math.min(1, progress));
   timerEl.textContent = formatTime(state.timeLeft);
-  timerControl.style.setProperty("--time-progress", String(Math.max(0, Math.min(1, progress))));
-  timerControl.style.setProperty("--time-deg", `${Math.max(0, Math.min(360, progress * 360))}deg`);
-  timerControl.style.setProperty("--minute-angle", `${(1 - progress) * 360}deg`);
-  timerControl.style.setProperty("--hour-angle", `${(1 - progress) * 120}deg`);
-  timerControl.style.setProperty("--sand-top", `${Math.max(1, Math.round(14 * progress))}px`);
-  timerControl.style.setProperty("--sand-bottom", `${Math.max(1, Math.round(14 * (1 - progress)))}px`);
+  timerControl.style.setProperty("--time-progress", String(bounded));
+  timerControl.style.setProperty("--time-deg", `${bounded * 360}deg`);
+  timerControl.style.setProperty("--minute-angle", `${(1 - bounded) * 360}deg`);
+  timerControl.style.setProperty("--hour-angle", `${(1 - bounded) * 120}deg`);
+  timerControl.style.setProperty("--sand-top", `${Math.max(1, Math.round(14 * bounded))}px`);
+  timerControl.style.setProperty("--sand-bottom", `${Math.max(1, Math.round(14 * (1 - bounded)))}px`);
   timerControl.classList.toggle("low", state.timeLeft <= 10);
 }
 
 function resetTimer() {
   clearInterval(state.timerId);
-  state.duration = settings[difficultyEl.value].seconds;
+  state.duration = currentPlan().seconds;
   state.timeLeft = state.duration;
-  state.seconds = 0;
   updateTimerDisplay();
   state.timerId = setInterval(() => {
     state.timeLeft -= 1;
-    state.seconds += 1;
     updateTimerDisplay();
     if (state.timeLeft <= 0) {
       clearInterval(state.timerId);
@@ -293,7 +305,7 @@ function drawSegment(from, to, color, size, erase) {
 
 function startDrawing(event) {
   event.preventDefault();
-  board.setPointerCapture(event.pointerId);
+  if (board.setPointerCapture) board.setPointerCapture(event.pointerId);
   state.drawing = true;
   state.lastPoint = getPoint(event);
   state.currentPath = {
@@ -340,7 +352,7 @@ function clearBoardWithConfirmation() {
 }
 
 function normalizeAnswer(value) {
-  const match = String(value).replace(/[Oo]/g, "0").replace(/[Il]/g, "1").match(/-?\d+/);
+  const match = String(value).replace(/[Oo]/g, "0").replace(/[Il|]/g, "1").match(/-?\d+/);
   return match ? Number(match[0]) : NaN;
 }
 
@@ -349,7 +361,6 @@ function scoreTemplate(grid, template) {
   let expected = 0;
   let extras = 0;
   let ink = 0;
-
   for (let row = 0; row < 7; row += 1) {
     for (let col = 0; col < 5; col += 1) {
       const hasInk = grid[row][col] === 1;
@@ -360,8 +371,7 @@ function scoreTemplate(grid, template) {
       if (hasInk && !wantsInk) extras += 1;
     }
   }
-
-  return hits / Math.max(1, expected) - extras / Math.max(1, ink) * 0.28;
+  return hits / Math.max(1, expected) - (extras / Math.max(1, ink)) * 0.24;
 }
 
 function answerInkComponents() {
@@ -377,20 +387,18 @@ function answerInkComponents() {
   const image = ctx.getImageData(sx, sy, sw, sh);
   const columnInk = Array(sw).fill(0);
   const alphaAt = (x, y) => image.data[(y * sw + x) * 4 + 3];
-
   for (let y = 0; y < sh; y += 1) {
     for (let x = 0; x < sw; x += 1) {
       if (alphaAt(x, y) > 24) columnInk[x] += 1;
     }
   }
 
-  const threshold = Math.max(2, Math.round(sh * 0.01));
+  const threshold = Math.max(2, Math.round(sh * 0.008));
   const ranges = [];
   let start = null;
   let lastInk = -1;
   let blankRun = 0;
-  const splitGap = Math.max(13, Math.round(sw * 0.04));
-
+  const splitGap = Math.max(8, Math.round(sw * 0.025));
   columnInk.forEach((count, x) => {
     if (count > threshold) {
       if (start === null) start = x;
@@ -398,7 +406,6 @@ function answerInkComponents() {
       blankRun = 0;
       return;
     }
-
     if (start !== null) {
       blankRun += 1;
       if (blankRun >= splitGap) {
@@ -408,7 +415,6 @@ function answerInkComponents() {
       }
     }
   });
-
   if (start !== null) ranges.push({ minX: start, maxX: lastInk });
 
   return ranges.map((range) => {
@@ -426,12 +432,53 @@ function answerInkComponents() {
   }).filter((box) => box.maxX - box.minX > 2 && box.maxY - box.minY > 8);
 }
 
+function cloneComponent(component, minX, maxX) {
+  return { ...component, minX, maxX };
+}
+
+function splitWidestComponent(components) {
+  const sorted = [...components].sort((a, b) => (b.maxX - b.minX) - (a.maxX - a.minX));
+  const target = sorted[0];
+  if (!target || target.maxX - target.minX < 20) return components;
+  const middle = Math.round((target.minX + target.maxX) / 2);
+  const replacement = [cloneComponent(target, target.minX, middle - 2), cloneComponent(target, middle + 2, target.maxX)];
+  return components.flatMap((component) => (component === target ? replacement : [component]));
+}
+
+function normalizeComponentsForExpected(components, expectedText) {
+  let normalized = [...components].sort((a, b) => a.minX - b.minX);
+  const expectedLength = expectedText.length;
+  while (normalized.length < expectedLength) {
+    const next = splitWidestComponent(normalized);
+    if (next.length === normalized.length) break;
+    normalized = next.sort((a, b) => a.minX - b.minX);
+  }
+  while (normalized.length > expectedLength && normalized.length > 1) {
+    let mergeIndex = 0;
+    let smallestGap = Infinity;
+    for (let index = 0; index < normalized.length - 1; index += 1) {
+      const gap = normalized[index + 1].minX - normalized[index].maxX;
+      if (gap < smallestGap) {
+        smallestGap = gap;
+        mergeIndex = index;
+      }
+    }
+    const merged = {
+      ...normalized[mergeIndex],
+      maxX: normalized[mergeIndex + 1].maxX,
+      minY: Math.min(normalized[mergeIndex].minY, normalized[mergeIndex + 1].minY),
+      maxY: Math.max(normalized[mergeIndex].maxY, normalized[mergeIndex + 1].maxY),
+    };
+    normalized.splice(mergeIndex, 2, merged);
+  }
+  return normalized;
+}
+
 function rasterizeInkComponent(component) {
   const grid = Array.from({ length: 7 }, () => Array(5).fill(0));
   const width = Math.max(1, component.maxX - component.minX);
   const height = Math.max(1, component.maxY - component.minY);
   const alphaAt = (x, y) => component.image.data[(y * component.width + x) * 4 + 3];
-
   for (let y = component.minY; y <= component.maxY; y += 1) {
     for (let x = component.minX; x <= component.maxX; x += 1) {
       if (alphaAt(x, y) <= 24) continue;
@@ -440,16 +487,13 @@ function rasterizeInkComponent(component) {
       grid[row][col] = 1;
     }
   }
-
   return grid;
 }
 
 function gridInkCount(grid, rowStart, rowEnd, colStart, colEnd) {
   let count = 0;
   for (let row = rowStart; row <= rowEnd; row += 1) {
-    for (let col = colStart; col <= colEnd; col += 1) {
-      count += grid[row]?.[col] ? 1 : 0;
-    }
+    for (let col = colStart; col <= colEnd; col += 1) count += grid[row]?.[col] ? 1 : 0;
   }
   return count;
 }
@@ -466,13 +510,13 @@ function scoreDigit(component, digit) {
   const centerInk = gridInkCount(grid, 0, 6, 2, 2);
   const rightInk = gridInkCount(grid, 0, 6, 3, 4);
   let score = Math.max(...digitTemplates[digit].map((template) => scoreTemplate(grid, template)));
-
-  if (digit === "1" && aspect < 0.42 && centerInk >= 4 && leftInk <= 3 && rightInk <= 3) score += 0.22;
-  if (digit === "2" && topInk >= 2 && middleInk >= 2 && bottomInk >= 2 && leftInk >= 1 && rightInk >= 1) score += 0.22;
-  if (digit === "0" && topInk >= 2 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2 && middleInk <= 8) score += 0.12;
+  if (digit === "1" && aspect < 0.5 && centerInk >= 4 && leftInk <= 4 && rightInk <= 4) score += 0.32;
+  if (digit === "2" && topInk >= 1 && middleInk >= 2 && bottomInk >= 2 && leftInk >= 1 && rightInk >= 1) score += 0.24;
+  if (digit === "3" && rightInk >= 3 && middleInk >= 2 && leftInk <= 5) score += 0.1;
+  if (digit === "4" && middleInk >= 3 && rightInk >= 3 && topInk >= 1) score += 0.18;
+  if (digit === "0" && topInk >= 2 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2 && middleInk <= 9) score += 0.12;
   if (digit === "8" && topInk >= 2 && middleInk >= 3 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2) score += 0.14;
-  if (digit === "7" && topInk >= 3 && bottomInk <= 2 && leftInk <= 4) score += 0.14;
-
+  if (digit === "7" && topInk >= 3 && bottomInk <= 2 && leftInk <= 4) score += 0.16;
   return score;
 }
 
@@ -485,30 +529,45 @@ function recognizeInkComponent(component) {
   return { digit: top.digit, score: top.score, confidence: Math.max(0, Math.min(1, top.score - next.score + 0.55)) };
 }
 
+function scoreExpected(components, expectedText) {
+  const normalized = normalizeComponentsForExpected(components, expectedText);
+  if (normalized.length !== expectedText.length) return null;
+  const scores = normalized.map((component, index) => scoreDigit(component, expectedText[index]));
+  const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  return { average, min: Math.min(...scores), components: normalized };
+}
+
 function recognizeDigitsLocally(expectedText = "") {
   const components = answerInkComponents();
   if (!components.length) return { text: "", status: "empty", confidence: 0 };
 
-  const recognized = components.map(recognizeInkComponent);
+  const expected = /^\d+$/.test(expectedText) ? scoreExpected(components, expectedText) : null;
+  const componentsForReading = expected?.components || components;
+  const recognized = componentsForReading.map(recognizeInkComponent);
+  const bestScore = recognized.reduce((sum, item) => sum + item.score, 0) / recognized.length;
 
-  if (expectedText && expectedText.length === components.length) {
-    const expectedScore = components.reduce((sum, component, index) => sum + scoreDigit(component, expectedText[index]), 0) / components.length;
-    const bestScore = recognized.reduce((sum, item) => sum + item.score, 0) / components.length;
-    if (expectedScore > 0.48 && expectedScore >= bestScore - 0.1) {
-      return { text: expectedText, status: "local", confidence: Math.max(0.68, expectedScore) };
-    }
+  if (expected && expected.average > 0.4 && expected.min > 0.12 && expected.average >= bestScore - 0.18) {
+    return { text: expectedText, status: "local", confidence: Math.max(0.7, expected.average) };
   }
+
   const text = recognized.map((item) => item.digit).join("");
   const confidence = recognized.reduce((sum, item) => sum + item.confidence, 0) / Math.max(1, recognized.length);
   return { text, status: text ? "local" : "unreadable", confidence };
 }
 
+function pathsInsideAnswerBox() {
+  const rect = getAnswerRect();
+  return state.paths
+    .map((path) => ({
+      ...path,
+      points: path.points.filter((point) => point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom),
+    }))
+    .filter((path) => path.points.length > 1 && !path.erase);
+}
+
 async function recognizeWithBrowserApi(paths) {
   const Recognizer = window.HandwritingRecognizer || window.webkitHandwritingRecognizer;
-  if (!Recognizer || !window.HandwritingDrawing || !window.HandwritingStroke) {
-    return { text: "", status: "unsupported", confidence: 0 };
-  }
-
+  if (!Recognizer || !window.HandwritingDrawing || !window.HandwritingStroke) return { text: "", status: "unsupported", confidence: 0 };
   try {
     const recognizer = await Recognizer.create({ languages: ["en"], recognitionType: "text" });
     const drawing = new window.HandwritingDrawing();
@@ -525,12 +584,9 @@ async function recognizeWithBrowserApi(paths) {
 }
 
 async function recognizeWriting(expectedText) {
-  const paths = answerInkComponents();
-  if (!paths.length) return { text: "", status: "empty", confidence: 0 };
-
+  if (!answerInkComponents().length) return { text: "", status: "empty", confidence: 0 };
   const local = recognizeDigitsLocally(expectedText);
-  if (local.text && local.confidence >= 0.45) return local;
-
+  if (local.text && local.confidence >= 0.42) return local;
   const browser = await recognizeWithBrowserApi(pathsInsideAnswerBox());
   if (browser.text) return browser;
   return local.text ? local : { text: "", status: "unreadable", confidence: 0 };
@@ -539,9 +595,11 @@ async function recognizeWriting(expectedText) {
 function showFeedback(message, type) {
   feedbackEl.textContent = message;
   feedbackEl.className = `feedback ${type}`;
-  feedbackDialog.className = `feedback-dialog ${type}`;
-  if (typeof feedbackDialog.showModal === "function" && !feedbackDialog.open) feedbackDialog.showModal();
-  else window.alert(message);
+  feedbackPanel.className = `feedback-panel ${type}`;
+  feedbackPanel.hidden = false;
+  retryFeedbackButton.hidden = type === "correct";
+  nextFeedbackButton.hidden = type !== "correct";
+  closeFeedbackButton.hidden = type !== "correct";
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -590,16 +648,14 @@ window.addEventListener("resize", resizeBoard);
 timerControl.addEventListener("click", cycleTimerStyle);
 startPracticeButton.addEventListener("click", startPractice);
 backToLevelsButton.addEventListener("click", showStartScreen);
-closeFeedbackButton.addEventListener("click", () => feedbackDialog.close());
+closeFeedbackButton.addEventListener("click", hideFeedback);
 retryFeedbackButton.addEventListener("click", () => {
-  feedbackDialog.close();
+  hideFeedback();
   clearBoard();
   resetTimer();
 });
-nextFeedbackButton.addEventListener("click", () => {
-  feedbackDialog.close();
-  showQuestion();
-});
+nextFeedbackButton.addEventListener("click", showQuestion);
+nextMainButton.addEventListener("click", showQuestion);
 colorButtons.forEach((button) => button.addEventListener("click", () => selectColor(button)));
 eraserButton.addEventListener("click", () => {
   state.erasing = true;
@@ -615,14 +671,9 @@ checkButton.addEventListener("click", checkAnswer);
 operationEl.addEventListener("change", () => {
   if (!practiceBoard.hidden) showQuestion();
 });
-difficultyEl.addEventListener("change", () => {
-  updateProgressUi();
-  if (!practiceBoard.hidden) showQuestion();
-});
 levelButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (button.disabled) return;
-    difficultyEl.value = button.dataset.level;
     state.progress.currentStage = Number(button.dataset.stage || 1);
     saveProgress();
     updateProgressUi();
@@ -632,8 +683,3 @@ levelButtons.forEach((button) => {
 updateProgressUi();
 if (window.lucide) window.lucide.createIcons();
 showStartScreen();
-
-
-
-
-

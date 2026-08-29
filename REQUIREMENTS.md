@@ -1,4 +1,4 @@
-# MathSprout Requirements
+# QuickMaths Requirements
 
 ## Product Goal
 - [x] Build a simple mobile-first web app for children to practice arithmetic on a colorful whiteboard-style screen.
@@ -9,18 +9,19 @@
 ## Implemented Features
 
 ### Practice Flow
-- [x] App name: MathSprout.
+- [x] App name: QuickMaths.
 - [x] Separate level/options start screen with Candy Crush-style stage path.
+- [x] Start action stays as an overlay while the currently active level remains visible.
 - [x] Mobile-first layout with touch and pen support.
 - [x] Practice modes: addition, subtraction, multiplication, and division.
-- [x] Difficulty levels: Starter, Explorer, and Wizard.
+- [x] Planned stages start with tiny one-digit addition before introducing subtraction, within-20 facts, two-digit practice, multiplication, and division.
 - [x] One random question shown at a time.
 - [x] Old-school stacked question layout with one large question on the whiteboard.
 - [x] Operator aligns to the left of the longer number column.
 - [x] Dedicated final-answer box on the whiteboard.
 - [x] Whiteboard workspace where children can write intermediate working outside the answer box.
 - [x] Printed question and answer box are separate from the drawing layer, so erase and clear do not remove them.
-- [x] Next question button.
+- [x] Main Next question button.
 - [x] Check answer button.
 
 ### Whiteboard Tools
@@ -31,11 +32,14 @@
 - [x] Undo.
 - [x] Circular tool buttons.
 - [x] Lucide icon buttons for back, eraser, undo, clear, and feedback.
+- [x] Tool buttons moved away from the primary Check/Next action stack.
 
 ### Feedback And Timer
 - [x] Visible timer for the current question.
 - [x] Countdown timer with style cycling: digital, analog, and hourglass.
-- [x] Feedback popup after checking: correct answer has OK and Next; wrong answer and timeout ask the child to retry.
+- [x] Feedback appears below the answer area so the written answer remains visible.
+- [x] Correct feedback has OK and Next on the same row.
+- [x] Wrong answer and timeout feedback ask the child to retry.
 
 ### Recognition
 - [x] No typed answer field; final answers are read from the answer box.
@@ -45,12 +49,14 @@
 - [x] Browser handwriting recognition remains optional when available.
 - [x] Multiple template styles exist for each digit.
 - [x] Expected-answer scoring improves recognition for child handwriting variations.
+- [x] Recognition now tries to split wide joined digits and merge over-split strokes before scoring.
 
 ### Gamification
 - [x] Stars and score.
 - [x] Streak reward.
 - [x] Locked level progression saved on the device.
 - [x] Cheerful colors for children.
+- [x] Four-stage-band level plan: Starter, Explorer, Builder, Wizard.
 
 ### Accessibility And Compatibility
 - [x] Large tap targets.
@@ -60,7 +66,7 @@
 - [x] No backend and no build step required.
 - [x] Persist local progress in `localStorage`.
 - [x] Runs by opening `index.html` locally and when hosted on GitHub Pages.
-- [x] Avoid external dependencies for reliability.
+- [x] Uses local recognition fallback for Safari and browsers without handwriting APIs.
 - [x] Version JavaScript and CSS file references to avoid browser cache issues after updates.
 - [x] Include MIT license.
 
@@ -76,17 +82,16 @@
 ### P0: Production Stability
 - [ ] Add a recognition confidence review state: if the app is unsure, show "I think it says X" with Correct/Wrong buttons for adult-assisted correction.
 - [ ] Add a small on-device recognition test harness with saved synthetic digit samples for regression checks.
-- [x] Improve recognition with multi-template digit scoring and expected-answer validation.
-- [ ] Improve digit segmentation for touching digits and wide handwritten `1`, `2`, `4`, and `7` styles.
-- [ ] Add a low-height mobile layout pass for small phones so answer box, controls, and question never collide.
-- [ ] Add a simple browser smoke-test script for layout and syntax validation.
+- [ ] Add a low-height mobile layout smoke test for 320px, 375px, and 430px wide screens.
+- [ ] Add browser smoke-test script for syntax, layout, drawing, checking, timer cycling, and level navigation.
 
 ### P1: Better Learning Experience
 - [x] Add Candy Crush-style stage path with progressive unlocks.
+- [x] Add operation-specific stage tuning for first addition, subtraction, multiplication, and division progressions.
 - [ ] Add a session summary screen with correct count, missed questions, time, and stars earned.
 - [ ] Add retry missed question flow.
-- [ ] Add operation-specific difficulty tuning: carrying, borrowing, times tables, and exact division sets.
 - [ ] Add optional sound effects with mute control.
+- [ ] Add optional parent reset for local progress.
 
 ### P2: Whiteboard Improvements
 - [ ] Add pen thickness control.
@@ -113,4 +118,6 @@
 - [x] Add feedback popup.
 - [x] Add timer style cycling.
 - [x] Add countdown timer, timeout retry popup, and popup Next flow.
-
+- [x] Rename app to QuickMaths.
+- [x] Add planned child-friendly arithmetic stage progression.
+- [x] Move feedback below the answer box and restore main Next.
