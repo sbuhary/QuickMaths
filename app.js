@@ -8,13 +8,17 @@ const timerControl = document.querySelector("#timer-control");
 const feedbackPanel = document.querySelector("#feedback-panel");
 const feedbackEl = document.querySelector("#feedback");
 const closeFeedbackButton = document.querySelector("#close-feedback");
+const markCorrectButton = document.querySelector("#mark-correct");
+const markWrongButton = document.querySelector("#mark-wrong");
 const answerBox = document.querySelector("#answer-box");
 const operationEl = document.querySelector("#operation");
 const difficultyEl = document.querySelector("#difficulty");
 const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
 const stageSummaryEl = document.querySelector("#stage-summary");
+const sessionSummaryEl = document.querySelector("#session-summary");
 const startPracticeButton = document.querySelector("#start-practice");
+const resetProgressButton = document.querySelector("#reset-progress");
 const backToLevelsButton = document.querySelector("#back-to-levels");
 const retryFeedbackButton = document.querySelector("#retry-feedback");
 const nextFeedbackButton = document.querySelector("#next-feedback");
@@ -67,6 +71,9 @@ const state = {
   currentColor: "#1f2937",
   erasing: false,
   drawing: false,
+  activePointerId: null,
+  activeTouchPointers: new Set(),
+  gestureMode: false,
   lastPoint: null,
   paths: [],
   currentPath: null,
@@ -75,6 +82,8 @@ const state = {
   timerId: null,
   timerStyle: 0,
   progress: loadProgress(),
+  session: { correct: 0, missed: 0, startedAt: Date.now() },
+  pendingReview: null,
 };
 
 function loadProgress() {
@@ -100,6 +109,7 @@ function updateProgressUi() {
   starsEl.textContent = `${state.progress.stars} stars`;
   streakEl.textContent = `${state.progress.streak} streak`;
   if (stageSummaryEl) stageSummaryEl.textContent = `Stage ${plan.stage}: ${plan.title}`;
+  if (sessionSummaryEl) sessionSummaryEl.textContent = `${state.session.correct} right / ${state.session.missed} missed`;
   startPracticeButton.textContent = `Start stage ${plan.stage}`;
   levelButtons.forEach((button) => {
     const stage = Number(button.dataset.stage || 1);
@@ -116,6 +126,15 @@ function updateProgressUi() {
 
 function unlockEligibleLevels() {
   state.progress.unlockedStages = Math.min(stagePlans.length, Math.max(state.progress.unlockedStages, state.progress.currentStage + 1));
+}
+
+function resetProgress() {
+  if (!window.confirm("Reset stars, streak, and unlocked stages?")) return;
+  localStorage.removeItem("quickmaths-progress");
+  localStorage.removeItem("mathsprout-progress");
+  state.progress = loadProgress();
+  state.session = { correct: 0, missed: 0, startedAt: Date.now() };
+  updateProgressUi();
 }
 
 function randomInt(min, max) {
@@ -247,6 +266,8 @@ function resetTimer() {
     updateTimerDisplay();
     if (state.timeLeft <= 0) {
       clearInterval(state.timerId);
+      recordMissOnce();
+      updateProgressUi();
       showFeedback("Time is up. Try this one again.", "timeout");
     }
   }, 1000);
@@ -292,6 +313,14 @@ function getAnswerRect() {
   };
 }
 
+function pointInsideAnswer(point) {
+  const rect = getAnswerRect();
+  return point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
+}
+
+function updateAnswerHighlight(point) {
+  answerBox.classList.toggle("active", Boolean(point && pointInsideAnswer(point)));
+}
 function drawSegment(from, to, color, size, erase) {
   ctx.globalCompositeOperation = erase ? "destination-out" : "source-over";
   ctx.strokeStyle = color;
@@ -308,6 +337,7 @@ function cancelCurrentStroke() {
   state.activePointerId = null;
   state.currentPath = null;
   redrawBoard();
+  updateAnswerHighlight(null);
 }
 
 function startDrawing(event) {
@@ -326,6 +356,7 @@ function startDrawing(event) {
   state.activePointerId = event.pointerId;
   state.drawing = true;
   state.lastPoint = getPoint(event);
+  updateAnswerHighlight(state.lastPoint);
   state.currentPath = {
     color: state.currentColor,
     erase: state.erasing,
@@ -338,6 +369,7 @@ function keepDrawing(event) {
   if (!state.drawing || event.pointerId !== state.activePointerId || state.gestureMode) return;
   event.preventDefault();
   const point = getPoint(event);
+  updateAnswerHighlight(point);
   drawSegment(state.lastPoint, point, state.currentPath.color, state.currentPath.size, state.currentPath.erase);
   state.currentPath.points.push(point);
   state.lastPoint = point;
@@ -354,6 +386,7 @@ function stopDrawing(event) {
   state.activePointerId = null;
   if (state.currentPath.points.length > 1) state.paths.push(state.currentPath);
   state.currentPath = null;
+  updateAnswerHighlight(null);
 }
 
 function redrawBoard() {
@@ -621,10 +654,37 @@ function showFeedback(message, type) {
   feedbackEl.className = `feedback ${type}`;
   feedbackPanel.className = `feedback-panel ${type}`;
   feedbackPanel.hidden = false;
-  retryFeedbackButton.hidden = type === "correct";
+  retryFeedbackButton.hidden = type === "correct" || type === "review";
   nextFeedbackButton.hidden = type !== "correct";
   closeFeedbackButton.hidden = type !== "correct";
+  markCorrectButton.hidden = type !== "review";
+  markWrongButton.hidden = type !== "review";
   if (window.lucide) window.lucide.createIcons();
+}
+
+function recordMissOnce() {
+  if (!state.current || state.current.missedRecorded) return;
+  state.current.missedRecorded = true;
+  state.session.missed += 1;
+}
+
+function awardCorrectAnswer(readText) {
+  state.progress.streak += 1;
+  const streakBonus = state.progress.streak % 3 === 0 ? 2 : 0;
+  state.progress.stars += 1 + streakBonus;
+  state.progress.answered += 1;
+  state.session.correct += 1;
+  state.pendingReview = null;
+  unlockEligibleLevels();
+  clearInterval(state.timerId);
+  saveProgress();
+  updateProgressUi();
+  showFeedback(`Correct. I read ${readText}. ${formatTime(state.timeLeft)} left.`, "correct");
+}
+
+function askForRecognitionReview(recognized) {
+  state.pendingReview = recognized;
+  showFeedback(`I think it says ${recognized.text}. Is that right?`, "review");
 }
 
 async function checkAnswer() {
@@ -635,16 +695,17 @@ async function checkAnswer() {
   const given = normalizeAnswer(recognized.text);
   const correct = given === state.current.answer;
 
+  if (recognized.text && recognized.confidence < 0.62) {
+    askForRecognitionReview(recognized);
+    checkButton.disabled = false;
+    return;
+  }
+
   if (correct) {
-    state.progress.streak += 1;
-    const streakBonus = state.progress.streak % 3 === 0 ? 2 : 0;
-    state.progress.stars += 1 + streakBonus;
-    state.progress.answered += 1;
-    unlockEligibleLevels();
-    clearInterval(state.timerId);
-    showFeedback(`Correct. I read ${recognized.text}. ${formatTime(state.timeLeft)} left.`, "correct");
+    awardCorrectAnswer(recognized.text);
   } else {
     state.progress.streak = 0;
+    recordMissOnce();
     const message = recognized.status === "empty"
       ? "Write the final answer inside the box, then try again."
       : `I read ${recognized.text || "nothing"}. Try this one again.`;
@@ -671,6 +732,7 @@ board.addEventListener("pointerleave", stopDrawing);
 window.addEventListener("resize", resizeBoard);
 timerControl.addEventListener("click", cycleTimerStyle);
 startPracticeButton.addEventListener("click", startPractice);
+resetProgressButton.addEventListener("click", resetProgress);
 backToLevelsButton.addEventListener("click", showStartScreen);
 closeFeedbackButton.addEventListener("click", hideFeedback);
 retryFeedbackButton.addEventListener("click", () => {
@@ -679,6 +741,15 @@ retryFeedbackButton.addEventListener("click", () => {
   resetTimer();
 });
 nextFeedbackButton.addEventListener("click", showQuestion);
+markCorrectButton.addEventListener("click", () => awardCorrectAnswer(state.pendingReview?.text || String(state.current.answer)));
+markWrongButton.addEventListener("click", () => {
+  state.pendingReview = null;
+  state.progress.streak = 0;
+  recordMissOnce();
+  saveProgress();
+  updateProgressUi();
+  showFeedback("Try this one again.", "wrong");
+});
 nextMainButton.addEventListener("click", showQuestion);
 colorButtons.forEach((button) => button.addEventListener("click", () => selectColor(button)));
 eraserButton.addEventListener("click", () => {

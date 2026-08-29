@@ -9,7 +9,7 @@
       content="QuickMaths is a playful mobile whiteboard app for children to practice arithmetic."
     >
     <title>QuickMaths</title>
-    <link rel="stylesheet" href="styles.css?v=20260829-9">
+    <link rel="stylesheet" href="styles.css?v=20260829-10">
   </head>
   <body>
     <main class="app-shell">
@@ -34,6 +34,7 @@
             <option value="wizard">Wizard</option>
           </select>
           <p id="stage-summary" class="stage-summary">Stage 1: Tiny sums</p>
+          <p id="session-summary" class="session-summary">0 right / 0 missed</p>
           <div class="level-path" aria-label="Candy path levels">
             <button class="level-node active" type="button" data-stage="1" data-level="starter"><span>1</span><small>Starter</small></button>
             <button class="level-node" type="button" data-stage="2" data-level="starter"><span>2</span><small>Starter</small></button>
@@ -51,6 +52,7 @@
         </div>
         <div class="start-overlay">
           <button id="start-practice" class="action-button primary wide" type="button">Start stage 1</button>
+          <button id="reset-progress" class="circle-button reset-button" type="button" aria-label="Reset progress"><i data-lucide="rotate-ccw"></i></button>
         </div>
       </section>
 
@@ -95,6 +97,8 @@
             <button id="retry-feedback" class="action-button" type="button">Try again</button>
             <button id="next-feedback" class="action-button primary" type="button">Next</button>
             <button id="close-feedback" class="action-button" type="button">OK</button>
+            <button id="mark-correct" class="action-button primary" type="button">Correct</button>
+            <button id="mark-wrong" class="action-button" type="button">Wrong</button>
           </div>
         </section>
 
@@ -112,6 +116,6 @@
     </main>
 
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-    <script src="app.js?v=20260829-9"></script>
+    <script src="app.js?v=20260829-10"></script>
   </body>
 </html>

@@ -68,7 +68,7 @@ select {
   color: var(--ink);
   font-weight: 800;
 }
-.stage-summary {
+.stage-summary, .session-summary {
   margin: 0 0 12px;
   padding: 10px 12px;
   border-radius: 8px;
@@ -77,6 +77,7 @@ select {
   font-size: 0.88rem;
   font-weight: 900;
 }
+.session-summary { background: #fff7d6; margin-top: -4px; }
 .level-path {
   position: relative;
   display: grid;
@@ -123,6 +124,10 @@ select {
   z-index: 3;
   width: min(calc(100% - 56px), 520px);
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 46px;
+  gap: 10px;
+  align-items: center;
 }
 
 canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; touch-action: pinch-zoom; }
@@ -188,6 +193,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 }
 .circle-button svg { width: 24px; height: 24px; stroke-width: 3; }
 .back-button { background: var(--purple); }
+.reset-button { background: #eef2ff; color: var(--ink); }
 .palette { top: 82px; left: 50%; display: flex; gap: 12px; transform: translateX(-50%); }
 .color { background: var(--swatch); }
 .circle-button.selected, .circle-button.selected-tool { outline: 4px solid var(--yellow); }
@@ -206,6 +212,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   border: 4px dashed rgba(108, 92, 231, 0.66); border-radius: 8px; background: rgba(255, 255, 255, 0.22); pointer-events: none;
 }
 .answer-box span { position: absolute; top: -28px; left: 10px; color: rgba(31, 41, 55, 0.48); font-size: 1rem; font-weight: 900; }
+.answer-box.active { border-color: var(--mint); background: rgba(0, 184, 148, 0.1); }
 .tool-rail {
   left: 16px;
   bottom: 16px;
@@ -244,6 +251,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 .feedback-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .feedback-actions .action-button { min-height: 42px; }
 .feedback-panel.wrong .feedback-actions, .feedback-panel.timeout .feedback-actions { grid-template-columns: 1fr; max-width: 145px; }
+.feedback-panel.review .feedback-actions { grid-template-columns: 1fr 1fr; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 

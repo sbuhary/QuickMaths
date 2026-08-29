@@ -7,9 +7,11 @@ QuickMaths is a mobile-first arithmetic practice app for children. It runs as a 
 - Addition, subtraction, multiplication, and division.
 - Research-informed stage plan that starts with very small one-digit addition before moving into subtraction, within-20 facts, two-digit practice, multiplication, and division.
 - Writable whiteboard with pen colors, eraser, undo, and clear. Writing uses one finger or pen; two-finger gestures stay available for browser zoom.
-- A dedicated final-answer box, while the rest of the board remains open for working.
+- A dedicated final-answer box, while the rest of the board remains open for working. The box highlights while writing inside it.
 - Countdown timer per question. Tap the timer to cycle between digital, analog, and hourglass styles.
 - Main Check and Next buttons, plus feedback actions near the answer box.
+- Confidence review when handwriting recognition is unsure, so an adult can mark the read as correct or wrong.
+- Session summary and parent reset for local progress.
 - Written-answer checking from the answer box using local canvas-based digit recognition, with browser handwriting recognition as an optional fallback.
 - Candy Crush-style level path with stars, streaks, and locked progression saved on the device.
 

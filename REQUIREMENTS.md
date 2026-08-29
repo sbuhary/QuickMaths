@@ -12,6 +12,7 @@
 - [x] App name: QuickMaths.
 - [x] Separate level/options start screen with Candy Crush-style stage path.
 - [x] Start action stays as an overlay while the currently active level remains visible.
+- [x] Show a session summary with right and missed counts.
 - [x] Mobile-first layout with touch and pen support.
 - [x] Writing works with one finger or pen only; two-finger gestures do not draw and remain available for browser zoom.
 - [x] Practice modes: addition, subtraction, multiplication, and division.
@@ -39,6 +40,7 @@
 - [x] Visible timer for the current question.
 - [x] Countdown timer with style cycling: digital, analog, and hourglass.
 - [x] Feedback appears below the answer area so the written answer remains visible.
+- [x] Confidence review appears when recognition is unsure, with Correct/Wrong buttons.
 - [x] Correct feedback has OK and Next on the same row.
 - [x] Wrong answer and timeout feedback ask the child to retry.
 
@@ -74,31 +76,34 @@
 ## Known Limitations
 - [ ] Local digit recognition is heuristic and cannot guarantee every handwriting style.
 - [ ] Multi-digit segmentation can still fail when digits touch or overlap heavily.
-- [ ] No automated visual regression tests yet.
+- [x] Static smoke test covers layout breakpoints and app wiring.
+- [ ] No automated visual regression tests with screenshots yet.
 - [ ] No offline install/PWA behavior yet.
 - [ ] Progress is device-local only and does not sync across browsers or devices.
 
 ## Next Priority Features
 
 ### P0: Production Stability
-- [ ] Add a recognition confidence review state: if the app is unsure, show "I think it says X" with Correct/Wrong buttons for adult-assisted correction.
-- [ ] Add a small on-device recognition test harness with saved synthetic digit samples for regression checks.
-- [ ] Add a low-height mobile layout smoke test for 320px, 375px, and 430px wide screens.
-- [ ] Add browser smoke-test script for syntax, layout, drawing, checking, timer cycling, and level navigation.
+- [x] Add a recognition confidence review state: if the app is unsure, show "I think it says X" with Correct/Wrong buttons for adult-assisted correction.
+- [x] Add a small on-device recognition test harness with saved synthetic digit samples for regression checks.
+- [x] Add a low-height mobile layout smoke test for 320px, 375px, and 430px wide screens.
+- [x] Add static smoke-test script for syntax, layout hooks, drawing policy, asset versions, and level progression.
+- [ ] Add browser smoke-test script for interactive drawing, checking, timer cycling, and level navigation.
 
 ### P1: Better Learning Experience
 - [x] Add Candy Crush-style stage path with progressive unlocks.
 - [x] Add operation-specific stage tuning for first addition, subtraction, multiplication, and division progressions.
-- [ ] Add a session summary screen with correct count, missed questions, time, and stars earned.
+- [x] Add a session summary with correct count and missed questions.
+- [ ] Add full session summary screen with time and stars earned.
 - [ ] Add retry missed question flow.
 - [ ] Add optional sound effects with mute control.
-- [ ] Add optional parent reset for local progress.
+- [x] Add optional parent reset for local progress.
 
 ### P2: Whiteboard Improvements
 - [ ] Add pen thickness control.
 - [ ] Add answer-box-only clear button.
 - [ ] Add full-board clear button separate from answer clear.
-- [ ] Add visual answer-box highlight while writing inside it.
+- [x] Add visual answer-box highlight while writing inside it.
 - [ ] Add left/right handed layout option for controls.
 
 ### P3: Install And Share
@@ -123,3 +128,5 @@
 - [x] Add planned child-friendly arithmetic stage progression.
 - [x] Move feedback below the answer box and restore main Next.
 - [x] Restrict drawing to one active touch pointer and allow two-finger browser zoom.
+- [x] Add confidence review, session summary, parent reset, and smoke test harness.
+- [x] Add visual answer-box highlight while writing inside it.
