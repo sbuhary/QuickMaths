@@ -15,7 +15,8 @@ const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
 const startPracticeButton = document.querySelector("#start-practice");
 const backToLevelsButton = document.querySelector("#back-to-levels");
-const nextButton = document.querySelector("#next");
+const retryFeedbackButton = document.querySelector("#retry-feedback");
+const nextFeedbackButton = document.querySelector("#next-feedback");
 const checkButton = document.querySelector("#check");
 const clearButton = document.querySelector("#clear");
 const undoButton = document.querySelector("#undo");
@@ -24,9 +25,9 @@ const colorButtons = [...document.querySelectorAll(".color")];
 const levelButtons = [...document.querySelectorAll(".level-node")];
 
 const settings = {
-  starter: { label: "Starter", max: 10, multiplicationMax: 5, divisionMax: 5, unlockAt: 0 },
-  explorer: { label: "Explorer", max: 60, multiplicationMax: 10, divisionMax: 10, unlockAt: 6 },
-  wizard: { label: "Wizard", max: 250, multiplicationMax: 12, divisionMax: 12, unlockAt: 15 },
+  starter: { label: "Starter", max: 10, multiplicationMax: 5, divisionMax: 5, unlockAt: 0, seconds: 60 },
+  explorer: { label: "Explorer", max: 60, multiplicationMax: 10, divisionMax: 10, unlockAt: 4, seconds: 75 },
+  wizard: { label: "Wizard", max: 250, multiplicationMax: 12, divisionMax: 12, unlockAt: 8, seconds: 90 },
 };
 
 const digitTemplates = {
@@ -84,13 +85,15 @@ const state = {
   paths: [],
   currentPath: null,
   seconds: 0,
+  timeLeft: 60,
+  duration: 60,
   timerId: null,
   timerStyle: 0,
   progress: loadProgress(),
 };
 
 function loadProgress() {
-  const fallback = { stars: 0, streak: 0, answered: 0, unlocked: ["starter"] };
+  const fallback = { stars: 0, streak: 0, answered: 0, unlocked: ["starter"], unlockedStages: 1, currentStage: 1 };
   try {
     return { ...fallback, ...JSON.parse(localStorage.getItem("mathsprout-progress")) };
   } catch {
@@ -108,14 +111,16 @@ function updateProgressUi() {
   streakEl.textContent = `${state.progress.streak} streak`;
   levelButtons.forEach((button) => {
     const level = button.dataset.level;
-    const isUnlocked = unlocked.has(level);
+    const stage = Number(button.dataset.stage || 1);
+    const isUnlocked = unlocked.has(level) && stage <= state.progress.unlockedStages;
     button.disabled = !isUnlocked;
-    button.classList.toggle("active", difficultyEl.value === level);
-    button.setAttribute("aria-label", `${settings[level].label} level${isUnlocked ? "" : " locked"}`);
+    button.classList.toggle("active", state.progress.currentStage === stage);
+    button.setAttribute("aria-label", `${settings[level].label} stage ${stage}${isUnlocked ? "" : " locked"}`);
   });
 }
 
 function unlockEligibleLevels() {
+  state.progress.unlockedStages = Math.min(12, Math.max(state.progress.unlockedStages, state.progress.currentStage + 1));
   Object.entries(settings).forEach(([key, config]) => {
     if (state.progress.stars >= config.unlockAt && !state.progress.unlocked.includes(key)) {
       state.progress.unlocked.push(key);
@@ -207,24 +212,38 @@ function formatTime(seconds) {
 }
 
 function updateTimerDisplay() {
-  timerEl.textContent = formatTime(state.seconds);
-  timerControl.style.setProperty("--minute-angle", `${(state.seconds % 60) * 6}deg`);
-  timerControl.style.setProperty("--hour-angle", `${(state.seconds % 12) * 30}deg`);
+  const progress = state.duration > 0 ? state.timeLeft / state.duration : 0;
+  timerEl.textContent = formatTime(state.timeLeft);
+  timerControl.style.setProperty("--time-progress", String(Math.max(0, Math.min(1, progress))));
+  timerControl.style.setProperty("--time-deg", `${Math.max(0, Math.min(360, progress * 360))}deg`);
+  timerControl.style.setProperty("--minute-angle", `${(1 - progress) * 360}deg`);
+  timerControl.style.setProperty("--hour-angle", `${(1 - progress) * 120}deg`);
+  timerControl.style.setProperty("--sand-top", `${Math.max(1, Math.round(14 * progress))}px`);
+  timerControl.style.setProperty("--sand-bottom", `${Math.max(1, Math.round(14 * (1 - progress)))}px`);
+  timerControl.classList.toggle("low", state.timeLeft <= 10);
 }
 
 function resetTimer() {
   clearInterval(state.timerId);
+  state.duration = settings[difficultyEl.value].seconds;
+  state.timeLeft = state.duration;
   state.seconds = 0;
   updateTimerDisplay();
   state.timerId = setInterval(() => {
+    state.timeLeft -= 1;
     state.seconds += 1;
     updateTimerDisplay();
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerId);
+      showFeedback("Time is up. Try this one again.", "timeout");
+    }
   }, 1000);
 }
 
 function cycleTimerStyle() {
   state.timerStyle = (state.timerStyle + 1) % timerStyles.length;
   timerControl.className = `timer ${timerStyles[state.timerStyle]}`;
+  updateTimerDisplay();
 }
 
 function resizeBoard() {
@@ -521,8 +540,9 @@ function showFeedback(message, type) {
   feedbackEl.textContent = message;
   feedbackEl.className = `feedback ${type}`;
   feedbackDialog.className = `feedback-dialog ${type}`;
-  if (typeof feedbackDialog.showModal === "function") feedbackDialog.showModal();
+  if (typeof feedbackDialog.showModal === "function" && !feedbackDialog.open) feedbackDialog.showModal();
   else window.alert(message);
+  if (window.lucide) window.lucide.createIcons();
 }
 
 async function checkAnswer() {
@@ -539,12 +559,13 @@ async function checkAnswer() {
     state.progress.stars += 1 + streakBonus;
     state.progress.answered += 1;
     unlockEligibleLevels();
-    showFeedback(`Correct. I read ${recognized.text}. Time ${formatTime(state.seconds)}.`, "correct");
+    clearInterval(state.timerId);
+    showFeedback(`Correct. I read ${recognized.text}. ${formatTime(state.timeLeft)} left.`, "correct");
   } else {
     state.progress.streak = 0;
     const message = recognized.status === "empty"
-      ? `Write the final answer inside the box. Correct answer: ${state.current.answer}.`
-      : `I read ${recognized.text || "nothing"}. Correct answer: ${state.current.answer}.`;
+      ? "Write the final answer inside the box, then try again."
+      : `I read ${recognized.text || "nothing"}. Try this one again.`;
     showFeedback(message, "wrong");
   }
 
@@ -570,6 +591,15 @@ timerControl.addEventListener("click", cycleTimerStyle);
 startPracticeButton.addEventListener("click", startPractice);
 backToLevelsButton.addEventListener("click", showStartScreen);
 closeFeedbackButton.addEventListener("click", () => feedbackDialog.close());
+retryFeedbackButton.addEventListener("click", () => {
+  feedbackDialog.close();
+  clearBoard();
+  resetTimer();
+});
+nextFeedbackButton.addEventListener("click", () => {
+  feedbackDialog.close();
+  showQuestion();
+});
 colorButtons.forEach((button) => button.addEventListener("click", () => selectColor(button)));
 eraserButton.addEventListener("click", () => {
   state.erasing = true;
@@ -581,7 +611,6 @@ undoButton.addEventListener("click", () => {
   redrawBoard();
 });
 clearButton.addEventListener("click", clearBoardWithConfirmation);
-nextButton.addEventListener("click", showQuestion);
 checkButton.addEventListener("click", checkAnswer);
 operationEl.addEventListener("change", () => {
   if (!practiceBoard.hidden) showQuestion();
@@ -594,11 +623,17 @@ levelButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (button.disabled) return;
     difficultyEl.value = button.dataset.level;
+    state.progress.currentStage = Number(button.dataset.stage || 1);
+    saveProgress();
     updateProgressUi();
   });
 });
 
 updateProgressUi();
+if (window.lucide) window.lucide.createIcons();
 showStartScreen();
+
+
+
 
 

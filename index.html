@@ -9,7 +9,7 @@
       content="MathSprout is a playful mobile whiteboard app for children to practice arithmetic."
     >
     <title>MathSprout</title>
-    <link rel="stylesheet" href="styles.css?v=20260829-6">
+    <link rel="stylesheet" href="styles.css?v=20260829-7">
   </head>
   <body>
     <main class="app-shell">
@@ -17,29 +17,33 @@
         <div class="start-card">
           <p class="eyebrow">MathSprout</p>
           <h1>Pick a math path</h1>
-          <div class="start-settings" aria-label="Practice settings">
-            <label>
-              Operation
-              <select id="operation">
-                <option value="addition">Addition</option>
-                <option value="subtraction">Subtraction</option>
-                <option value="multiplication">Multiplication</option>
-                <option value="division">Division</option>
-              </select>
-            </label>
-            <label>
-              Difficulty
-              <select id="difficulty">
-                <option value="starter">Starter</option>
-                <option value="explorer">Explorer</option>
-                <option value="wizard">Wizard</option>
-              </select>
-            </label>
-          </div>
-          <div class="level-grid" aria-label="Levels">
-            <button class="level-node active" type="button" data-level="starter"><span>1</span><small>Starter</small></button>
-            <button class="level-node" type="button" data-level="explorer"><span>2</span><small>Explorer</small></button>
-            <button class="level-node" type="button" data-level="wizard"><span>3</span><small>Wizard</small></button>
+          <label>
+            Operation
+            <select id="operation">
+              <option value="addition">Addition</option>
+              <option value="subtraction">Subtraction</option>
+              <option value="multiplication">Multiplication</option>
+              <option value="division">Division</option>
+            </select>
+          </label>
+          <select id="difficulty" class="sr-only" aria-label="Difficulty">
+            <option value="starter">Starter</option>
+            <option value="explorer">Explorer</option>
+            <option value="wizard">Wizard</option>
+          </select>
+          <div class="level-path" aria-label="Candy path levels">
+            <button class="level-node active" type="button" data-stage="1" data-level="starter"><span>1</span><small>Starter</small></button>
+            <button class="level-node" type="button" data-stage="2" data-level="starter"><span>2</span><small>Starter</small></button>
+            <button class="level-node" type="button" data-stage="3" data-level="starter"><span>3</span><small>Starter</small></button>
+            <button class="level-node" type="button" data-stage="4" data-level="starter"><span>4</span><small>Starter</small></button>
+            <button class="level-node" type="button" data-stage="5" data-level="explorer"><span>5</span><small>Explorer</small></button>
+            <button class="level-node" type="button" data-stage="6" data-level="explorer"><span>6</span><small>Explorer</small></button>
+            <button class="level-node" type="button" data-stage="7" data-level="explorer"><span>7</span><small>Explorer</small></button>
+            <button class="level-node" type="button" data-stage="8" data-level="explorer"><span>8</span><small>Explorer</small></button>
+            <button class="level-node" type="button" data-stage="9" data-level="wizard"><span>9</span><small>Wizard</small></button>
+            <button class="level-node" type="button" data-stage="10" data-level="wizard"><span>10</span><small>Wizard</small></button>
+            <button class="level-node" type="button" data-stage="11" data-level="wizard"><span>11</span><small>Wizard</small></button>
+            <button class="level-node" type="button" data-stage="12" data-level="wizard"><span>12</span><small>Wizard</small></button>
           </div>
           <button id="start-practice" class="action-button primary wide" type="button">Start</button>
         </div>
@@ -49,7 +53,7 @@
         <canvas id="board" aria-label="Writable answer whiteboard"></canvas>
 
         <header class="topbar">
-          <button id="back-to-levels" class="circle-button back-button" type="button" aria-label="Back to levels">?</button>
+          <button id="back-to-levels" class="circle-button back-button" type="button" aria-label="Back to levels"><i data-lucide="chevron-left"></i></button>
           <div class="brand-mark">
             <p class="eyebrow">MathSprout</p>
             <div class="score-strip">
@@ -59,7 +63,7 @@
           </div>
           <button id="timer-control" class="timer digital" type="button" aria-label="Change timer style">
             <span>Time</span>
-            <strong id="timer">00:00</strong>
+            <strong id="timer">01:00</strong>
             <i class="timer-art" aria-hidden="true"></i>
           </button>
         </header>
@@ -72,7 +76,7 @@
         </section>
 
         <section class="problem-card" aria-live="polite">
-          <div id="question" class="question">Tap Next</div>
+          <div id="question" class="question">Tap Start</div>
         </section>
 
         <section id="answer-box" class="answer-box" aria-label="Write final answer here">
@@ -80,21 +84,25 @@
         </section>
 
         <section class="tool-dock" aria-label="Whiteboard actions">
-          <button id="eraser" class="circle-button icon-button icon-eraser" type="button" aria-label="Eraser"><span class="sr-only">Eraser</span></button>
-          <button id="undo" class="circle-button icon-button icon-undo" type="button" aria-label="Undo"><span class="sr-only">Undo</span></button>
-          <button id="clear" class="circle-button icon-button icon-clear" type="button" aria-label="Clear board"><span class="sr-only">Clear</span></button>
+          <button id="eraser" class="circle-button tool-button" type="button" aria-label="Eraser"><i data-lucide="eraser"></i></button>
+          <button id="undo" class="circle-button tool-button" type="button" aria-label="Undo"><i data-lucide="undo-2"></i></button>
+          <button id="clear" class="circle-button tool-button" type="button" aria-label="Clear board"><i data-lucide="trash-2"></i></button>
           <button id="check" class="action-button primary" type="button">Check</button>
-          <button id="next" class="action-button" type="button">Next</button>
         </section>
       </section>
     </main>
 
     <dialog id="feedback-dialog" class="feedback-dialog">
-      <div class="result-mark" id="result-mark" aria-hidden="true"></div>
+      <div class="result-mark" id="result-mark" aria-hidden="true"><i data-lucide="sparkles"></i></div>
       <p id="feedback" class="feedback" aria-live="assertive"></p>
-      <button id="close-feedback" class="action-button primary wide" type="button">OK</button>
+      <div class="dialog-actions">
+        <button id="retry-feedback" class="action-button" type="button">Try again</button>
+        <button id="next-feedback" class="action-button primary" type="button">Next</button>
+        <button id="close-feedback" class="action-button" type="button">OK</button>
+      </div>
     </dialog>
 
-    <script src="app.js?v=20260829-6"></script>
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script src="app.js?v=20260829-7"></script>
   </body>
 </html>

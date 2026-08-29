@@ -10,7 +10,7 @@
 
 ### Practice Flow
 - [x] App name: MathSprout.
-- [x] Separate level/options start screen.
+- [x] Separate level/options start screen with Candy Crush-style stage path.
 - [x] Mobile-first layout with touch and pen support.
 - [x] Practice modes: addition, subtraction, multiplication, and division.
 - [x] Difficulty levels: Starter, Explorer, and Wizard.
@@ -30,12 +30,12 @@
 - [x] Clear writing with confirmation.
 - [x] Undo.
 - [x] Circular tool buttons.
-- [x] Icon-style eraser, undo, and clear buttons.
+- [x] Lucide icon buttons for back, eraser, undo, clear, and feedback.
 
 ### Feedback And Timer
 - [x] Visible timer for the current question.
-- [x] Timer style cycling: digital, analog, and hourglass.
-- [x] Feedback popup after checking: correct/incorrect, correct answer, and time taken.
+- [x] Countdown timer with style cycling: digital, analog, and hourglass.
+- [x] Feedback popup after checking: correct answer has OK and Next; wrong answer and timeout ask the child to retry.
 
 ### Recognition
 - [x] No typed answer field; final answers are read from the answer box.
@@ -76,12 +76,13 @@
 ### P0: Production Stability
 - [ ] Add a recognition confidence review state: if the app is unsure, show "I think it says X" with Correct/Wrong buttons for adult-assisted correction.
 - [ ] Add a small on-device recognition test harness with saved synthetic digit samples for regression checks.
+- [x] Improve recognition with multi-template digit scoring and expected-answer validation.
 - [ ] Improve digit segmentation for touching digits and wide handwritten `1`, `2`, `4`, and `7` styles.
 - [ ] Add a low-height mobile layout pass for small phones so answer box, controls, and question never collide.
 - [ ] Add a simple browser smoke-test script for layout and syntax validation.
 
 ### P1: Better Learning Experience
-- [ ] Add level goals, for example 5 correct answers to complete a level.
+- [x] Add Candy Crush-style stage path with progressive unlocks.
 - [ ] Add a session summary screen with correct count, missed questions, time, and stars earned.
 - [ ] Add retry missed question flow.
 - [ ] Add operation-specific difficulty tuning: carrying, borrowing, times tables, and exact division sets.
@@ -111,3 +112,5 @@
 - [x] Move colors above the writing space.
 - [x] Add feedback popup.
 - [x] Add timer style cycling.
+- [x] Add countdown timer, timeout retry popup, and popup Next flow.
+
