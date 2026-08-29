@@ -383,16 +383,38 @@ function rasterizeInkComponent(component) {
   return grid;
 }
 
+function gridInkCount(grid, rowStart, rowEnd, colStart, colEnd) {
+  let count = 0;
+  for (let row = rowStart; row <= rowEnd; row += 1) {
+    for (let col = colStart; col <= colEnd; col += 1) {
+      count += grid[row]?.[col] ? 1 : 0;
+    }
+  }
+  return count;
+}
+
 function recognizeInkComponent(component) {
   const width = Math.max(1, component.maxX - component.minX);
   const height = Math.max(1, component.maxY - component.minY);
   const aspect = width / height;
+  const grid = rasterizeInkComponent(component);
+  const topInk = gridInkCount(grid, 0, 1, 0, 2);
+  const middleInk = gridInkCount(grid, 2, 4, 0, 2);
+  const bottomInk = gridInkCount(grid, 5, 6, 0, 2);
+  const leftInk = gridInkCount(grid, 0, 6, 0, 0);
+  const centerInk = gridInkCount(grid, 0, 6, 1, 1);
+  const rightInk = gridInkCount(grid, 0, 6, 2, 2);
 
-  if (aspect < 0.42) {
-    return { digit: "1", confidence: 0.98 };
+  const looksLikeOne = aspect < 0.34 && centerInk >= 4 && leftInk <= 2 && rightInk <= 2 && bottomInk <= 2;
+  if (looksLikeOne) {
+    return { digit: "1", confidence: 0.96 };
   }
 
-  const grid = rasterizeInkComponent(component);
+  const looksLikeTwo = topInk >= 2 && middleInk >= 2 && bottomInk >= 2 && rightInk >= 1 && leftInk >= 1;
+  if (looksLikeTwo && aspect < 0.72) {
+    return { digit: "2", confidence: 0.9 };
+  }
+
   const ranked = Object.entries(digitTemplates)
     .map(([digit, template]) => ({ digit, score: scoreTemplate(grid, template) }))
     .sort((a, b) => b.score - a.score);
@@ -534,5 +556,6 @@ levelButtons.forEach((button) => {
 resizeBoard();
 updateProgressUi();
 showQuestion();
+
 
 
