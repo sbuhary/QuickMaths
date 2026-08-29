@@ -13,6 +13,7 @@
 - [x] Separate level/options start screen with Candy Crush-style stage path.
 - [x] Start action stays as an overlay while the currently active level remains visible.
 - [x] Mobile-first layout with touch and pen support.
+- [x] Writing works with one finger or pen only; two-finger gestures do not draw and remain available for browser zoom.
 - [x] Practice modes: addition, subtraction, multiplication, and division.
 - [x] Planned stages start with tiny one-digit addition before introducing subtraction, within-20 facts, two-digit practice, multiplication, and division.
 - [x] One random question shown at a time.
@@ -121,3 +122,4 @@
 - [x] Rename app to QuickMaths.
 - [x] Add planned child-friendly arithmetic stage progression.
 - [x] Move feedback below the answer box and restore main Next.
+- [x] Restrict drawing to one active touch pointer and allow two-finger browser zoom.

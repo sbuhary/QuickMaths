@@ -125,7 +125,7 @@ select {
   margin: 0 auto;
 }
 
-canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; touch-action: none; }
+canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; touch-action: pinch-zoom; }
 .topbar, .palette, .problem-card, .answer-box, .tool-rail, .action-stack, .feedback-panel { position: absolute; z-index: 2; }
 .topbar {
   top: 12px; left: 14px; right: 14px;

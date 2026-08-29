@@ -303,9 +303,27 @@ function drawSegment(from, to, color, size, erase) {
   ctx.globalCompositeOperation = "source-over";
 }
 
+function cancelCurrentStroke() {
+  state.drawing = false;
+  state.activePointerId = null;
+  state.currentPath = null;
+  redrawBoard();
+}
+
 function startDrawing(event) {
+  if (event.pointerType === "touch") {
+    state.activeTouchPointers.add(event.pointerId);
+    if (state.activeTouchPointers.size > 1) {
+      state.gestureMode = true;
+      cancelCurrentStroke();
+      return;
+    }
+  }
+
+  if (state.gestureMode || state.activePointerId !== null) return;
   event.preventDefault();
   if (board.setPointerCapture) board.setPointerCapture(event.pointerId);
+  state.activePointerId = event.pointerId;
   state.drawing = true;
   state.lastPoint = getPoint(event);
   state.currentPath = {
@@ -317,7 +335,7 @@ function startDrawing(event) {
 }
 
 function keepDrawing(event) {
-  if (!state.drawing) return;
+  if (!state.drawing || event.pointerId !== state.activePointerId || state.gestureMode) return;
   event.preventDefault();
   const point = getPoint(event);
   drawSegment(state.lastPoint, point, state.currentPath.color, state.currentPath.size, state.currentPath.erase);
@@ -325,9 +343,15 @@ function keepDrawing(event) {
   state.lastPoint = point;
 }
 
-function stopDrawing() {
-  if (!state.drawing) return;
+function stopDrawing(event) {
+  if (event?.pointerType === "touch") {
+    state.activeTouchPointers.delete(event.pointerId);
+    if (state.activeTouchPointers.size === 0) state.gestureMode = false;
+  }
+
+  if (!state.drawing || event?.pointerId !== state.activePointerId) return;
   state.drawing = false;
+  state.activePointerId = null;
   if (state.currentPath.points.length > 1) state.paths.push(state.currentPath);
   state.currentPath = null;
 }
