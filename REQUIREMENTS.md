@@ -1,59 +1,51 @@
 # MathSprout Requirements
 
 ## Goal
-Build a simple mobile-first web app for children to practice arithmetic on a colorful whiteboard-style screen. The app must be static and suitable for GitHub Pages hosting.
+- [x] Build a simple mobile-first web app for children to practice arithmetic on a colorful whiteboard-style screen.
+- [x] Keep the app static and suitable for GitHub Pages hosting.
 
 ## Core Features
-- App name: MathSprout
-- Mobile-first layout with touch and pen support.
-- Practice modes:
-  - Addition
-  - Subtraction
-  - Multiplication
-  - Division
-- Difficulty levels:
-  - Starter: small numbers and simple facts.
-  - Explorer: larger numbers and two-step carrying/borrowing opportunities.
-  - Wizard: multi-digit problems and harder multiplication/division.
-- One random question shown at a time.
-- Whiteboard workspace where children can write the answer and intermediate steps.
-- The printed question remains separate from the writable canvas and cannot be erased by the whiteboard eraser.
-- Pen tools:
-  - Multiple colors
-  - Eraser
-  - Clear writing
-  - Undo
-- Visible timer for the current question.
-- Next question button.
-- Check answer button.
-- Intelligent answer detection:
-  - Try browser handwriting recognition when supported.
-  - Provide an answer field fallback so the app remains usable on all GitHub Pages browsers.
-- Feedback after checking:
-  - Correct or incorrect
-  - Correct answer
-  - Time taken
-- Gamification:
-  - Candy-path level map.
-  - Stars and score.
-  - Streak reward.
-  - Unlock levels by completing questions.
-  - Cheerful colors and playful animations.
-- Accessibility:
-  - Large tap targets.
-  - Clear labels.
-  - Works with touch, mouse, or stylus.
+- [x] App name: MathSprout.
+- [x] Mobile-first layout with touch and pen support.
+- [x] Practice modes: addition, subtraction, multiplication, and division.
+- [x] Difficulty levels: Starter, Explorer, and Wizard.
+- [x] One random question shown at a time.
+- [x] Old-school stacked question layout with one large question on the whiteboard.
+- [x] Whiteboard workspace where children can write the answer and intermediate steps.
+- [x] Printed question is separate from the drawing layer, so erase and clear do not remove it.
+- [x] Pen colors.
+- [x] Eraser.
+- [x] Clear writing.
+- [x] Undo.
+- [x] Visible timer for the current question.
+- [x] Next question button.
+- [x] Check answer button.
+- [x] Browser handwriting recognition attempt when supported.
+- [x] Answer field fallback for browsers without handwriting recognition.
+- [x] Feedback after checking: correct/incorrect, correct answer, and time taken.
+- [x] Gamified level map.
+- [x] Stars and score.
+- [x] Streak reward.
+- [x] Unlock levels by completing questions.
+- [x] Cheerful colors for children.
+- [x] Large tap targets.
+- [x] Clear labels.
+- [x] Works with touch, mouse, or stylus.
 
 ## Technical Requirements
-- Static files only: HTML, CSS, and JavaScript.
-- No backend and no build step required.
-- Persist local progress in `localStorage`.
-- Must run by opening `index.html` locally and when hosted on GitHub Pages.
-- Avoid external dependencies for reliability.
+- [x] Static files only: HTML, CSS, and JavaScript.
+- [x] No backend and no build step required.
+- [x] Persist local progress in `localStorage`.
+- [x] Must run by opening `index.html` locally and when hosted on GitHub Pages.
+- [x] Avoid external dependencies for reliability.
+- [x] Version JavaScript file references to avoid browser cache issues after updates.
+- [x] Include a project license.
 
 ## Implementation Plan
-1. Create requirements document and commit it.
-2. Scaffold the static app files and commit them.
-3. Implement arithmetic generation, levels, whiteboard drawing, timer, checking, and progress.
-4. Polish mobile styling and gamification.
-5. Run local verification and commit the final implementation.
+- [x] Create requirements document and commit it.
+- [x] Scaffold the static app files and commit them.
+- [x] Implement arithmetic generation, levels, whiteboard drawing, timer, checking, and progress.
+- [x] Polish mobile styling and gamification.
+- [x] Simplify to one main whiteboard with a large stacked question.
+- [x] Add license, checklist requirements, and JavaScript cache versioning.
+- [x] Run local verification and commit the final implementation.
