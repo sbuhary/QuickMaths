@@ -3,7 +3,7 @@ const ctx = board.getContext("2d", { willReadFrequently: true });
 const questionEl = document.querySelector("#question");
 const timerEl = document.querySelector("#timer");
 const feedbackEl = document.querySelector("#feedback");
-const answerEl = document.querySelector("#answer");
+const answerBox = document.querySelector("#answer-box");
 const operationEl = document.querySelector("#operation");
 const difficultyEl = document.querySelector("#difficulty");
 const starsEl = document.querySelector("#stars");
@@ -13,6 +13,8 @@ const checkButton = document.querySelector("#check");
 const clearButton = document.querySelector("#clear");
 const undoButton = document.querySelector("#undo");
 const eraserButton = document.querySelector("#eraser");
+const settingsToggle = document.querySelector("#settings-toggle");
+const settingsPanel = document.querySelector("#settings-panel");
 const colorButtons = [...document.querySelectorAll(".color")];
 const levelButtons = [...document.querySelectorAll(".level-node")];
 
@@ -57,7 +59,7 @@ function updateProgressUi() {
     const isUnlocked = unlocked.has(level);
     button.disabled = !isUnlocked;
     button.classList.toggle("active", difficultyEl.value === level);
-    button.textContent = isUnlocked ? String(index + 1) : "Lock";
+    button.textContent = isUnlocked ? String(index + 1) : "L";
     button.setAttribute("aria-label", `${settings[level].label} level${isUnlocked ? "" : " locked"}`);
   });
 }
@@ -115,19 +117,21 @@ function makeQuestion() {
 }
 
 function renderStackedQuestion(question) {
+  const digits = Math.max(String(question.a).length, String(question.b).length);
+  questionEl.style.setProperty("--digits", `${digits}ch`);
   return `
-    <span class="row top">${question.a}</span>
-    <span class="row bottom"><span>${question.symbol}</span><span>${question.b}</span></span>
+    <span class="top">${question.a}</span>
+    <span class="operator">${question.symbol}</span>
+    <span class="bottom-number">${question.b}</span>
     <span class="bar"></span>
-    <span class="equals">= ?</span>
   `;
 }
+
 function showQuestion() {
   state.current = makeQuestion();
   questionEl.innerHTML = renderStackedQuestion(state.current);
-  feedbackEl.textContent = "Use the board for your working, then check.";
+  feedbackEl.textContent = "Write the final answer inside the box.";
   feedbackEl.className = "feedback";
-  answerEl.value = "";
   clearBoard();
   resetTimer();
 }
@@ -168,6 +172,34 @@ function resizeBoard() {
 function getPoint(event) {
   const rect = board.getBoundingClientRect();
   return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+}
+
+function getAnswerRect() {
+  const boardRect = board.getBoundingClientRect();
+  const boxRect = answerBox.getBoundingClientRect();
+  return {
+    left: boxRect.left - boardRect.left,
+    top: boxRect.top - boardRect.top,
+    right: boxRect.right - boardRect.left,
+    bottom: boxRect.bottom - boardRect.top,
+  };
+}
+
+function pointInsideRect(point, rect) {
+  return point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
+}
+
+function pathsInsideAnswerBox() {
+  const rect = getAnswerRect();
+  return state.paths
+    .filter((path) => !path.erase)
+    .map((path) => ({
+      ...path,
+      points: path.points
+        .filter((point) => pointInsideRect(point, rect))
+        .map((point) => ({ x: point.x - rect.left, y: point.y - rect.top })),
+    }))
+    .filter((path) => path.points.length > 1);
 }
 
 function drawSegment(from, to, color, size, erase) {
@@ -224,39 +256,51 @@ function clearBoard() {
   ctx.clearRect(0, 0, board.clientWidth, board.clientHeight);
 }
 
+function clearBoardWithConfirmation() {
+  if (!state.paths.length) return;
+  if (window.confirm("Clear all writing on the board?")) {
+    clearBoard();
+    feedbackEl.textContent = "Board cleared.";
+    feedbackEl.className = "feedback";
+  }
+}
+
 function normalizeAnswer(value) {
   const match = String(value).replace(/[Oo]/g, "0").replace(/[Il]/g, "1").match(/-?\d+/);
   return match ? Number(match[0]) : NaN;
 }
 
 async function recognizeWriting() {
+  const paths = pathsInsideAnswerBox();
   const Recognizer = window.HandwritingRecognizer || window.webkitHandwritingRecognizer;
-  if (!Recognizer || !window.HandwritingDrawing || !window.HandwritingStroke || state.paths.length === 0) return "";
+
+  if (!paths.length) return { text: "", status: "empty" };
+  if (!Recognizer || !window.HandwritingDrawing || !window.HandwritingStroke) {
+    return { text: "", status: "unsupported" };
+  }
 
   try {
     const recognizer = await Recognizer.create({ languages: ["en"], recognitionType: "text" });
     const drawing = new window.HandwritingDrawing();
-    state.paths.filter((path) => !path.erase).forEach((path) => {
+    paths.forEach((path) => {
       const stroke = new window.HandwritingStroke();
       path.points.forEach((point, index) => stroke.addPoint({ x: point.x, y: point.y, t: index }));
       drawing.addStroke(stroke);
     });
     const predictions = await recognizer.recognize(drawing);
-    return predictions?.[0]?.text || "";
+    return { text: predictions?.[0]?.text || "", status: "ok" };
   } catch {
-    return "";
+    return { text: "", status: "unsupported" };
   }
 }
 
 async function checkAnswer() {
   if (!state.current) showQuestion();
   checkButton.disabled = true;
-  feedbackEl.textContent = "Checking...";
+  feedbackEl.textContent = "Checking the answer box...";
 
   const recognized = await recognizeWriting();
-  if (!answerEl.value && recognized) answerEl.value = recognized;
-
-  const given = normalizeAnswer(answerEl.value || recognized);
+  const given = normalizeAnswer(recognized.text);
   const correct = given === state.current.answer;
 
   if (correct) {
@@ -264,14 +308,18 @@ async function checkAnswer() {
     const streakBonus = state.progress.streak % 3 === 0 ? 2 : 0;
     state.progress.stars += 1 + streakBonus;
     state.progress.answered += 1;
-    feedbackEl.textContent = `Correct! Answer ${state.current.answer}. Time ${formatTime(state.seconds)}.`;
+    feedbackEl.textContent = `Correct. Answer ${state.current.answer}. Time ${formatTime(state.seconds)}.`;
     feedbackEl.className = "feedback correct";
     unlockEligibleLevels();
   } else {
     state.progress.streak = 0;
-    feedbackEl.textContent = Number.isNaN(given)
-      ? `I could not read an answer yet. The correct answer is ${state.current.answer}.`
-      : `Nice try. The correct answer is ${state.current.answer}.`;
+    if (recognized.status === "empty") {
+      feedbackEl.textContent = `Write the final answer inside the box. Correct answer: ${state.current.answer}.`;
+    } else if (recognized.status === "unsupported") {
+      feedbackEl.textContent = `This browser cannot read handwriting yet. Correct answer: ${state.current.answer}.`;
+    } else {
+      feedbackEl.textContent = `I read ${recognized.text || "nothing"}. Correct answer: ${state.current.answer}.`;
+    }
     feedbackEl.className = "feedback wrong";
   }
 
@@ -287,6 +335,11 @@ function selectColor(button) {
   colorButtons.forEach((item) => item.classList.toggle("selected", item === button));
 }
 
+function hideSettings() {
+  settingsPanel.hidden = true;
+  settingsToggle.setAttribute("aria-expanded", "false");
+}
+
 board.addEventListener("pointerdown", startDrawing);
 board.addEventListener("pointermove", keepDrawing);
 board.addEventListener("pointerup", stopDrawing);
@@ -294,6 +347,10 @@ board.addEventListener("pointercancel", stopDrawing);
 board.addEventListener("pointerleave", stopDrawing);
 window.addEventListener("resize", resizeBoard);
 
+settingsToggle.addEventListener("click", () => {
+  settingsPanel.hidden = !settingsPanel.hidden;
+  settingsToggle.setAttribute("aria-expanded", String(!settingsPanel.hidden));
+});
 colorButtons.forEach((button) => button.addEventListener("click", () => selectColor(button)));
 eraserButton.addEventListener("click", () => {
   state.erasing = true;
@@ -304,11 +361,17 @@ undoButton.addEventListener("click", () => {
   state.paths.pop();
   redrawBoard();
 });
-clearButton.addEventListener("click", clearBoard);
+clearButton.addEventListener("click", clearBoardWithConfirmation);
 nextButton.addEventListener("click", showQuestion);
 checkButton.addEventListener("click", checkAnswer);
-operationEl.addEventListener("change", showQuestion);
-difficultyEl.addEventListener("change", showQuestion);
+operationEl.addEventListener("change", () => {
+  hideSettings();
+  showQuestion();
+});
+difficultyEl.addEventListener("change", () => {
+  hideSettings();
+  showQuestion();
+});
 levelButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (button.disabled) return;
@@ -321,4 +384,3 @@ levelButtons.forEach((button) => {
 resizeBoard();
 updateProgressUi();
 showQuestion();
-

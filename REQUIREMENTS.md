@@ -20,8 +20,8 @@
 - [x] Visible timer for the current question.
 - [x] Next question button.
 - [x] Check answer button.
-- [x] Browser handwriting recognition attempt when supported.
-- [x] Answer field fallback for browsers without handwriting recognition.
+- [x] Browser handwriting recognition reads only strokes inside the final-answer box when supported.
+- [x] No typed answer field; final answers are read from the answer box when handwriting recognition is available.
 - [x] Feedback after checking: correct/incorrect, correct answer, and time taken.
 - [x] Gamified level map.
 - [x] Stars and score.
@@ -38,7 +38,7 @@
 - [x] Persist local progress in `localStorage`.
 - [x] Must run by opening `index.html` locally and when hosted on GitHub Pages.
 - [x] Avoid external dependencies for reliability.
-- [x] Version JavaScript file references to avoid browser cache issues after updates.
+- [x] Version JavaScript and CSS file references to avoid browser cache issues after updates.
 - [x] Include a project license.
 
 ## Implementation Plan
@@ -49,3 +49,4 @@
 - [x] Simplify to one main whiteboard with a large stacked question.
 - [x] Add license, checklist requirements, and JavaScript cache versioning.
 - [x] Run local verification and commit the final implementation.
+

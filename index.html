@@ -9,17 +9,16 @@
       content="MathSprout is a playful mobile whiteboard app for children to practice arithmetic."
     >
     <title>MathSprout</title>
-    <link rel="stylesheet" href="styles.css?v=20260829-2">
+    <link rel="stylesheet" href="styles.css?v=20260829-3">
   </head>
   <body>
     <main class="app-shell">
       <section class="whiteboard" aria-label="Math practice whiteboard">
         <canvas id="board" aria-label="Writable answer whiteboard"></canvas>
 
-        <header class="topbar overlay-panel">
-          <div>
+        <header class="topbar">
+          <div class="brand-mark">
             <p class="eyebrow">MathSprout</p>
-            <h1>Math board</h1>
             <div class="score-strip">
               <span id="stars">0 stars</span>
               <span id="streak">0 streak</span>
@@ -31,13 +30,14 @@
           </div>
         </header>
 
-        <section class="level-map overlay-panel" aria-label="Level map">
+        <nav class="level-map" aria-label="Level map">
           <button class="level-node active" type="button" data-level="starter">1</button>
           <button class="level-node" type="button" data-level="explorer">2</button>
           <button class="level-node" type="button" data-level="wizard">3</button>
-        </section>
+        </nav>
 
-        <section class="controls overlay-panel" aria-label="Question settings">
+        <button id="settings-toggle" class="circle-button settings-toggle" type="button" aria-label="Practice options" aria-expanded="false">...</button>
+        <section id="settings-panel" class="settings-panel" aria-label="Question settings" hidden>
           <label>
             Operation
             <select id="operation">
@@ -61,34 +61,26 @@
           <div id="question" class="question">Tap Next</div>
         </section>
 
-        <div class="write-hint" aria-hidden="true">Write here</div>
-
-        <section class="toolbar overlay-panel" aria-label="Whiteboard tools">
-          <button class="color selected" style="--swatch:#1f2937" type="button" data-color="#1f2937" aria-label="Black pen"></button>
-          <button class="color" style="--swatch:#e84393" type="button" data-color="#e84393" aria-label="Pink pen"></button>
-          <button class="color" style="--swatch:#0984e3" type="button" data-color="#0984e3" aria-label="Blue pen"></button>
-          <button class="color" style="--swatch:#00b894" type="button" data-color="#00b894" aria-label="Green pen"></button>
-          <button id="eraser" type="button">Erase</button>
-          <button id="undo" type="button">Undo</button>
-          <button id="clear" type="button">Clear</button>
+        <section id="answer-box" class="answer-box" aria-label="Write final answer here">
+          <span>Answer</span>
         </section>
 
-        <section class="answer-panel overlay-panel">
-          <label>
-            Answer
-            <input id="answer" inputmode="numeric" autocomplete="off" placeholder="Type if needed">
-          </label>
-          <div class="action-row">
-            <button id="check" class="primary" type="button">Check</button>
-            <button id="next" type="button">Next</button>
-          </div>
-          <p id="feedback" class="feedback" aria-live="assertive"></p>
+        <p id="feedback" class="feedback" aria-live="assertive"></p>
+
+        <section class="tool-dock" aria-label="Whiteboard tools">
+          <button class="circle-button color selected" style="--swatch:#1f2937" type="button" data-color="#1f2937" aria-label="Black pen"></button>
+          <button class="circle-button color" style="--swatch:#e84393" type="button" data-color="#e84393" aria-label="Pink pen"></button>
+          <button class="circle-button color" style="--swatch:#0984e3" type="button" data-color="#0984e3" aria-label="Blue pen"></button>
+          <button class="circle-button color" style="--swatch:#00b894" type="button" data-color="#00b894" aria-label="Green pen"></button>
+          <button id="eraser" class="circle-button icon-button icon-eraser" type="button" aria-label="Eraser"><span class="sr-only">Eraser</span></button>
+          <button id="undo" class="circle-button icon-button icon-undo" type="button" aria-label="Undo"><span class="sr-only">Undo</span></button>
+          <button id="clear" class="circle-button icon-button icon-clear" type="button" aria-label="Clear board"><span class="sr-only">Clear</span></button>
+          <button id="check" class="action-button primary" type="button">Check</button>
+          <button id="next" class="action-button" type="button">Next</button>
         </section>
       </section>
     </main>
-    <script src="app.js?v=20260829-2"></script>
+    <script src="app.js?v=20260829-3"></script>
   </body>
 </html>
-
-
 
