@@ -53,10 +53,10 @@
 - [x] Visible timer for the current question.
 - [x] Countdown timer with style cycling: digital, analog, and hourglass.
 - [x] Feedback appears below the answer area so the written answer remains visible.
-- [x] Confidence review appears when recognition is unsure, with Correct/Wrong buttons.
+- [x] Low-confidence recognition shows tappable answer choices, including the correct answer and nearby values.
 - [x] Feedback is inline on the board instead of a popup/overlay.
 - [x] Correct answers trigger animated celebration.
-- [x] Correct feedback explains remaining time in child-friendly words.
+- [x] Correct feedback explains remaining time in child-friendly words on a separate line.
 - [x] Wrong answer and timeout feedback ask the child to retry without showing Next.
 - [x] Bottom action area shows only the needed full-width action for the current state.
 
@@ -81,6 +81,7 @@
 ### Accessibility And Compatibility
 - [x] Large tap targets.
 - [x] Clear labels for controls.
+- [x] Help buttons on the level screen and practice screen explain how to play.
 - [x] Works with touch, mouse, or stylus.
 - [x] Static files only: HTML, CSS, and JavaScript.
 - [x] No backend and no build step required.
@@ -106,7 +107,7 @@
 ### P0: Production Stability
 - [x] Add deterministic Playwright visual regression coverage for the mobile board.
 - [x] Improve joined multi-digit answer splitting before recognition scoring.
-- [x] Add a recognition confidence review state: if the app is unsure, show "I think it says X" with Correct/Wrong buttons for adult-assisted correction.
+- [x] Add a recognition confidence review state: if the app is unsure, show answer-choice boxes with the correct answer and nearby values.
 - [x] Add a small on-device recognition test harness with saved synthetic digit samples for regression checks.
 - [x] Add a low-height mobile layout smoke test for 320px, 375px, and 430px wide screens.
 - [x] Add static smoke-test script for syntax, layout hooks, drawing policy, asset versions, and level progression.
@@ -169,3 +170,4 @@
 - [x] Add splash/refresh restore, separate level background, inline feedback, compact score icons, and state-only bottom actions.
 - [x] Add child-name personalization, fallback congratulations, correct-answer celebration, and opaque pencil overlay.
 - [x] Require missing names before practice, add lock icons, brighter level nodes, kid-friendly time-left wording, and pencil/eraser cursors.
+- [x] Add low-confidence answer-choice boxes and help overlays.

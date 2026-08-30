@@ -14,7 +14,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/quickmaths-icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/quickmaths-icon.svg">
-    <link rel="stylesheet" href="styles.css?v=20260830-06">
+    <link rel="stylesheet" href="styles.css?v=20260830-07">
   </head>
   <body>
     <main class="app-shell">
@@ -72,6 +72,7 @@
           <button id="start-practice" class="action-button primary wide" type="button">Start stage 1</button>
           <button id="retry-missed" class="circle-button reset-button" type="button" aria-label="Retry missed questions" disabled><i data-lucide="repeat-2"></i></button>
           <button id="reset-progress" class="circle-button reset-button" type="button" aria-label="Reset progress"><i data-lucide="rotate-ccw"></i></button>
+          <button id="help-start" class="circle-button reset-button help-button" type="button" aria-label="How to play"><i data-lucide="circle-help"></i></button>
         </div>
       </section>
 
@@ -100,6 +101,7 @@
           <button id="eraser" class="circle-button tool-button" type="button" aria-label="Eraser"><i data-lucide="eraser"></i></button>
           <button id="undo" class="circle-button tool-button" type="button" aria-label="Undo"><i data-lucide="undo-2"></i></button>
           <button id="clear" class="circle-button tool-button danger-tool" type="button" aria-label="Clear whole board"><i data-lucide="trash-2"></i></button>
+          <button id="help-practice" class="circle-button tool-button help-button" type="button" aria-label="How to play"><i data-lucide="circle-help"></i></button>
         </section>
 
         <section id="pen-panel" class="pen-panel" aria-label="Pen options" hidden>
@@ -128,6 +130,7 @@
         <section id="feedback-panel" class="feedback-panel" hidden>
           <div class="result-mark" id="result-mark" aria-hidden="true"><i data-lucide="sparkles"></i></div>
           <p id="feedback" class="feedback" aria-live="assertive"></p>
+          <div id="answer-choices" class="answer-choices" aria-label="Choose the answer" hidden></div>
           <div class="feedback-actions">
             <button id="retry-feedback" class="action-button" type="button" hidden>Try again</button>
             <button id="next-feedback" class="action-button primary" type="button" hidden>Next</button>
@@ -144,6 +147,19 @@
           <button id="next-main" class="action-button primary" type="button" hidden>Next</button>
         </section>
       </section>
+      <section id="help-gate" class="help-gate" aria-label="How to play" hidden>
+        <div class="help-card">
+          <p class="eyebrow">QuickMaths</p>
+          <h2>How to play</h2>
+          <ul>
+            <li>Pick a level and solve one question.</li>
+            <li>Write the final answer inside the Answer box.</li>
+            <li>Use the rest of the board for working.</li>
+            <li>Tap Check. If QuickMaths is unsure, pick the answer you meant.</li>
+          </ul>
+          <button id="close-help" class="action-button primary" type="button">OK</button>
+        </div>
+      </section>
       <section id="name-gate" class="name-gate" aria-label="Enter your name" hidden>
         <div class="name-card">
           <p class="eyebrow">QuickMaths</p>
@@ -155,7 +171,7 @@
     </main>
 
     <script src="version.js"></script>
-    <script src="icons.js?v=20260830-06"></script>
-    <script src="app.js?v=20260830-06"></script>
+    <script src="icons.js?v=20260830-07"></script>
+    <script src="app.js?v=20260830-07"></script>
   </body>
 </html>

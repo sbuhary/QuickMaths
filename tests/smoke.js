@@ -9,6 +9,7 @@ const samples = JSON.parse(fs.readFileSync("tests/recognition-samples.json", "ut
 const manifest = JSON.parse(fs.readFileSync("manifest.webmanifest", "utf8"));
 const serviceWorker = fs.readFileSync("sw.js", "utf8");
 const version = fs.readFileSync("version.js", "utf8").match(/QUICKMATHS_RELEASE = "([^"]+)"/)?.[1];
+const iconsSource = fs.readFileSync("icons.js", "utf8");
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -84,6 +85,10 @@ assert(html.includes("id=\"name-gate\"") && js.includes("requireKidName") && js.
 assert(html.includes("id=\"celebration\"") && css.includes("confetti-pop") && js.includes("celebrateCorrectAnswer"), "Correct-answer celebration missing");
 assert(html.includes("data-lucide=\"star\"") && html.includes("data-lucide=\"flame\"") && html.includes("data-lucide=\"lock\""), "Game-style score and lock icons missing");
 assert(js.includes("formatKidTimeLeft") && js.includes("You still had"), "Kid-friendly time-left wording missing");
+assert(html.includes('id="answer-choices"') && js.includes("nearbyAnswerChoices") && js.includes("verifyChosenAnswer"), "Low-confidence answer choices missing");
+assert(js.includes('recognized.status !== "empty"') && js.includes("pick the answer you meant"), "Low-confidence choice prompt missing");
+assert(html.includes('id="help-start"') && html.includes('id="help-practice"') && html.includes('id="help-gate"') && js.includes("showHelp") && iconsSource.includes('"circle-help"'), "Help overlay missing");
+assert(css.includes("white-space: pre-line"), "Feedback must support line breaks");
 assert(js.includes("svgCursor") && js.includes("updateToolUi") && css.includes("#pencil.selected-tool svg"), "Pencil/eraser cursor and selected-color state missing");
 assert(serviceWorker.includes("backgrounds/levels.svg"), "Level background must be cached by service worker");
 for (const width of [320, 375, 430]) assert(width <= 520, `Smoke viewport ${width}px must use mobile layout rules`);

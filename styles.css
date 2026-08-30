@@ -170,7 +170,7 @@ input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 
   width: min(calc(100% - 56px), 520px);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 46px 46px;
+  grid-template-columns: 1fr 46px 46px 46px;
   gap: 10px;
   align-items: center;
 }
@@ -351,7 +351,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   text-align: left;
 }
 .result-mark { display: none; }
-.feedback { display: inline-block; max-width: 100%; margin: 0; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.96); color: var(--ink); font-size: 0.96rem; line-height: 1.18; font-weight: 900; box-shadow: var(--shadow); }
+.feedback { display: inline-block; max-width: 100%; margin: 0; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.96); color: var(--ink); font-size: 0.96rem; line-height: 1.18; font-weight: 900; white-space: pre-line; box-shadow: var(--shadow); }
 .feedback.correct { color: #047857; }
 .feedback.wrong, .feedback.timeout { color: #be123c; }
 .feedback-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; max-width: 260px; }
@@ -359,6 +359,46 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 .feedback-panel.wrong .feedback-actions, .feedback-panel.timeout .feedback-actions { grid-template-columns: 1fr; max-width: 145px; }
 .feedback-panel.review .feedback-actions { grid-template-columns: 1fr 1fr; }
 
+.answer-choices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(48px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+  max-width: 320px;
+}
+.answer-choice {
+  min-height: 46px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff7d6;
+  color: var(--ink);
+  font-size: 1.3rem;
+  font-weight: 900;
+  box-shadow: var(--shadow);
+}
+.answer-choice:active { transform: scale(0.98); }
+.help-button { color: var(--purple); }
+.help-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(31, 41, 55, 0.42);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.help-card {
+  width: min(100%, 360px);
+  padding: 20px;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 20px 44px rgba(31, 41, 55, 0.28);
+}
+.help-card h2 { margin: 0 0 12px; font-size: 1.8rem; line-height: 1; }
+.help-card ul { margin: 0 0 16px; padding-left: 20px; color: var(--ink); font-weight: 800; line-height: 1.35; }
+.help-card li + li { margin-top: 7px; }
 .name-gate {
   position: fixed;
   inset: 0;

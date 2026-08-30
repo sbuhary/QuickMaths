@@ -10,6 +10,7 @@ const timerControl = document.querySelector("#timer-control");
 const soundToggleButton = document.querySelector("#sound-toggle");
 const feedbackPanel = document.querySelector("#feedback-panel");
 const feedbackEl = document.querySelector("#feedback");
+const answerChoicesEl = document.querySelector("#answer-choices");
 const closeFeedbackButton = document.querySelector("#close-feedback");
 const markCorrectButton = document.querySelector("#mark-correct");
 const markWrongButton = document.querySelector("#mark-wrong");
@@ -21,6 +22,10 @@ const kidNameEl = document.querySelector("#kid-name");
 const nameGate = document.querySelector("#name-gate");
 const gateNameEl = document.querySelector("#gate-name");
 const saveNameButton = document.querySelector("#save-name");
+const helpGate = document.querySelector("#help-gate");
+const helpStartButton = document.querySelector("#help-start");
+const helpPracticeButton = document.querySelector("#help-practice");
+const closeHelpButton = document.querySelector("#close-help");
 const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
 const stageSummaryEl = document.querySelector("#stage-summary");
@@ -165,6 +170,68 @@ function requireKidName(action) {
   return false;
 }
 
+function showHelp() {
+  closePenPanel();
+  helpGate.hidden = false;
+}
+
+function hideHelp() {
+  helpGate.hidden = true;
+}
+
+function nearbyAnswerChoices(readText, correctAnswer) {
+  const read = normalizeAnswer(readText);
+  const anchor = Number.isFinite(read) ? read : correctAnswer;
+  const choices = new Set([correctAnswer, anchor]);
+  for (const offset of [-2, -1, 1, 2]) {
+    const value = anchor + offset;
+    if (value >= 0) choices.add(value);
+  }
+  for (const offset of [-2, -1, 1, 2]) {
+    const value = correctAnswer + offset;
+    if (choices.size >= 4) break;
+    if (value >= 0) choices.add(value);
+  }
+  const sorted = [...choices]
+    .filter((value) => Number.isFinite(value) && value >= 0)
+    .sort((a, b) => Math.abs(a - anchor) - Math.abs(b - anchor) || a - b);
+  const limited = sorted.slice(0, 4);
+  if (!limited.includes(correctAnswer)) limited[limited.length - 1] = correctAnswer;
+  return [...new Set(limited)].sort((a, b) => a - b);
+}
+
+function showAnswerChoices(choices) {
+  answerChoicesEl.replaceChildren();
+  choices.forEach((choice) => {
+    const button = document.createElement("button");
+    button.className = "answer-choice";
+    button.type = "button";
+    button.textContent = String(choice);
+    button.setAttribute("aria-label", `Use ${choice} as the answer`);
+    button.addEventListener("click", () => verifyChosenAnswer(choice));
+    answerChoicesEl.appendChild(button);
+  });
+  answerChoicesEl.hidden = false;
+}
+
+function hideAnswerChoices() {
+  answerChoicesEl.hidden = true;
+  answerChoicesEl.replaceChildren();
+}
+
+function verifyChosenAnswer(value) {
+  hideAnswerChoices();
+  if (Number(value) === state.current.answer) {
+    awardCorrectAnswer(String(value));
+    return;
+  }
+  state.progress.streak = 0;
+  recordMissOnce();
+  saveProgress();
+  updateProgressUi();
+  playTone("wrong");
+  showFeedback(state.kidName ? `You picked ${value}. Try again, ${state.kidName}.` : `You picked ${value}. Try this one again.`, "wrong");
+}
 function formatKidTimeLeft(seconds) {
   const safeSeconds = Math.max(0, Number(seconds) || 0);
   if (safeSeconds < 60) return `You still had ${safeSeconds} second${safeSeconds === 1 ? "" : "s"}.`;
@@ -388,6 +455,7 @@ function renderStackedQuestion(question) {
 
 function hideFeedback() {
   feedbackPanel.hidden = true;
+  hideAnswerChoices();
   if (celebrationEl) {
     celebrationEl.hidden = true;
     celebrationEl.classList.remove("burst");
@@ -921,8 +989,9 @@ function showFeedback(message, type) {
   retryFeedbackButton.hidden = true;
   nextFeedbackButton.hidden = true;
   closeFeedbackButton.hidden = true;
-  markCorrectButton.hidden = type !== "review";
-  markWrongButton.hidden = type !== "review";
+  markCorrectButton.hidden = true;
+  markWrongButton.hidden = true;
+  if (type !== "choices") hideAnswerChoices();
   setActionState(type);
   if (window.lucide) window.lucide.createIcons();
 }
@@ -955,12 +1024,14 @@ function awardCorrectAnswer(readText) {
   updateProgressUi();
   playTone("correct");
   celebrateCorrectAnswer();
-  showFeedback(`${namePrefix(state.kidName ? "Great work" : "Congratulations")} I read ${readText}. ${formatKidTimeLeft(state.timeLeft)}`, "correct");
+  showFeedback(`${namePrefix(state.kidName ? "Great work" : "Congratulations")} I read ${readText}.` + "\n" + formatKidTimeLeft(state.timeLeft), "correct");
 }
 
 function askForRecognitionReview(recognized) {
   state.pendingReview = recognized;
-  showFeedback(`${state.kidName ? `${state.kidName}, I think` : "I think"} it says ${recognized.text}. Is that right?`, "review");
+  const choices = nearbyAnswerChoices(recognized.text, state.current.answer);
+  showFeedback(state.kidName ? `${state.kidName}, pick the answer you meant.` : "Pick the answer you meant.", "choices");
+  showAnswerChoices(choices);
 }
 
 async function checkAnswer() {
@@ -971,7 +1042,7 @@ async function checkAnswer() {
   const given = normalizeAnswer(recognized.text);
   const correct = given === state.current.answer;
 
-  if (recognized.text && recognized.confidence < 0.62) {
+  if (recognized.status !== "empty" && recognized.confidence < 0.62) {
     askForRecognitionReview(recognized);
     return;
   }
@@ -1077,6 +1148,12 @@ gateNameEl.addEventListener("keydown", (event) => {
   if (event.key === "Enter") saveNameFromGate();
 });
 saveNameButton.addEventListener("click", saveNameFromGate);
+helpStartButton.addEventListener("click", showHelp);
+helpPracticeButton.addEventListener("click", showHelp);
+closeHelpButton.addEventListener("click", hideHelp);
+helpGate.addEventListener("click", (event) => {
+  if (event.target === helpGate) hideHelp();
+});
 document.addEventListener("pointerdown", (event) => {
   if (penPanel.hidden) return;
   if (penPanel.contains(event.target) || pencilButton.contains(event.target)) return;
