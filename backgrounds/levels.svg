@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 1180" role="img" aria-label="colorful level path background">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dff7ff"/>
+      <stop offset="0.42" stop-color="#fff7d6"/>
+      <stop offset="1" stop-color="#ffe0ee"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+  </defs>
+  <rect width="760" height="1180" fill="url(#sky)"/>
+  <path d="M-20 190 C 130 100, 245 290, 396 198 S 650 118, 800 225" fill="none" stroke="#ffffff" stroke-width="42" stroke-linecap="round" opacity="0.58"/>
+  <path d="M-40 760 C 155 660, 260 850, 426 742 S 645 665, 800 820" fill="none" stroke="#ffffff" stroke-width="54" stroke-linecap="round" opacity="0.48"/>
+  <g opacity="0.68" filter="url(#soft)">
+    <circle cx="91" cy="119" r="34" fill="#ff5f9e"/>
+    <circle cx="642" cy="135" r="42" fill="#00b894"/>
+    <circle cx="570" cy="344" r="26" fill="#ffd166"/>
+    <circle cx="108" cy="426" r="48" fill="#6c5ce7"/>
+    <circle cx="658" cy="622" r="36" fill="#0984e3"/>
+    <circle cx="155" cy="921" r="30" fill="#00b894"/>
+    <circle cx="594" cy="1015" r="48" fill="#ff5f9e"/>
+  </g>
+  <g opacity="0.26" fill="none" stroke="#6c5ce7" stroke-width="5" stroke-linecap="round">
+    <path d="M86 620h90"/>
+    <path d="M545 502h70"/>
+    <path d="M266 1040h95"/>
+  </g>
+</svg>

@@ -1,4 +1,4 @@
-﻿import { expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 const appUrl = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:4173/index.html';
 
@@ -21,7 +21,7 @@ test.describe('QuickMaths app', () => {
     await page.goto(appUrl);
     await expect(page).toHaveTitle(/QuickMaths/);
     await expect(page.getByRole('heading', { name: 'Pick a math path' })).toBeVisible();
-    await expect(page.locator('#start-screen')).toHaveScreenshot('quickmaths-level-picker.png', { maxDiffPixelRatio: 0.08 });
+    await expect(page.locator('#start-screen')).toHaveScreenshot('quickmaths-level-picker.png', { maxDiffPixelRatio: 0.08, timeout: 15000 });
     await page.getByRole('button', { name: /Start stage 1/i }).click();
     await expect(page.getByLabel('Math practice whiteboard')).toBeVisible();
     await expect(page.getByRole('button', { name: /Change timer style/i })).toBeVisible();
@@ -42,14 +42,12 @@ test.describe('QuickMaths app', () => {
     await page.getByRole('button', { name: /Pencil and colors/i }).click();
     await page.getByRole('button', { name: /Thin pen/i }).click();
     await page.getByRole('button', { name: /Medium pen/i }).click();
-    await page.getByRole('button', { name: /Clear answer/i }).click();
-    await page.getByRole('button', { name: /Move controls/i }).click();
     await page.evaluate(() => {
       const timer = document.querySelector('#timer');
       if (timer) timer.textContent = '01:00';
     });
 
     expect(errors).toEqual([]);
-    await expect(page).toHaveScreenshot('quickmaths-mobile-board.png', { maxDiffPixelRatio: 0.08 });
+    await expect(page).toHaveScreenshot('quickmaths-mobile-board.png', { maxDiffPixelRatio: 0.08, timeout: 15000 });
   });
 });

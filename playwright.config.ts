@@ -6,6 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
+  timeout: 45000,
   reporter: [['list'], ['html', { open: 'never' }]],
   webServer: {
     command: 'node tests/static-server.js',

@@ -1,13 +1,14 @@
-const CACHE_VERSION = "quickmaths-20260830-03";
+const CACHE_VERSION = "quickmaths-20260830-04";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20260830-03",
+  "./styles.css?v=20260830-04",
   "./version.js",
-  "./icons.js?v=20260830-03",
-  "./app.js?v=20260830-03",
+  "./icons.js?v=20260830-04",
+  "./app.js?v=20260830-04",
   "./manifest.webmanifest",
-  "./icons/quickmaths-icon.svg"
+  "./icons/quickmaths-icon.svg",
+  "./backgrounds/levels.svg"
 ];
 
 self.addEventListener("install", (event) => {

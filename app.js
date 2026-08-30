@@ -1,4 +1,5 @@
-﻿const startScreen = document.querySelector("#start-screen");
+const splashScreen = document.querySelector("#splash-screen");
+const startScreen = document.querySelector("#start-screen");
 const practiceBoard = document.querySelector("#practice-board");
 const board = document.querySelector("#board");
 const ctx = board.getContext("2d", { willReadFrequently: true });
@@ -27,11 +28,10 @@ const retryFeedbackButton = document.querySelector("#retry-feedback");
 const nextFeedbackButton = document.querySelector("#next-feedback");
 const checkButton = document.querySelector("#check");
 const nextMainButton = document.querySelector("#next-main");
+const tryMainButton = document.querySelector("#try-main");
 const pencilButton = document.querySelector("#pencil");
 const penPanel = document.querySelector("#pen-panel");
 const clearButton = document.querySelector("#clear");
-const clearAnswerButton = document.querySelector("#clear-answer");
-const handToggleButton = document.querySelector("#hand-toggle");
 const undoButton = document.querySelector("#undo");
 const eraserButton = document.querySelector("#eraser");
 const colorButtons = [...document.querySelectorAll(".color")];
@@ -93,7 +93,6 @@ const state = {
   progress: loadProgress(),
   session: { correct: 0, missed: 0, starsEarned: 0, missedQuestions: [], startedAt: Date.now() },
   pendingReview: null,
-  handedness: localStorage.getItem("quickmaths-handedness") || "right",
   soundEnabled: localStorage.getItem("quickmaths-sound") !== "off",
   audioContext: null,
   answerState: "ready",
@@ -148,14 +147,6 @@ function formatElapsed(milliseconds) {
   return `${minutes}:${seconds}`;
 }
 
-function updateHandedness() {
-  practiceBoard.dataset.controls = state.handedness;
-  handToggleButton.setAttribute("aria-label", state.handedness === "right" ? "Move controls to left" : "Move controls to right");
-  const icon = handToggleButton.querySelector("i");
-  if (icon) icon.setAttribute("data-lucide", state.handedness === "right" ? "panel-left" : "panel-right");
-  localStorage.setItem("quickmaths-handedness", state.handedness);
-  if (window.lucide) window.lucide.createIcons();
-}
 function normalizeProgress(progress) {
   const maxStage = stagePlans.length;
   const unlockedStages = Math.max(1, Math.min(maxStage, Number(progress.unlockedStages) || 1));
@@ -191,8 +182,8 @@ function currentPlan() {
 
 function updateProgressUi() {
   const plan = currentPlan();
-  starsEl.textContent = `${state.progress.stars} stars`;
-  streakEl.textContent = `${state.progress.streak} streak`;
+  starsEl.textContent = String(state.progress.stars);
+  streakEl.textContent = String(state.progress.streak);
   if (stageSummaryEl) stageSummaryEl.textContent = `Stage ${plan.stage}: ${plan.title}`;
   if (sessionSummaryEl) sessionSummaryEl.textContent = `${state.session.correct} right / ${state.session.missed} missed`;
   if (sessionDetailEl) sessionDetailEl.textContent = `${formatElapsed(Date.now() - state.session.startedAt)} practiced / ${state.session.starsEarned} stars earned`;
@@ -301,7 +292,8 @@ function hideFeedback() {
 
 function setActionState(mode) {
   state.answerState = mode;
-  checkButton.hidden = mode === "correct" || mode === "wrong" || mode === "timeout" || mode === "review";
+  checkButton.hidden = mode !== "ready" && mode !== "checking";
+  tryMainButton.hidden = mode !== "wrong" && mode !== "timeout";
   nextMainButton.hidden = mode !== "correct";
   checkButton.disabled = mode === "checking";
 }
@@ -321,15 +313,40 @@ function togglePenPanel() {
   penPanel.hidden = !penPanel.hidden;
 }
 
+function rememberView(view) {
+  localStorage.setItem("quickmaths-view", view);
+  localStorage.setItem("quickmaths-last-seen", String(Date.now()));
+}
+
+function routeToRememberedView() {
+  const view = localStorage.getItem("quickmaths-view") === "practice" ? "practice" : "levels";
+  if (view === "practice") startPractice();
+  else showStartScreen();
+}
+
+function showSplashThenRestore() {
+  splashScreen.hidden = false;
+  startScreen.hidden = true;
+  practiceBoard.hidden = true;
+  window.setTimeout(() => {
+    splashScreen.hidden = true;
+    routeToRememberedView();
+  }, 850);
+}
 function showStartScreen() {
+  rememberView("levels");
   clearInterval(state.timerId);
   hideFeedback();
+  closePenPanel();
+  splashScreen.hidden = true;
   practiceBoard.hidden = true;
   startScreen.hidden = false;
   updateProgressUi();
 }
 
 function startPractice() {
+  rememberView("practice");
+  splashScreen.hidden = true;
   startScreen.hidden = true;
   practiceBoard.hidden = false;
   requestAnimationFrame(() => {
@@ -516,17 +533,6 @@ function redrawBoard() {
 function clearBoard() {
   state.paths = [];
   ctx.clearRect(0, 0, board.clientWidth, board.clientHeight);
-  updateAnswerHighlight(null);
-}
-
-function pathTouchesAnswer(path) {
-  const rect = getAnswerRect();
-  return path.points.some((point) => point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom);
-}
-
-function clearAnswerOnly() {
-  state.paths = state.paths.filter((path) => !pathTouchesAnswer(path));
-  redrawBoard();
   updateAnswerHighlight(null);
 }
 
@@ -806,9 +812,9 @@ function showFeedback(message, type) {
   feedbackEl.className = `feedback ${type}`;
   feedbackPanel.className = `feedback-panel ${type}`;
   feedbackPanel.hidden = false;
-  retryFeedbackButton.hidden = type === "correct" || type === "review";
-  nextFeedbackButton.hidden = type !== "correct";
-  closeFeedbackButton.hidden = type !== "correct";
+  retryFeedbackButton.hidden = true;
+  nextFeedbackButton.hidden = true;
+  closeFeedbackButton.hidden = true;
   markCorrectButton.hidden = type !== "review";
   markWrongButton.hidden = type !== "review";
   setActionState(type);
@@ -879,9 +885,17 @@ async function checkAnswer() {
   updateProgressUi();
 }
 
+function tryAgainCurrentQuestion() {
+  hideFeedback();
+  clearBoard();
+  setActionState("ready");
+  resetTimer();
+}
 function retryMissedQuestions() {
   const missed = state.session.missedQuestions.shift();
   if (!missed) return;
+  rememberView("practice");
+  splashScreen.hidden = true;
   startScreen.hidden = true;
   practiceBoard.hidden = false;
   requestAnimationFrame(() => {
@@ -897,10 +911,6 @@ function selectSize(button) {
   sizeButtons.forEach((item) => item.classList.toggle("selected-size", item === button));
 }
 
-function toggleHandedness() {
-  state.handedness = state.handedness === "right" ? "left" : "right";
-  updateHandedness();
-}
 function selectColor(button) {
   state.currentColor = button.dataset.color;
   usePencil();
@@ -921,12 +931,8 @@ resetProgressButton.addEventListener("click", resetProgress);
 retryMissedButton.addEventListener("click", retryMissedQuestions);
 backToLevelsButton.addEventListener("click", showStartScreen);
 closeFeedbackButton.addEventListener("click", hideFeedback);
-retryFeedbackButton.addEventListener("click", () => {
-  hideFeedback();
-  clearBoard();
-  setActionState("ready");
-  resetTimer();
-});
+retryFeedbackButton.addEventListener("click", tryAgainCurrentQuestion);
+tryMainButton.addEventListener("click", tryAgainCurrentQuestion);
 nextFeedbackButton.addEventListener("click", () => showQuestion());
 markCorrectButton.addEventListener("click", () => awardCorrectAnswer(state.pendingReview?.text || String(state.current.answer)));
 markWrongButton.addEventListener("click", () => {
@@ -953,10 +959,13 @@ undoButton.addEventListener("click", () => {
   state.paths.pop();
   redrawBoard();
 });
-clearAnswerButton.addEventListener("click", clearAnswerOnly);
 clearButton.addEventListener("click", clearBoardWithConfirmation);
-handToggleButton.addEventListener("click", toggleHandedness);
 checkButton.addEventListener("click", checkAnswer);
+document.addEventListener("pointerdown", (event) => {
+  if (penPanel.hidden) return;
+  if (penPanel.contains(event.target) || pencilButton.contains(event.target)) return;
+  closePenPanel();
+});
 operationEl.addEventListener("change", () => {
   if (!practiceBoard.hidden) showQuestion();
 });
@@ -970,8 +979,7 @@ levelButtons.forEach((button) => {
 });
 
 registerServiceWorker();
-updateHandedness();
 updateSoundButton();
 updateProgressUi();
 if (window.lucide) window.lucide.createIcons();
-showStartScreen();
+showSplashThenRestore();

@@ -10,7 +10,10 @@
 
 ### Practice Flow
 - [x] App name: QuickMaths.
+- [x] Brief QuickMaths greeting splash appears on app load before restoring the last screen.
+- [x] Practice screen header removes the app name and uses compact game-style score icons.
 - [x] Separate level/options start screen with Candy Crush-style stage path.
+- [x] Remember the last screen and restore it after refresh.
 - [x] Full-screen scrollable level picker with floating Start, Retry, and Reset controls.
 - [x] Start action stays as an overlay while the currently active level remains visible.
 - [x] Show a session summary with right and missed counts.
@@ -40,17 +43,18 @@
 - [x] Local icon renderer avoids CDN/CORS issues in Safari and file URLs.
 - [x] Tool buttons moved away from the primary Check/Next action stack.
 - [x] Whiteboard tools are grouped in a top floating toolbar in a logical order.
-- [x] Separate answer-only clear from whole-board clear.
+- [x] Remove duplicate-looking answer clear; keep one confirmed whole-board clear.
 - [x] Add pen thickness controls.
-- [x] Add left/right handed layout toggle.
+- [x] Remove left/right handed layout toggle to reduce toolbar clutter.
 
 ### Feedback And Timer
 - [x] Visible timer for the current question.
 - [x] Countdown timer with style cycling: digital, analog, and hourglass.
 - [x] Feedback appears below the answer area so the written answer remains visible.
 - [x] Confidence review appears when recognition is unsure, with Correct/Wrong buttons.
-- [x] Correct feedback has OK and Next on the same row, while the main board keeps only Next available.
+- [x] Feedback is inline on the board instead of a popup/overlay.
 - [x] Wrong answer and timeout feedback ask the child to retry without showing Next.
+- [x] Bottom action area shows only the needed full-width action for the current state.
 
 ### Recognition
 - [x] No typed answer field; final answers are read from the answer box.
@@ -63,7 +67,7 @@
 - [x] Recognition now tries to split wide joined digits using low-ink valleys and merge over-split strokes before scoring.
 
 ### Gamification
-- [x] Stars and score.
+- [x] Stars and score displayed with game-style icons.
 - [x] Streak reward.
 - [x] Locked level progression saved on the device.
 - [x] Cheerful colors for children.
@@ -75,7 +79,7 @@
 - [x] Works with touch, mouse, or stylus.
 - [x] Static files only: HTML, CSS, and JavaScript.
 - [x] No backend and no build step required.
-- [x] Persist local progress in `localStorage`.
+- [x] Persist local progress and last screen in `localStorage`.
 - [x] Runs by opening `index.html` locally and when hosted on GitHub Pages.
 - [x] Uses local recognition fallback for Safari and browsers without handwriting APIs.
 - [x] Version JavaScript and CSS file references to avoid browser cache issues after updates.
@@ -114,14 +118,14 @@
 
 ### P2: Whiteboard Improvements
 - [x] Add pen thickness control.
-- [x] Add answer-box-only clear button.
-- [x] Add full-board clear button separate from answer clear.
+- [x] Simplify clearing to one confirmed whole-board clear button.
+- [x] Add full-board clear button with confirmation.
 - [x] Add visual answer-box highlight while writing inside it.
 - [x] Add deterministic Playwright mobile UI coverage with visual screenshots.
 - [x] Add level-picker visual coverage for the floating-button layout.
 - [x] Replace external icon CDN with local icon rendering for Safari/local-file compatibility.
 - [x] Improve joined multi-digit recognition with valley-based splitting.
-- [x] Add left/right handed layout option for controls.
+- [x] Remove the side-switch control after toolbar simplification.
 
 ### P3: Install And Share
 - [x] Add PWA manifest and service worker for offline install.
@@ -146,7 +150,7 @@
 - [x] Move feedback below the answer box and restore main Next.
 - [x] Restrict drawing to one active touch pointer and allow two-finger browser zoom.
 - [x] Add confidence review, session summary, parent reset, and smoke test harness.
-- [x] Add retry missed flow, pen thickness, answer-only clear, whole-board clear, and handedness toggle.
+- [x] Add retry missed flow, pen thickness, one confirmed whole-board clear.
 - [x] Add muteable sounds, PWA shell, app icon, version checks, and optional browser smoke test.
 - [x] Add GitHub Pages deployment guide and `.nojekyll`.
 - [x] Add visual answer-box highlight while writing inside it.
@@ -154,3 +158,4 @@
 - [x] Add level-picker visual coverage for the floating-button layout.
 - [x] Replace external icon CDN with local icon rendering for Safari/local-file compatibility.
 - [x] Improve joined multi-digit recognition with valley-based splitting.
+- [x] Add splash/refresh restore, separate level background, inline feedback, compact score icons, and state-only bottom actions.
