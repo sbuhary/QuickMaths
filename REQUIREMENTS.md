@@ -30,6 +30,7 @@
 
 ### Whiteboard Tools
 - [x] Pen colors.
+- [x] Pencil button opens pen colors and thickness instead of keeping colors always visible.
 - [x] Color controls moved above the writing space.
 - [x] Eraser.
 - [x] Clear writing with confirmation.
@@ -38,6 +39,7 @@
 - [x] Lucide icon buttons for back, eraser, undo, clear, and feedback.
 - [x] Local icon renderer avoids CDN/CORS issues in Safari and file URLs.
 - [x] Tool buttons moved away from the primary Check/Next action stack.
+- [x] Whiteboard tools are grouped in a top floating toolbar in a logical order.
 - [x] Separate answer-only clear from whole-board clear.
 - [x] Add pen thickness controls.
 - [x] Add left/right handed layout toggle.
@@ -47,8 +49,8 @@
 - [x] Countdown timer with style cycling: digital, analog, and hourglass.
 - [x] Feedback appears below the answer area so the written answer remains visible.
 - [x] Confidence review appears when recognition is unsure, with Correct/Wrong buttons.
-- [x] Correct feedback has OK and Next on the same row.
-- [x] Wrong answer and timeout feedback ask the child to retry.
+- [x] Correct feedback has OK and Next on the same row, while the main board keeps only Next available.
+- [x] Wrong answer and timeout feedback ask the child to retry without showing Next.
 
 ### Recognition
 - [x] No typed answer field; final answers are read from the answer box.

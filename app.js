@@ -1,4 +1,4 @@
-const startScreen = document.querySelector("#start-screen");
+﻿const startScreen = document.querySelector("#start-screen");
 const practiceBoard = document.querySelector("#practice-board");
 const board = document.querySelector("#board");
 const ctx = board.getContext("2d", { willReadFrequently: true });
@@ -27,6 +27,8 @@ const retryFeedbackButton = document.querySelector("#retry-feedback");
 const nextFeedbackButton = document.querySelector("#next-feedback");
 const checkButton = document.querySelector("#check");
 const nextMainButton = document.querySelector("#next-main");
+const pencilButton = document.querySelector("#pencil");
+const penPanel = document.querySelector("#pen-panel");
 const clearButton = document.querySelector("#clear");
 const clearAnswerButton = document.querySelector("#clear-answer");
 const handToggleButton = document.querySelector("#hand-toggle");
@@ -94,6 +96,7 @@ const state = {
   handedness: localStorage.getItem("quickmaths-handedness") || "right",
   soundEnabled: localStorage.getItem("quickmaths-sound") !== "off",
   audioContext: null,
+  answerState: "ready",
 };
 
 function registerServiceWorker() {
@@ -296,6 +299,28 @@ function hideFeedback() {
   feedbackPanel.hidden = true;
 }
 
+function setActionState(mode) {
+  state.answerState = mode;
+  checkButton.hidden = mode === "correct" || mode === "wrong" || mode === "timeout" || mode === "review";
+  nextMainButton.hidden = mode !== "correct";
+  checkButton.disabled = mode === "checking";
+}
+
+function closePenPanel() {
+  penPanel.hidden = true;
+}
+
+function usePencil() {
+  state.erasing = false;
+  pencilButton.classList.add("selected-tool");
+  eraserButton.classList.remove("selected-tool");
+}
+
+function togglePenPanel() {
+  usePencil();
+  penPanel.hidden = !penPanel.hidden;
+}
+
 function showStartScreen() {
   clearInterval(state.timerId);
   hideFeedback();
@@ -319,7 +344,9 @@ function showQuestion(question = null) {
   difficultyEl.value = state.current.plan.level;
   questionEl.innerHTML = renderStackedQuestion(state.current);
   hideFeedback();
+  closePenPanel();
   clearBoard();
+  setActionState("ready");
   resetTimer();
 }
 
@@ -784,6 +811,7 @@ function showFeedback(message, type) {
   closeFeedbackButton.hidden = type !== "correct";
   markCorrectButton.hidden = type !== "review";
   markWrongButton.hidden = type !== "review";
+  setActionState(type);
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -824,7 +852,7 @@ function askForRecognitionReview(recognized) {
 
 async function checkAnswer() {
   if (!state.current) showQuestion();
-  checkButton.disabled = true;
+  setActionState("checking");
   const expectedText = String(state.current.answer);
   const recognized = await recognizeWriting(expectedText);
   const given = normalizeAnswer(recognized.text);
@@ -832,7 +860,6 @@ async function checkAnswer() {
 
   if (recognized.text && recognized.confidence < 0.62) {
     askForRecognitionReview(recognized);
-    checkButton.disabled = false;
     return;
   }
 
@@ -850,7 +877,6 @@ async function checkAnswer() {
 
   saveProgress();
   updateProgressUi();
-  checkButton.disabled = false;
 }
 
 function retryMissedQuestions() {
@@ -867,6 +893,7 @@ function retryMissedQuestions() {
 
 function selectSize(button) {
   state.currentSize = Number(button.dataset.size || 5);
+  usePencil();
   sizeButtons.forEach((item) => item.classList.toggle("selected-size", item === button));
 }
 
@@ -876,9 +903,9 @@ function toggleHandedness() {
 }
 function selectColor(button) {
   state.currentColor = button.dataset.color;
-  state.erasing = false;
-  eraserButton.classList.remove("selected-tool");
+  usePencil();
   colorButtons.forEach((item) => item.classList.toggle("selected", item === button));
+  closePenPanel();
 }
 
 board.addEventListener("pointerdown", startDrawing);
@@ -897,6 +924,7 @@ closeFeedbackButton.addEventListener("click", hideFeedback);
 retryFeedbackButton.addEventListener("click", () => {
   hideFeedback();
   clearBoard();
+  setActionState("ready");
   resetTimer();
 });
 nextFeedbackButton.addEventListener("click", () => showQuestion());
@@ -911,11 +939,14 @@ markWrongButton.addEventListener("click", () => {
   showFeedback("Try this one again.", "wrong");
 });
 nextMainButton.addEventListener("click", () => showQuestion());
+pencilButton.addEventListener("click", togglePenPanel);
 colorButtons.forEach((button) => button.addEventListener("click", () => selectColor(button)));
 sizeButtons.forEach((button) => button.addEventListener("click", () => selectSize(button)));
 eraserButton.addEventListener("click", () => {
+  closePenPanel();
   state.erasing = true;
   eraserButton.classList.add("selected-tool");
+  pencilButton.classList.remove("selected-tool");
   colorButtons.forEach((button) => button.classList.remove("selected"));
 });
 undoButton.addEventListener("click", () => {

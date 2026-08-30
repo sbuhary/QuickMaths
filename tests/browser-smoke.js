@@ -1,4 +1,4 @@
-const fs = require("node:fs");
+﻿const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 
@@ -24,6 +24,8 @@ async function main() {
   await page.getByRole("button", { name: /Start stage 1/i }).click();
   await page.getByRole("button", { name: /Change timer style/i }).click();
   await page.getByRole("button", { name: /Mute sounds/i }).click();
+  await page.getByRole("button", { name: /Pencil and colors/i }).click();
+  await page.getByRole("button", { name: /Medium pen/i }).click();
 
   const canvas = await page.locator("#board").boundingBox();
   if (!canvas) throw new Error("Canvas not visible");
@@ -31,8 +33,7 @@ async function main() {
   await page.mouse.down();
   await page.mouse.move(canvas.x + 130, canvas.y + 450);
   await page.mouse.up();
-  await page.getByRole("button", { name: /Clear answer only/i }).click();
-  await page.getByRole("button", { name: /^Next$/i }).click();
+  await page.getByRole("button", { name: /Clear answer/i }).click();
 
   if (errors.length) throw new Error(errors.join("\n"));
   await browser.close();

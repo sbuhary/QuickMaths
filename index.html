@@ -14,7 +14,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/quickmaths-icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/quickmaths-icon.svg">
-    <link rel="stylesheet" href="styles.css?v=20260830-02">
+    <link rel="stylesheet" href="styles.css?v=20260830-03">
   </head>
   <body>
     <main class="app-shell">
@@ -83,11 +83,27 @@
           </button>
         </header>
 
-        <section class="palette" aria-label="Pen colors">
-          <button class="circle-button color selected" style="--swatch:#1f2937" type="button" data-color="#1f2937" aria-label="Black pen"></button>
-          <button class="circle-button color" style="--swatch:#e84393" type="button" data-color="#e84393" aria-label="Pink pen"></button>
-          <button class="circle-button color" style="--swatch:#0984e3" type="button" data-color="#0984e3" aria-label="Blue pen"></button>
-          <button class="circle-button color" style="--swatch:#00b894" type="button" data-color="#00b894" aria-label="Green pen"></button>
+        <section class="board-toolbar" aria-label="Whiteboard tools">
+          <button id="pencil" class="circle-button tool-button selected-tool" type="button" aria-label="Pencil and colors"><i data-lucide="pencil"></i></button>
+          <button id="eraser" class="circle-button tool-button" type="button" aria-label="Eraser"><i data-lucide="eraser"></i></button>
+          <button id="undo" class="circle-button tool-button" type="button" aria-label="Undo"><i data-lucide="undo-2"></i></button>
+          <button id="clear-answer" class="circle-button tool-button" type="button" aria-label="Clear answer"><i data-lucide="badge-x"></i></button>
+          <button id="clear" class="circle-button tool-button danger-tool" type="button" aria-label="Clear whole board"><i data-lucide="trash-2"></i></button>
+          <button id="hand-toggle" class="circle-button tool-button" type="button" aria-label="Move controls to left or right"><i data-lucide="panel-left"></i></button>
+        </section>
+
+        <section id="pen-panel" class="pen-panel" aria-label="Pen options" hidden>
+          <div class="palette" aria-label="Pen colors">
+            <button class="circle-button color selected" style="--swatch:#1f2937" type="button" data-color="#1f2937" aria-label="Black pen"></button>
+            <button class="circle-button color" style="--swatch:#e84393" type="button" data-color="#e84393" aria-label="Pink pen"></button>
+            <button class="circle-button color" style="--swatch:#0984e3" type="button" data-color="#0984e3" aria-label="Blue pen"></button>
+            <button class="circle-button color" style="--swatch:#00b894" type="button" data-color="#00b894" aria-label="Green pen"></button>
+          </div>
+          <div class="pen-sizes" aria-label="Pen thickness">
+            <button class="circle-button size selected-size" style="--dot:8px" type="button" data-size="5" aria-label="Thin pen"></button>
+            <button class="circle-button size" style="--dot:12px" type="button" data-size="8" aria-label="Medium pen"></button>
+            <button class="circle-button size" style="--dot:16px" type="button" data-size="11" aria-label="Thick pen"></button>
+          </div>
         </section>
 
 
@@ -111,17 +127,6 @@
           </div>
         </section>
 
-        <section class="tool-rail" aria-label="Whiteboard tools">
-          <button id="eraser" class="circle-button tool-button" type="button" aria-label="Eraser"><i data-lucide="eraser"></i></button>
-          <button id="clear-answer" class="circle-button tool-button" type="button" aria-label="Clear answer only"><i data-lucide="badge-x"></i></button>
-          <button id="undo" class="circle-button tool-button" type="button" aria-label="Undo"><i data-lucide="undo-2"></i></button>
-          <button id="clear" class="circle-button tool-button" type="button" aria-label="Clear whole board"><i data-lucide="trash-2"></i></button>
-          <button id="hand-toggle" class="circle-button tool-button" type="button" aria-label="Move controls to left or right"><i data-lucide="panel-left"></i></button>
-          <span class="tool-divider" aria-hidden="true"></span>
-          <button class="circle-button size selected-size" style="--dot:8px" type="button" data-size="5" aria-label="Thin pen"></button>
-          <button class="circle-button size" style="--dot:12px" type="button" data-size="8" aria-label="Medium pen"></button>
-          <button class="circle-button size" style="--dot:16px" type="button" data-size="11" aria-label="Thick pen"></button>
-        </section>
 
         <section class="action-stack" aria-label="Question actions">
           <button id="check" class="action-button primary" type="button">Check</button>
@@ -131,7 +136,7 @@
     </main>
 
     <script src="version.js"></script>
-    <script src="icons.js?v=20260830-02"></script>
-    <script src="app.js?v=20260830-02"></script>
+    <script src="icons.js?v=20260830-03"></script>
+    <script src="app.js?v=20260830-03"></script>
   </body>
 </html>

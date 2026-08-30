@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+﻿import { expect, test } from '@playwright/test';
 
 const appUrl = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:4173/index.html';
 
@@ -39,11 +39,11 @@ test.describe('QuickMaths app', () => {
     await openStableStage(page);
     await page.getByRole('button', { name: /Change timer style/i }).click();
     await page.getByRole('button', { name: /Mute sounds/i }).click();
+    await page.getByRole('button', { name: /Pencil and colors/i }).click();
     await page.getByRole('button', { name: /Thin pen/i }).click();
     await page.getByRole('button', { name: /Medium pen/i }).click();
-    await page.getByRole('button', { name: /Clear answer only/i }).click();
+    await page.getByRole('button', { name: /Clear answer/i }).click();
     await page.getByRole('button', { name: /Move controls/i }).click();
-    await page.getByRole('button', { name: /^Next$/i }).click();
     await page.evaluate(() => {
       const timer = document.querySelector('#timer');
       if (timer) timer.textContent = '01:00';

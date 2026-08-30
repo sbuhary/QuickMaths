@@ -18,7 +18,8 @@ function extractConst(name) {
   const start = js.indexOf(`const ${name} = `);
   assert(start >= 0, `Missing ${name}`);
   const afterStart = start + `const ${name} = `.length;
-  const end = js.indexOf(";\n", afterStart);
+  const match = /;\r?\n/.exec(js.slice(afterStart));
+  const end = match ? afterStart + match.index : -1;
   assert(end >= 0, `Cannot parse ${name}`);
   const context = {};
   vm.runInNewContext(`${name} = ${js.slice(afterStart, end)}`, context);
@@ -67,12 +68,13 @@ assert(serviceWorker.includes("self.addEventListener(\"fetch\"") && js.includes(
 assert(html.includes("id=\"sound-toggle\"") && js.includes("playTone") && js.includes("toggleSound"), "Sound toggle behavior missing");
 assert(css.includes(".answer-box.active"), "Answer box highlight style missing");
 assert(html.includes("id=\"clear-answer\""), "Answer-only clear control missing");
-assert(html.includes("id=\"hand-toggle\""), "Handedness toggle missing");
+assert(html.includes("id=\"hand-toggle\"") && html.includes("id=\"pencil\"") && html.includes("id=\"pen-panel\""), "Pencil and handedness controls missing");
 assert(html.includes("data-size=\"11\"") && html.includes("aria-label=\"Thick pen\""), "Pen size controls missing");
 assert(html.includes("id=\"retry-missed\""), "Retry missed control missing");
 assert(js.includes("retryMissedQuestions") && js.includes("missedQuestions"), "Retry missed behavior missing");
 assert(js.includes("componentColumnInk") && js.includes("findSplitColumn"), "Valley-based digit splitting missing");
 assert(js.includes("hasQuestion") && js.includes("() => showQuestion()"), "Next handlers must not pass click events as questions");
+assert(js.includes("setActionState(type)") && js.includes("nextMainButton.hidden") && js.includes("checkButton.hidden"), "Answer actions must follow feedback state");
 assert(js.includes("normalizeProgress") && js.includes("Math.min(unlockedStages"), "Saved progress must be clamped to available stages");
 assert(js.includes("clearAnswerOnly") && js.includes("pathTouchesAnswer"), "Answer-only clear behavior missing");
 assert(js.includes("toggleHandedness") && css.includes("data-controls=\"left\""), "Handedness behavior missing");
