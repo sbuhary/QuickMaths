@@ -42,20 +42,29 @@ button:disabled { opacity: 0.62; }
   box-shadow: 0 18px 38px rgba(45, 52, 54, 0.26);
 }
 
-.start-screen { padding: 18px 18px 88px; }
+.start-screen { padding: 0; }
 .start-card {
-  width: min(100%, 560px);
+  position: absolute;
+  inset: 0;
+  width: 100%;
   height: 100%;
-  margin: 0 auto;
   overflow: auto;
-  padding: 20px 18px 24px;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: var(--shadow);
+  -webkit-overflow-scrolling: touch;
+  padding: 20px 24px 108px;
+  scrollbar-width: thin;
+}
+.start-card::after {
+  content: "";
+  position: sticky;
+  display: block;
+  bottom: -108px;
+  height: 108px;
+  margin: 16px -24px -108px;
+  background: linear-gradient(transparent, rgba(255, 254, 248, 0.92) 42%, #fffef8);
+  pointer-events: none;
 }
 .eyebrow { margin: 0 0 4px; color: var(--purple); font-size: 0.82rem; font-weight: 900; }
-.start-card h1 { margin: 0 0 16px; font-size: 1.9rem; line-height: 1; }
+.start-card h1 { margin: 0 0 16px; font-size: 2rem; line-height: 1; }
 label { display: block; color: #5b6472; font-size: 0.72rem; font-weight: 900; }
 select {
   width: 100%;
@@ -82,9 +91,9 @@ select {
 .level-path {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(64px, 1fr));
-  gap: 14px;
-  margin: 4px 0 8px;
+  grid-template-columns: repeat(3, minmax(76px, 1fr));
+  gap: 18px 14px;
+  margin: 18px 0 20px;
 }
 .level-path::before {
   content: "";
@@ -109,7 +118,7 @@ select {
   box-shadow: var(--shadow);
   font-weight: 900;
 }
-.level-node:nth-child(4n+2), .level-node:nth-child(4n+3) { transform: translateY(10px); }
+.level-node:nth-child(3n+2) { transform: translateY(10px); }
 .level-node[data-level="explorer"] { background: var(--blue); }
 .level-node[data-level="builder"] { background: var(--mint); }
 .level-node[data-level="wizard"] { background: var(--purple); }
@@ -117,6 +126,14 @@ select {
 .level-node small { display: block; font-size: 0.56rem; }
 .level-node.active { outline: 4px solid var(--yellow); }
 .level-node:disabled { background: #a3aab8; opacity: 0.75; }
+.start-overlay::before {
+  content: "";
+  position: absolute;
+  inset: -18px -16px -12px;
+  border-radius: 28px 28px 0 0;
+  background: linear-gradient(transparent, rgba(255, 254, 248, 0.78) 26%, rgba(255, 254, 248, 0.96));
+  z-index: -1;
+}
 .start-overlay {
   position: absolute;
   left: 28px;
@@ -269,14 +286,25 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 @media (max-width: 520px) {
   .app-shell { padding: 0; }
   .start-screen, .whiteboard { width: 100%; height: 100vh; height: 100svh; border-width: 7px; border-radius: 0; }
-  .start-screen { padding: 20px 20px 84px; }
-  .start-card { padding: 18px; }
-  .level-path { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .start-screen { padding: 0; }
+  .start-card { padding: 20px 20px 108px; }
+  .start-card::after { margin-left: -20px; margin-right: -20px; }
+  .level-path { grid-template-columns: repeat(3, minmax(72px, 1fr)); gap: 18px 12px; }
   .level-path::before { inset: 34px 28px auto; }
-  .level-node { min-height: 72px; }
-  .level-node:nth-child(4n+2), .level-node:nth-child(4n+3) { transform: none; }
-  .level-node:nth-child(3n+2) { transform: translateY(10px); }
   .start-overlay { left: 28px; right: 28px; bottom: 20px; width: auto; }
+  .topbar { top: 18px; left: 18px; right: 18px; }
+  .brand-mark { min-width: 0; padding: 10px 12px; }
+  .circle-button { width: 42px; height: 42px; }
+  .sound-button { width: 40px; height: 40px; }
+  .palette { top: 78px; gap: 10px; }
+  .problem-card { top: 160px; width: 86vw; }
+  .question { font-size: clamp(5rem, 27vw, 7.2rem); }
+  .answer-box { top: 384px; width: calc(100% - 44px); height: 104px; }
+  .feedback-panel { top: 506px; left: 22px; right: 112px; min-height: 82px; }
+  .tool-rail { left: 16px; bottom: 18px; }
+  .action-stack { right: 16px; bottom: 16px; width: min(50vw, 172px); }
+}
+.start-overlay { left: 28px; right: 28px; bottom: 20px; width: auto; }
   .topbar { grid-template-columns: 42px 1fr 40px auto; gap: 7px; }
   .circle-button { width: 42px; height: 42px; }
   .sound-button { width: 40px; height: 40px; }

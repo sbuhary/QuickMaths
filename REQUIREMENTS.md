@@ -11,6 +11,7 @@
 ### Practice Flow
 - [x] App name: QuickMaths.
 - [x] Separate level/options start screen with Candy Crush-style stage path.
+- [x] Full-screen scrollable level picker with floating Start, Retry, and Reset controls.
 - [x] Start action stays as an overlay while the currently active level remains visible.
 - [x] Show a session summary with right and missed counts.
 - [x] Show full session details with practice time and stars earned.
@@ -115,6 +116,7 @@
 - [x] Add full-board clear button separate from answer clear.
 - [x] Add visual answer-box highlight while writing inside it.
 - [x] Add deterministic Playwright mobile UI coverage with visual screenshots.
+- [x] Add level-picker visual coverage for the floating-button layout.
 - [x] Replace external icon CDN with local icon rendering for Safari/local-file compatibility.
 - [x] Improve joined multi-digit recognition with valley-based splitting.
 - [x] Add left/right handed layout option for controls.
@@ -147,5 +149,6 @@
 - [x] Add GitHub Pages deployment guide and `.nojekyll`.
 - [x] Add visual answer-box highlight while writing inside it.
 - [x] Add deterministic Playwright mobile UI coverage with visual screenshots.
+- [x] Add level-picker visual coverage for the floating-button layout.
 - [x] Replace external icon CDN with local icon rendering for Safari/local-file compatibility.
 - [x] Improve joined multi-digit recognition with valley-based splitting.

@@ -21,6 +21,7 @@ test.describe('QuickMaths app', () => {
     await page.goto(appUrl);
     await expect(page).toHaveTitle(/QuickMaths/);
     await expect(page.getByRole('heading', { name: 'Pick a math path' })).toBeVisible();
+    await expect(page.locator('#start-screen')).toHaveScreenshot('quickmaths-level-picker.png', { maxDiffPixelRatio: 0.08 });
     await page.getByRole('button', { name: /Start stage 1/i }).click();
     await expect(page.getByLabel('Math practice whiteboard')).toBeVisible();
     await expect(page.getByRole('button', { name: /Change timer style/i })).toBeVisible();
