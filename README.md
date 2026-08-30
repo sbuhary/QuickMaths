@@ -17,7 +17,7 @@ QuickMaths is a mobile-first arithmetic practice app for children. It runs as a 
 - Low-confidence handwriting review shows tappable answer choices, including the correct answer and nearby values, so the child can choose what they meant.
 - Full session summary with practice time and stars earned, retry missed questions, and parent reset for local progress.
 - Written-answer checking from the answer box using conservative local canvas-based digit recognition, with browser handwriting recognition as an optional fallback. Joined digits are split using low-ink valleys before scoring, and ambiguous reads ask the child to choose.
-- Brighter Candy Crush-style level path with stars, streaks, visible lock icons, last-screen restore, and help buttons on the main screens. Stages unlock after earning enough stars in the current stage.
+- Brighter Candy Crush-style winding stage path with stars, streaks, visible lock icons, last-screen restore, and help buttons on the main screens. Stages unlock after earning enough stars in the current stage.
 - Brief QuickMaths splash on app load, plus PWA metadata, app icon, and service worker for installable/offline-friendly use after first hosted load.
 
 

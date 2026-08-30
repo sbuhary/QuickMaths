@@ -67,6 +67,7 @@ assert(serviceWorker.includes(`quickmaths-${version}`), "Service worker cache ve
 assert(serviceWorker.includes(`assets/js/icons.js?v=${version}`), "Service worker must cache local icon renderer");
 assert(css.includes("touch-action: pinch-zoom"), "Canvas must allow pinch zoom");
 assert(html.includes("manifest.webmanifest"), "PWA manifest link missing");
+assert(html.includes("Winding stage path") && html.includes("class=\"level-road\"") && css.includes(".level-road path") && css.includes(".level-node:nth-of-type(12)"), "Winding stage path layout missing");
 assert(!html.includes("unpkg.com"), "Icon renderer must be local for Safari file URLs");
 assert(manifest.icons?.some((icon) => icon.src.includes("quickmaths-icon.svg")), "PWA icon missing from manifest");
 assert(serviceWorker.includes("self.addEventListener(\"fetch\"") && js.includes("registerServiceWorker"), "Service worker wiring missing");

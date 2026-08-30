@@ -14,7 +14,7 @@
 - [x] Require and save a child name for personalized messages.
 - [x] Prompt older saved users for a name before practice when no name exists.
 - [x] Practice screen header removes the app name and uses compact game-style score icons.
-- [x] Separate level/options start screen with Candy Crush-style stage path.
+- [x] Separate level/options start screen with a Candy Crush-style winding stage path.
 - [x] Remember the last screen and restore it after refresh.
 - [x] Full-screen scrollable level picker with floating Start, Retry, and Reset controls.
 - [x] Start action stays as an overlay while the currently active level remains visible.
@@ -122,7 +122,7 @@
 - [x] Add optional browser smoke-test script for interactive drawing, checking, timer cycling, and level navigation.
 
 ### P1: Better Learning Experience
-- [x] Add Candy Crush-style stage path with progressive unlocks.
+- [x] Add Candy Crush-style winding stage path with progressive unlocks.
 - [x] Add stage-star unlock requirements and remembered Easy/Medium/Difficult entry points.
 - [x] Add operation-specific stage tuning for first addition, subtraction, multiplication, and division progressions.
 - [x] Add a session summary with correct count and missed questions.
@@ -180,5 +180,6 @@
 - [x] Add child-name personalization, fallback congratulations, correct-answer celebration, and opaque pencil overlay.
 - [x] Add star milestone and stage-unlock achievement popups.
 - [x] Add per-stage star-gated unlocks and remembered difficulty selection.
+- [x] Present stages on a winding path layout.
 - [x] Require missing names before practice, add lock icons, brighter level nodes, kid-friendly time-left wording, and pencil/eraser cursors.
 - [x] Add low-confidence answer-choice boxes and help overlays.
