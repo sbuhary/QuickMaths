@@ -6,17 +6,17 @@ QuickMaths is a mobile-first arithmetic practice app for children. It runs as a 
 - Lucide-style icons for whiteboard controls. Icons are rendered from a local script so Safari and file URLs do not depend on a CDN.
 - Addition, subtraction, multiplication, and division.
 - Research-informed stage plan that starts with very small one-digit addition before moving into subtraction, within-20 facts, two-digit practice, multiplication, and division.
-- Writable whiteboard with pen colors, pen thickness, eraser, undo, and one confirmed whole-board clear. Writing uses one finger or pen; two-finger gestures stay available for browser zoom.
+- Writable whiteboard with pen colors, pen thickness, eraser, undo, pencil/eraser cursors, and one confirmed whole-board clear. Writing uses one finger or pen; two-finger gestures stay available for browser zoom.
 - A dedicated final-answer box, while the rest of the board remains open for working. The box highlights while writing inside it.
-- Countdown timer per question. Tap the timer to cycle between digital, analog, and hourglass styles.
+- Countdown timer per question. Tap the timer to cycle between digital, analog, and hourglass styles. Correct feedback explains remaining time in child-friendly words.
 - Optional sound effects with a mute toggle.
 - State-aware bottom actions: Check while answering, Try again after a wrong answer or timeout, and Next after a correct answer.
-- Optional child name for personalized greetings and feedback, with a friendly fallback when no name is saved.
+- Required `Your name` field for personalized greetings and feedback, with a prompt for older saved users who do not have a name yet.
 - Animated celebration when an answer is correct.
 - Confidence review when handwriting recognition is unsure, so an adult can mark the read as correct or wrong.
 - Full session summary with practice time and stars earned, retry missed questions, and parent reset for local progress.
 - Written-answer checking from the answer box using local canvas-based digit recognition, with browser handwriting recognition as an optional fallback. Joined digits are split using low-ink valleys before scoring.
-- Candy Crush-style level path with stars, streaks, locked progression, and last-screen restore saved on the device.
+- Brighter Candy Crush-style level path with stars, streaks, visible lock icons, and last-screen restore saved on the device.
 - Brief QuickMaths splash on app load, plus PWA metadata, app icon, and service worker for installable/offline-friendly use after first hosted load.
 
 ## Level Plan

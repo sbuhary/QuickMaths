@@ -18,6 +18,9 @@ const celebrationEl = document.querySelector("#celebration");
 const operationEl = document.querySelector("#operation");
 const difficultyEl = document.querySelector("#difficulty");
 const kidNameEl = document.querySelector("#kid-name");
+const nameGate = document.querySelector("#name-gate");
+const gateNameEl = document.querySelector("#gate-name");
+const saveNameButton = document.querySelector("#save-name");
 const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
 const stageSummaryEl = document.querySelector("#stage-summary");
@@ -100,6 +103,7 @@ const state = {
   audioContext: null,
   answerState: "ready",
   kidName: localStorage.getItem("quickmaths-kid-name") || "",
+  pendingNameAction: null,
 };
 
 function cleanKidName(value) {
@@ -123,6 +127,66 @@ function saveKidName() {
   updatePersonalGreeting();
 }
 
+function hasKidName() {
+  return Boolean(cleanKidName(state.kidName));
+}
+
+function showNameGate(action) {
+  state.pendingNameAction = action;
+  nameGate.hidden = false;
+  gateNameEl.value = cleanKidName(kidNameEl?.value || state.kidName);
+  gateNameEl.classList.remove("invalid");
+  window.setTimeout(() => gateNameEl.focus(), 30);
+}
+
+function closeNameGate() {
+  nameGate.hidden = true;
+  gateNameEl.classList.remove("invalid");
+}
+
+function saveNameFromGate() {
+  state.kidName = cleanKidName(gateNameEl.value);
+  if (!state.kidName) {
+    gateNameEl.classList.add("invalid");
+    gateNameEl.focus();
+    return;
+  }
+  localStorage.setItem("quickmaths-kid-name", state.kidName);
+  closeNameGate();
+  updatePersonalGreeting();
+  if (state.pendingNameAction === "retry") retryMissedQuestions();
+  else startPractice();
+}
+
+function requireKidName(action) {
+  saveKidName();
+  if (hasKidName()) return true;
+  showNameGate(action);
+  return false;
+}
+
+function formatKidTimeLeft(seconds) {
+  const safeSeconds = Math.max(0, Number(seconds) || 0);
+  if (safeSeconds < 60) return `You still had ${safeSeconds} second${safeSeconds === 1 ? "" : "s"}.`;
+  const minutes = Math.floor(safeSeconds / 60);
+  const rest = safeSeconds % 60;
+  if (!rest) return `You still had ${minutes} minute${minutes === 1 ? "" : "s"}.`;
+  return `You still had ${minutes} minute${minutes === 1 ? "" : "s"} and ${rest} second${rest === 1 ? "" : "s"}.`;
+}
+
+function svgCursor(shape, color) {
+  const stroke = color || "#1f2937";
+  const svg = shape === "eraser"
+    ? `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M7 21l11-11 7 7-8 8H10l-3-4z' fill='white' stroke='#1f2937' stroke-width='3' stroke-linejoin='round'/><path d='M16 12l7 7' stroke='#1f2937' stroke-width='3'/></svg>`
+    : `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M23 3l6 6-17 17H6v-6L23 3z' fill='white' stroke='${stroke}' stroke-width='3' stroke-linejoin='round'/><path d='M19 7l6 6' stroke='${stroke}' stroke-width='3'/></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 4 28, ${shape === "eraser" ? "cell" : "crosshair"}`;
+}
+
+function updateToolUi() {
+  practiceBoard.dataset.tool = state.erasing ? "eraser" : "pencil";
+  pencilButton.style.setProperty("--tool-color", state.currentColor);
+  board.style.cursor = state.erasing ? svgCursor("eraser") : svgCursor("pencil", state.currentColor);
+}
 function celebrateCorrectAnswer() {
   if (!celebrationEl) return;
   celebrationEl.hidden = false;
@@ -346,6 +410,7 @@ function usePencil() {
   state.erasing = false;
   pencilButton.classList.add("selected-tool");
   eraserButton.classList.remove("selected-tool");
+  updateToolUi();
 }
 
 function togglePenPanel() {
@@ -385,6 +450,7 @@ function showStartScreen() {
 }
 
 function startPractice() {
+  if (!requireKidName("start")) return;
   rememberView("practice");
   splashScreen.hidden = true;
   startScreen.hidden = true;
@@ -889,7 +955,7 @@ function awardCorrectAnswer(readText) {
   updateProgressUi();
   playTone("correct");
   celebrateCorrectAnswer();
-  showFeedback(`${namePrefix(state.kidName ? "Great work" : "Congratulations")} I read ${readText}. ${formatTime(state.timeLeft)} left.`, "correct");
+  showFeedback(`${namePrefix(state.kidName ? "Great work" : "Congratulations")} I read ${readText}. ${formatKidTimeLeft(state.timeLeft)}`, "correct");
 }
 
 function askForRecognitionReview(recognized) {
@@ -933,6 +999,7 @@ function tryAgainCurrentQuestion() {
   resetTimer();
 }
 function retryMissedQuestions() {
+  if (!requireKidName("retry")) return;
   const missed = state.session.missedQuestions.shift();
   if (!missed) return;
   rememberView("practice");
@@ -955,6 +1022,7 @@ function selectSize(button) {
 function selectColor(button) {
   state.currentColor = button.dataset.color;
   usePencil();
+  updateToolUi();
   colorButtons.forEach((item) => item.classList.toggle("selected", item === button));
   closePenPanel();
 }
@@ -995,6 +1063,7 @@ eraserButton.addEventListener("click", () => {
   eraserButton.classList.add("selected-tool");
   pencilButton.classList.remove("selected-tool");
   colorButtons.forEach((button) => button.classList.remove("selected"));
+  updateToolUi();
 });
 undoButton.addEventListener("click", () => {
   state.paths.pop();
@@ -1003,6 +1072,11 @@ undoButton.addEventListener("click", () => {
 clearButton.addEventListener("click", clearBoardWithConfirmation);
 checkButton.addEventListener("click", checkAnswer);
 kidNameEl.addEventListener("input", saveKidName);
+gateNameEl.addEventListener("input", () => gateNameEl.classList.remove("invalid"));
+gateNameEl.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") saveNameFromGate();
+});
+saveNameButton.addEventListener("click", saveNameFromGate);
 document.addEventListener("pointerdown", (event) => {
   if (penPanel.hidden) return;
   if (penPanel.contains(event.target) || pencilButton.contains(event.target)) return;
@@ -1022,6 +1096,7 @@ levelButtons.forEach((button) => {
 
 registerServiceWorker();
 updatePersonalGreeting();
+updateToolUi();
 updateSoundButton();
 updateProgressUi();
 if (window.lucide) window.lucide.createIcons();

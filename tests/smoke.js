@@ -79,9 +79,12 @@ assert(js.includes("normalizeProgress") && js.includes("Math.min(unlockedStages"
 assert(!html.includes("id=\"clear-answer\"") && js.includes("clearBoardWithConfirmation"), "Compact UI should keep one confirmed clear-all control");
 assert(!html.includes("id=\"hand-toggle\"") && !js.includes("toggleHandedness") && !css.includes("data-controls=\"left\""), "Removed side-toggle controls should stay out of the compact UI");
 assert(html.includes("id=\"splash-screen\"") && js.includes("showSplashThenRestore") && js.includes("quickmaths-view"), "Splash and refresh-view restore behavior missing");
-assert(html.includes("id=\"kid-name\"") && js.includes("quickmaths-kid-name") && js.includes("Congratulations"), "Personalized/fallback messages missing");
+assert(html.includes("id=\"kid-name\"") && html.includes("placeholder=\"Your name\"") && html.includes("required") && js.includes("quickmaths-kid-name") && js.includes("Congratulations"), "Required personalized/fallback messages missing");
+assert(html.includes("id=\"name-gate\"") && js.includes("requireKidName") && js.includes("saveNameFromGate"), "Missing required-name gate for old saved users");
 assert(html.includes("id=\"celebration\"") && css.includes("confetti-pop") && js.includes("celebrateCorrectAnswer"), "Correct-answer celebration missing");
-assert(html.includes("data-lucide=\"star\"") && html.includes("data-lucide=\"flame\""), "Game-style score icons missing");
+assert(html.includes("data-lucide=\"star\"") && html.includes("data-lucide=\"flame\"") && html.includes("data-lucide=\"lock\""), "Game-style score and lock icons missing");
+assert(js.includes("formatKidTimeLeft") && js.includes("You still had"), "Kid-friendly time-left wording missing");
+assert(js.includes("svgCursor") && js.includes("updateToolUi") && css.includes("#pencil.selected-tool svg"), "Pencil/eraser cursor and selected-color state missing");
 assert(serviceWorker.includes("backgrounds/levels.svg"), "Level background must be cached by service worker");
 for (const width of [320, 375, 430]) assert(width <= 520, `Smoke viewport ${width}px must use mobile layout rules`);
 assert(css.includes("@media (max-height: 690px)"), "Low-height layout media query missing");

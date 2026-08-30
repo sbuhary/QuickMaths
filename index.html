@@ -14,7 +14,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/quickmaths-icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/quickmaths-icon.svg">
-    <link rel="stylesheet" href="styles.css?v=20260830-05">
+    <link rel="stylesheet" href="styles.css?v=20260830-06">
   </head>
   <body>
     <main class="app-shell">
@@ -31,8 +31,8 @@
           <p class="eyebrow">QuickMaths</p>
           <h1>Pick a math path</h1>
           <label>
-            Name
-            <input id="kid-name" type="text" inputmode="text" autocomplete="given-name" maxlength="24" placeholder="Child name">
+            Your name
+            <input id="kid-name" type="text" inputmode="text" autocomplete="given-name" maxlength="24" placeholder="Your name" required>
           </label>
           <label>
             Operation
@@ -54,18 +54,18 @@
           <p id="session-summary" class="session-summary">0 right / 0 missed</p>
           <p id="session-detail" class="session-detail">0:00 practiced / 0 stars earned</p>
           <div class="level-path" aria-label="Candy path levels">
-            <button class="level-node active" type="button" data-stage="1" data-level="starter"><span>1</span><small>Starter</small></button>
-            <button class="level-node" type="button" data-stage="2" data-level="starter"><span>2</span><small>Starter</small></button>
-            <button class="level-node" type="button" data-stage="3" data-level="starter"><span>3</span><small>Starter</small></button>
-            <button class="level-node" type="button" data-stage="4" data-level="starter"><span>4</span><small>Starter</small></button>
-            <button class="level-node" type="button" data-stage="5" data-level="explorer"><span>5</span><small>Explorer</small></button>
-            <button class="level-node" type="button" data-stage="6" data-level="explorer"><span>6</span><small>Explorer</small></button>
-            <button class="level-node" type="button" data-stage="7" data-level="explorer"><span>7</span><small>Explorer</small></button>
-            <button class="level-node" type="button" data-stage="8" data-level="explorer"><span>8</span><small>Explorer</small></button>
-            <button class="level-node" type="button" data-stage="9" data-level="builder"><span>9</span><small>Builder</small></button>
-            <button class="level-node" type="button" data-stage="10" data-level="builder"><span>10</span><small>Builder</small></button>
-            <button class="level-node" type="button" data-stage="11" data-level="wizard"><span>11</span><small>Wizard</small></button>
-            <button class="level-node" type="button" data-stage="12" data-level="wizard"><span>12</span><small>Wizard</small></button>
+            <button class="level-node active" type="button" data-stage="1" data-level="starter"><i class="level-lock" data-lucide="lock"></i><span>1</span><small>Starter</small></button>
+            <button class="level-node" type="button" data-stage="2" data-level="starter"><i class="level-lock" data-lucide="lock"></i><span>2</span><small>Starter</small></button>
+            <button class="level-node" type="button" data-stage="3" data-level="starter"><i class="level-lock" data-lucide="lock"></i><span>3</span><small>Starter</small></button>
+            <button class="level-node" type="button" data-stage="4" data-level="starter"><i class="level-lock" data-lucide="lock"></i><span>4</span><small>Starter</small></button>
+            <button class="level-node" type="button" data-stage="5" data-level="explorer"><i class="level-lock" data-lucide="lock"></i><span>5</span><small>Explorer</small></button>
+            <button class="level-node" type="button" data-stage="6" data-level="explorer"><i class="level-lock" data-lucide="lock"></i><span>6</span><small>Explorer</small></button>
+            <button class="level-node" type="button" data-stage="7" data-level="explorer"><i class="level-lock" data-lucide="lock"></i><span>7</span><small>Explorer</small></button>
+            <button class="level-node" type="button" data-stage="8" data-level="explorer"><i class="level-lock" data-lucide="lock"></i><span>8</span><small>Explorer</small></button>
+            <button class="level-node" type="button" data-stage="9" data-level="builder"><i class="level-lock" data-lucide="lock"></i><span>9</span><small>Builder</small></button>
+            <button class="level-node" type="button" data-stage="10" data-level="builder"><i class="level-lock" data-lucide="lock"></i><span>10</span><small>Builder</small></button>
+            <button class="level-node" type="button" data-stage="11" data-level="wizard"><i class="level-lock" data-lucide="lock"></i><span>11</span><small>Wizard</small></button>
+            <button class="level-node" type="button" data-stage="12" data-level="wizard"><i class="level-lock" data-lucide="lock"></i><span>12</span><small>Wizard</small></button>
           </div>
         </div>
         <div class="start-overlay">
@@ -144,10 +144,18 @@
           <button id="next-main" class="action-button primary" type="button" hidden>Next</button>
         </section>
       </section>
+      <section id="name-gate" class="name-gate" aria-label="Enter your name" hidden>
+        <div class="name-card">
+          <p class="eyebrow">QuickMaths</p>
+          <h2>Your name</h2>
+          <input id="gate-name" type="text" inputmode="text" autocomplete="given-name" maxlength="24" placeholder="Your name" required>
+          <button id="save-name" class="action-button primary" type="button">Start</button>
+        </div>
+      </section>
     </main>
 
     <script src="version.js"></script>
-    <script src="icons.js?v=20260830-05"></script>
-    <script src="app.js?v=20260830-05"></script>
+    <script src="icons.js?v=20260830-06"></script>
+    <script src="app.js?v=20260830-06"></script>
   </body>
 </html>

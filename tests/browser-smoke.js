@@ -21,8 +21,11 @@ async function main() {
   });
 
   await page.goto(fileUrl);
-  await page.getByRole("textbox", { name: /Name/i }).fill("Mia");
+  await page.evaluate(() => localStorage.removeItem("quickmaths-kid-name"));
+  await page.reload();
   await page.getByRole("button", { name: /Start stage 1/i }).click();
+  await page.locator("#gate-name").fill("Mia");
+  await page.locator("#save-name").click();
   await page.getByRole("button", { name: /Change timer style/i }).click();
   await page.getByRole("button", { name: /Mute sounds/i }).click();
   await page.getByRole("button", { name: /Pencil and colors/i }).click();
