@@ -3,13 +3,13 @@ const vm = require("node:vm");
 const { execFileSync } = require("node:child_process");
 
 const html = fs.readFileSync("index.html", "utf8");
-const css = fs.readFileSync("styles.css", "utf8");
-const js = fs.readFileSync("app.js", "utf8");
+const css = fs.readFileSync("assets/css/styles.css", "utf8");
+const js = fs.readFileSync("assets/js/app.js", "utf8");
 const samples = JSON.parse(fs.readFileSync("tests/recognition-samples.json", "utf8"));
 const manifest = JSON.parse(fs.readFileSync("manifest.webmanifest", "utf8"));
 const serviceWorker = fs.readFileSync("sw.js", "utf8");
-const version = fs.readFileSync("version.js", "utf8").match(/QUICKMATHS_RELEASE = "([^"]+)"/)?.[1];
-const iconsSource = fs.readFileSync("icons.js", "utf8");
+const version = fs.readFileSync("assets/js/version.js", "utf8").match(/QUICKMATHS_RELEASE = "([^"]+)"/)?.[1];
+const iconsSource = fs.readFileSync("assets/js/icons.js", "utf8");
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -48,8 +48,8 @@ function scoreTemplate(grid, template) {
   return recall * 0.68 + precision * 0.32 - extraRate * 0.34;
 }
 
-execFileSync(process.execPath, ["--check", "app.js"], { stdio: "pipe" });
-execFileSync(process.execPath, ["--check", "icons.js"], { stdio: "pipe" });
+execFileSync(process.execPath, ["--check", "assets/js/app.js"], { stdio: "pipe" });
+execFileSync(process.execPath, ["--check", "assets/js/icons.js"], { stdio: "pipe" });
 execFileSync(process.execPath, ["--check", "tests/static-server.js"], { stdio: "pipe" });
 
 const stagePlans = extractConst("stagePlans");
@@ -59,11 +59,11 @@ assert(stagePlans.length === 12, "Expected 12 stages");
 assert(stagePlans[0].operation === "addition" && stagePlans[0].sumMax === 5, "Stage 1 should be tiny addition");
 assert(stagePlans[10].operation === "division", "Stage 11 should introduce division");
 assert(version, "Release version constant missing");
-assert(html.includes(`styles.css?v=${version}`), "CSS cache version does not match release version");
-assert(html.includes(`app.js?v=${version}`), "JS cache version does not match release version");
-assert(html.includes(`icons.js?v=${version}`), "Icon JavaScript cache version does not match release version");
+assert(html.includes(`assets/css/styles.css?v=${version}`), "CSS cache version does not match release version");
+assert(html.includes(`assets/js/app.js?v=${version}`), "JS cache version does not match release version");
+assert(html.includes(`assets/js/icons.js?v=${version}`), "Icon JavaScript cache version does not match release version");
 assert(serviceWorker.includes(`quickmaths-${version}`), "Service worker cache version does not match release version");
-assert(serviceWorker.includes(`icons.js?v=${version}`), "Service worker must cache local icon renderer");
+assert(serviceWorker.includes(`assets/js/icons.js?v=${version}`), "Service worker must cache local icon renderer");
 assert(css.includes("touch-action: pinch-zoom"), "Canvas must allow pinch zoom");
 assert(html.includes("manifest.webmanifest"), "PWA manifest link missing");
 assert(!html.includes("unpkg.com"), "Icon renderer must be local for Safari file URLs");
@@ -95,7 +95,7 @@ assert(js.includes('recognized.status !== "empty"') && js.includes("pick the ans
 assert(html.includes('id="help-start"') && html.includes('id="help-practice"') && html.includes('id="help-gate"') && js.includes("showHelp") && iconsSource.includes('"circle-help"'), "Help overlay missing");
 assert(css.includes("white-space: pre-line"), "Feedback must support line breaks");
 assert(js.includes("svgCursor") && js.includes("updateToolUi") && css.includes("#pencil.selected-tool svg"), "Pencil/eraser cursor and selected-color state missing");
-assert(serviceWorker.includes("backgrounds/levels.svg"), "Level background must be cached by service worker");
+assert(serviceWorker.includes("assets/backgrounds/levels.svg"), "Level background must be cached by service worker");
 for (const width of [320, 375, 430]) assert(width <= 520, `Smoke viewport ${width}px must use mobile layout rules`);
 assert(css.includes("@media (max-height: 690px)"), "Low-height layout media query missing");
 assert(css.includes("@media (max-width: 360px)"), "Small-width layout media query missing");

@@ -20,4 +20,4 @@ GitHub keeps the current UI screenshots in its official Pages documentation:
 ## Notes
 - GitHub Pages looks for an `index.html` file at the top level of the selected publishing source.
 - The `.nojekyll` file is included so GitHub Pages serves the static files directly.
-- The app cache version is tracked in `version.js`; keep the query strings in `index.html` aligned with that value.
+- The app cache version is tracked in `assets/js/version.js`; keep the query strings in `index.html` aligned with that value.

@@ -10,7 +10,7 @@
   "theme_color": "#6c5ce7",
   "icons": [
     {
-      "src": "icons/quickmaths-icon.svg",
+      "src": "assets/icons/quickmaths-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

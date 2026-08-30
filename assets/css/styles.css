@@ -46,7 +46,7 @@ button:disabled { opacity: 0.78; }
 .start-screen, .splash-screen {
   background:
     linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.16)),
-    url("backgrounds/levels.svg") center / cover no-repeat,
+    url("../backgrounds/levels.svg") center / cover no-repeat,
     #dff7ff;
 }
 .splash-screen {

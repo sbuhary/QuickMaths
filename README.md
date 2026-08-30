@@ -19,6 +19,13 @@ QuickMaths is a mobile-first arithmetic practice app for children. It runs as a 
 - Brighter Candy Crush-style level path with stars, streaks, visible lock icons, last-screen restore, and help buttons on the main screens.
 - Brief QuickMaths splash on app load, plus PWA metadata, app icon, and service worker for installable/offline-friendly use after first hosted load.
 
+
+## Project Structure
+- `index.html`, `manifest.webmanifest`, and `sw.js` stay at the repository root for GitHub Pages and service-worker scope.
+- `assets/js/` contains app scripts, icon rendering, and the release version constant.
+- `assets/css/` contains the app stylesheet.
+- `assets/icons/` and `assets/backgrounds/` contain visual assets.
+- `tests/` contains smoke tests, and `e2e/` contains Playwright coverage and snapshots.
 ## Level Plan
 1. Tiny sums: addition with totals up to 5.
 2. Facts to 10: one-digit addition with totals up to 10.
