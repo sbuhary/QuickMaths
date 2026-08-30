@@ -14,7 +14,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/quickmaths-icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/quickmaths-icon.svg">
-    <link rel="stylesheet" href="styles.css?v=20260830-07">
+    <link rel="stylesheet" href="styles.css?v=20260830-08">
   </head>
   <body>
     <main class="app-shell">
@@ -147,6 +147,17 @@
           <button id="next-main" class="action-button primary" type="button" hidden>Next</button>
         </section>
       </section>
+      <section id="reward-gate" class="reward-gate" aria-label="Achievement" hidden>
+        <div class="reward-card">
+          <div class="reward-badge" aria-hidden="true"><i data-lucide="star"></i></div>
+          <h2 id="reward-title">Stars earned!</h2>
+          <p id="reward-message">You earned stars.</p>
+          <div class="reward-actions">
+            <button id="reward-ok" class="action-button" type="button">OK</button>
+            <button id="reward-next" class="action-button primary" type="button">Next</button>
+          </div>
+        </div>
+      </section>
       <section id="help-gate" class="help-gate" aria-label="How to play" hidden>
         <div class="help-card">
           <p class="eyebrow">QuickMaths</p>
@@ -171,7 +182,7 @@
     </main>
 
     <script src="version.js"></script>
-    <script src="icons.js?v=20260830-07"></script>
-    <script src="app.js?v=20260830-07"></script>
+    <script src="icons.js?v=20260830-08"></script>
+    <script src="app.js?v=20260830-08"></script>
   </body>
 </html>

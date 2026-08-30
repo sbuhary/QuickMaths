@@ -83,6 +83,7 @@ assert(html.includes("id=\"splash-screen\"") && js.includes("showSplashThenResto
 assert(html.includes("id=\"kid-name\"") && html.includes("placeholder=\"Your name\"") && html.includes("required") && js.includes("quickmaths-kid-name") && js.includes("Congratulations"), "Required personalized/fallback messages missing");
 assert(html.includes("id=\"name-gate\"") && js.includes("requireKidName") && js.includes("saveNameFromGate"), "Missing required-name gate for old saved users");
 assert(html.includes("id=\"celebration\"") && css.includes("confetti-pop") && js.includes("celebrateCorrectAnswer"), "Correct-answer celebration missing");
+assert(html.includes('id="reward-gate"') && js.includes("starMilestones") && js.includes("earnedStarMilestones") && js.includes("Stage ${unlockedStage} unlocked!") && css.includes("reward-pop"), "Star milestone and stage-unlock reward popup missing");
 assert(html.includes("data-lucide=\"star\"") && html.includes("data-lucide=\"flame\"") && html.includes("data-lucide=\"lock\""), "Game-style score and lock icons missing");
 assert(js.includes("formatKidTimeLeft") && js.includes("You still had"), "Kid-friendly time-left wording missing");
 assert(html.includes('id="answer-choices"') && js.includes("nearbyAnswerChoices") && js.includes("verifyChosenAnswer"), "Low-confidence answer choices missing");

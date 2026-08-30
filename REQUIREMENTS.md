@@ -57,6 +57,8 @@
 - [x] Feedback is inline on the board instead of a popup/overlay.
 - [x] Correct answers trigger animated celebration.
 - [x] Correct feedback explains remaining time in child-friendly words on a separate line.
+- [x] Star milestone popups celebrate when children reach set star totals.
+- [x] Newly unlocked stages are announced with a celebration popup.
 - [x] Wrong answer and timeout feedback ask the child to retry without showing Next.
 - [x] Bottom action area shows only the needed full-width action for the current state.
 
@@ -74,6 +76,7 @@
 - [x] Stars and score displayed with game-style icons.
 - [x] Streak reward.
 - [x] Locked level progression saved on the device.
+- [x] Children are told immediately when the next stage unlocks.
 - [x] Disabled levels show a lock icon.
 - [x] Cheerful colors for children.
 - [x] Four-stage-band level plan: Starter, Explorer, Builder, Wizard.
@@ -169,5 +172,6 @@
 - [x] Improve joined multi-digit recognition with valley-based splitting.
 - [x] Add splash/refresh restore, separate level background, inline feedback, compact score icons, and state-only bottom actions.
 - [x] Add child-name personalization, fallback congratulations, correct-answer celebration, and opaque pencil overlay.
+- [x] Add star milestone and stage-unlock achievement popups.
 - [x] Require missing names before practice, add lock icons, brighter level nodes, kid-friendly time-left wording, and pencil/eraser cursors.
 - [x] Add low-confidence answer-choice boxes and help overlays.

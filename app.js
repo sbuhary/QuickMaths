@@ -26,6 +26,11 @@ const helpGate = document.querySelector("#help-gate");
 const helpStartButton = document.querySelector("#help-start");
 const helpPracticeButton = document.querySelector("#help-practice");
 const closeHelpButton = document.querySelector("#close-help");
+const rewardGate = document.querySelector("#reward-gate");
+const rewardTitleEl = document.querySelector("#reward-title");
+const rewardMessageEl = document.querySelector("#reward-message");
+const rewardOkButton = document.querySelector("#reward-ok");
+const rewardNextButton = document.querySelector("#reward-next");
 const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
 const stageSummaryEl = document.querySelector("#stage-summary");
@@ -85,6 +90,7 @@ const digitTemplates = {
 };
 
 const timerStyles = ["digital", "analog", "hourglass"];
+const starMilestones = [5, 10, 20, 30, 50, 75, 100, 150, 200];
 const state = {
   current: null,
   currentColor: "#1f2937",
@@ -322,13 +328,14 @@ function normalizeProgress(progress) {
     stars: Math.max(0, Number(progress.stars) || 0),
     streak: Math.max(0, Number(progress.streak) || 0),
     answered: Math.max(0, Number(progress.answered) || 0),
+    celebratedMilestones: Array.isArray(progress.celebratedMilestones) ? progress.celebratedMilestones.map(Number).filter(Number.isFinite) : [],
     unlockedStages,
     currentStage,
   };
 }
 
 function loadProgress() {
-  const fallback = { stars: 0, streak: 0, answered: 0, unlockedStages: 1, currentStage: 1 };
+  const fallback = { stars: 0, streak: 0, answered: 0, celebratedMilestones: [], unlockedStages: 1, currentStage: 1 };
   try {
     const stored = localStorage.getItem("quickmaths-progress") || localStorage.getItem("mathsprout-progress");
     return normalizeProgress({ ...fallback, ...JSON.parse(stored || "{}") });
@@ -371,7 +378,38 @@ function updateProgressUi() {
 }
 
 function unlockEligibleLevels() {
+  const previousUnlocked = state.progress.unlockedStages;
   state.progress.unlockedStages = Math.min(stagePlans.length, Math.max(state.progress.unlockedStages, state.progress.currentStage + 1));
+  return state.progress.unlockedStages > previousUnlocked ? state.progress.unlockedStages : null;
+}
+
+function earnedStarMilestones(previousStars, nextStars) {
+  const celebrated = new Set(state.progress.celebratedMilestones || []);
+  const reached = starMilestones.filter((milestone) => milestone > previousStars && milestone <= nextStars && !celebrated.has(milestone));
+  state.progress.celebratedMilestones = [...celebrated, ...reached].sort((a, b) => a - b);
+  return reached;
+}
+
+function showRewardPopup(details) {
+  const { earnedStars, milestones, unlockedStage } = details;
+  const starWord = earnedStars === 1 ? "star" : "stars";
+  const player = state.kidName || "You";
+  const topMilestone = milestones[milestones.length - 1];
+  const milestoneText = topMilestone ? ` You reached ${topMilestone} stars.` : "";
+  if (unlockedStage) {
+    const stage = stagePlans[unlockedStage - 1];
+    rewardTitleEl.textContent = `Stage ${unlockedStage} unlocked!`;
+    rewardMessageEl.textContent = `${player} earned ${earnedStars} ${starWord}.${milestoneText} You can play ${stage.title} now.`;
+  } else {
+    rewardTitleEl.textContent = `${topMilestone} stars!`;
+    rewardMessageEl.textContent = `${player} reached ${topMilestone} stars. Keep going!`;
+  }
+  rewardGate.hidden = false;
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function hideRewardPopup() {
+  rewardGate.hidden = true;
 }
 
 function resetProgress() {
@@ -456,6 +494,7 @@ function renderStackedQuestion(question) {
 function hideFeedback() {
   feedbackPanel.hidden = true;
   hideAnswerChoices();
+  hideRewardPopup();
   if (celebrationEl) {
     celebrationEl.hidden = true;
     celebrationEl.classList.remove("burst");
@@ -1010,6 +1049,7 @@ function recordMissOnce() {
 }
 
 function awardCorrectAnswer(readText) {
+  const previousStars = state.progress.stars;
   state.progress.streak += 1;
   const streakBonus = state.progress.streak % 3 === 0 ? 2 : 0;
   const earnedStars = 1 + streakBonus;
@@ -1018,15 +1058,16 @@ function awardCorrectAnswer(readText) {
   state.progress.answered += 1;
   state.session.correct += 1;
   state.pendingReview = null;
-  unlockEligibleLevels();
+  const milestones = earnedStarMilestones(previousStars, state.progress.stars);
+  const unlockedStage = unlockEligibleLevels();
   clearInterval(state.timerId);
   saveProgress();
   updateProgressUi();
   playTone("correct");
   celebrateCorrectAnswer();
   showFeedback(`${namePrefix(state.kidName ? "Great work" : "Congratulations")} I read ${readText}.` + "\n" + formatKidTimeLeft(state.timeLeft), "correct");
+  if (unlockedStage || milestones.length) showRewardPopup({ earnedStars, milestones, unlockedStage });
 }
-
 function askForRecognitionReview(recognized) {
   state.pendingReview = recognized;
   const choices = nearbyAnswerChoices(recognized.text, state.current.answer);
@@ -1151,6 +1192,11 @@ saveNameButton.addEventListener("click", saveNameFromGate);
 helpStartButton.addEventListener("click", showHelp);
 helpPracticeButton.addEventListener("click", showHelp);
 closeHelpButton.addEventListener("click", hideHelp);
+rewardOkButton.addEventListener("click", hideRewardPopup);
+rewardNextButton.addEventListener("click", () => { hideRewardPopup(); showQuestion(); });
+rewardGate.addEventListener("click", (event) => {
+  if (event.target === rewardGate) hideRewardPopup();
+});
 helpGate.addEventListener("click", (event) => {
   if (event.target === helpGate) hideHelp();
 });
