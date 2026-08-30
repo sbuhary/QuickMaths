@@ -774,9 +774,11 @@ function scoreTemplate(grid, template) {
       if (hasInk && !wantsInk) extras += 1;
     }
   }
-  return hits / Math.max(1, expected) - (extras / Math.max(1, ink)) * 0.24;
+  const recall = hits / Math.max(1, expected);
+  const precision = hits / Math.max(1, ink);
+  const extraRate = extras / Math.max(1, ink);
+  return recall * 0.68 + precision * 0.32 - extraRate * 0.34;
 }
-
 function answerInkComponents() {
   const rect = getAnswerRect();
   const scaleX = board.width / board.clientWidth;
@@ -938,13 +940,14 @@ function scoreDigit(component, digit) {
   const centerInk = gridInkCount(grid, 0, 6, 2, 2);
   const rightInk = gridInkCount(grid, 0, 6, 3, 4);
   let score = Math.max(...digitTemplates[digit].map((template) => scoreTemplate(grid, template)));
-  if (digit === "1" && aspect < 0.5 && centerInk >= 4 && leftInk <= 4 && rightInk <= 4) score += 0.32;
-  if (digit === "2" && topInk >= 1 && middleInk >= 2 && bottomInk >= 2 && leftInk >= 1 && rightInk >= 1) score += 0.24;
-  if (digit === "3" && rightInk >= 3 && middleInk >= 2 && leftInk <= 5) score += 0.1;
-  if (digit === "4" && middleInk >= 3 && rightInk >= 3 && topInk >= 1) score += 0.18;
-  if (digit === "0" && topInk >= 2 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2 && middleInk <= 9) score += 0.12;
-  if (digit === "8" && topInk >= 2 && middleInk >= 3 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2) score += 0.14;
-  if (digit === "7" && topInk >= 3 && bottomInk <= 2 && leftInk <= 4) score += 0.16;
+  if (digit === "1" && aspect < 0.5 && centerInk >= 4 && leftInk <= 4 && rightInk <= 4) score += 0.3;
+  if (digit === "2" && topInk >= 1 && middleInk >= 2 && bottomInk >= 2 && leftInk >= 1 && rightInk >= 1) score += 0.2;
+  if (digit === "3" && rightInk >= 3 && middleInk >= 2 && leftInk <= 5) score += 0.08;
+  if (digit === "4" && middleInk >= 3 && rightInk >= 3 && topInk >= 1 && bottomInk <= 4) score += 0.06;
+  if (digit === "4" && (bottomInk > 7 || (leftInk < 2 && aspect > 0.55))) score -= 0.18;
+  if (digit === "0" && topInk >= 2 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2 && middleInk <= 9) score += 0.1;
+  if (digit === "8" && topInk >= 2 && middleInk >= 3 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2) score += 0.12;
+  if (digit === "7" && topInk >= 3 && bottomInk <= 2 && leftInk <= 4) score += 0.14;
   return score;
 }
 
@@ -953,8 +956,10 @@ function recognizeInkComponent(component) {
     .map((digit) => ({ digit, score: scoreDigit(component, digit) }))
     .sort((a, b) => b.score - a.score);
   const top = ranked[0];
-  const next = ranked[1] || { score: 0 };
-  return { digit: top.digit, score: top.score, confidence: Math.max(0, Math.min(1, top.score - next.score + 0.55)) };
+  const next = ranked[1] || { score: 0, digit: "" };
+  const margin = top.score - next.score;
+  const confidence = Math.max(0, Math.min(1, top.score * 0.55 + margin * 1.15));
+  return { digit: top.digit, score: top.score, confidence, margin, nextDigit: next.digit || "" };
 }
 
 function scoreExpected(components, expectedText) {
@@ -973,14 +978,16 @@ function recognizeDigitsLocally(expectedText = "") {
   const componentsForReading = expected?.components || components;
   const recognized = componentsForReading.map(recognizeInkComponent);
   const bestScore = recognized.reduce((sum, item) => sum + item.score, 0) / recognized.length;
-
-  if (expected && expected.average > 0.4 && expected.min > 0.12 && expected.average >= bestScore - 0.18) {
-    return { text: expectedText, status: "local", confidence: Math.max(0.7, expected.average) };
-  }
-
   const text = recognized.map((item) => item.digit).join("");
   const confidence = recognized.reduce((sum, item) => sum + item.confidence, 0) / Math.max(1, recognized.length);
-  return { text, status: text ? "local" : "unreadable", confidence };
+  const minimumMargin = Math.min(...recognized.map((item) => item.margin ?? 0));
+
+  if (expected && expected.average > 0.74 && expected.min > 0.48 && expected.average >= bestScore - 0.04) {
+    return { text: expectedText, status: "local", confidence: Math.min(0.88, Math.max(confidence, expected.average - 0.04)) };
+  }
+
+  const adjustedConfidence = minimumMargin < 0.08 ? Math.min(confidence, 0.58) : confidence;
+  return { text, status: text ? "local" : "unreadable", confidence: adjustedConfidence };
 }
 
 function pathsInsideAnswerBox() {
@@ -1014,12 +1021,11 @@ async function recognizeWithBrowserApi(paths) {
 async function recognizeWriting(expectedText) {
   if (!answerInkComponents().length) return { text: "", status: "empty", confidence: 0 };
   const local = recognizeDigitsLocally(expectedText);
-  if (local.text && local.confidence >= 0.42) return local;
+  if (local.text && local.confidence >= 0.62) return local;
   const browser = await recognizeWithBrowserApi(pathsInsideAnswerBox());
-  if (browser.text) return browser;
+  if (browser.text && browser.confidence > local.confidence) return browser;
   return local.text ? local : { text: "", status: "unreadable", confidence: 0 };
 }
-
 function showFeedback(message, type) {
   feedbackEl.textContent = message;
   feedbackEl.className = `feedback ${type}`;

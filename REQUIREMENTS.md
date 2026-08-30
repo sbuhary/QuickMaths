@@ -69,8 +69,9 @@
 - [x] Recognition works without browser handwriting APIs, including Safari.
 - [x] Browser handwriting recognition remains optional when available.
 - [x] Multiple template styles exist for each digit.
-- [x] Expected-answer scoring improves recognition for child handwriting variations.
+- [x] Expected-answer scoring is conservative so wrong handwriting is not accepted as correct too easily.
 - [x] Recognition now tries to split wide joined digits using low-ink valleys and merge over-split strokes before scoring.
+- [x] Ambiguous digit reads lower confidence and route to answer choices instead of marking too quickly.
 
 ### Gamification
 - [x] Stars and score displayed with game-style icons.
@@ -110,6 +111,7 @@
 ### P0: Production Stability
 - [x] Add deterministic Playwright visual regression coverage for the mobile board.
 - [x] Improve joined multi-digit answer splitting before recognition scoring.
+- [x] Reduce false correct/wrong recognition by tightening expected-answer bias and confidence thresholds.
 - [x] Add a recognition confidence review state: if the app is unsure, show answer-choice boxes with the correct answer and nearby values.
 - [x] Add a small on-device recognition test harness with saved synthetic digit samples for regression checks.
 - [x] Add a low-height mobile layout smoke test for 320px, 375px, and 430px wide screens.

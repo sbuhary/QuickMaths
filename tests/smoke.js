@@ -42,7 +42,10 @@ function scoreTemplate(grid, template) {
       if (hasInk && !wantsInk) extras += 1;
     }
   }
-  return hits / Math.max(1, expected) - (extras / Math.max(1, ink)) * 0.24;
+  const recall = hits / Math.max(1, expected);
+  const precision = hits / Math.max(1, ink);
+  const extraRate = extras / Math.max(1, ink);
+  return recall * 0.68 + precision * 0.32 - extraRate * 0.34;
 }
 
 execFileSync(process.execPath, ["--check", "app.js"], { stdio: "pipe" });
@@ -74,6 +77,7 @@ assert(html.includes("data-size=\"11\"") && html.includes("aria-label=\"Thick pe
 assert(html.includes("id=\"retry-missed\""), "Retry missed control missing");
 assert(js.includes("retryMissedQuestions") && js.includes("missedQuestions"), "Retry missed behavior missing");
 assert(js.includes("componentColumnInk") && js.includes("findSplitColumn"), "Valley-based digit splitting missing");
+assert(js.includes("expected.average > 0.74") && js.includes("minimumMargin < 0.08") && js.includes("confidence >= 0.62"), "Conservative recognition confidence guard missing");
 assert(js.includes("hasQuestion") && js.includes("() => showQuestion()"), "Next handlers must not pass click events as questions");
 assert(js.includes("setActionState(type)") && js.includes("tryMainButton.hidden") && js.includes("nextMainButton.hidden") && js.includes("checkButton.hidden"), "Answer actions must follow feedback state");
 assert(js.includes("normalizeProgress") && js.includes("Math.min(unlockedStages"), "Saved progress must be clamped to available stages");
