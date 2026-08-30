@@ -11,6 +11,8 @@
 ### Practice Flow
 - [x] App name: QuickMaths.
 - [x] Brief QuickMaths greeting splash appears on app load before restoring the last screen.
+- [x] Accept and save an optional child name for personalized messages.
+- [x] Fall back to congratulations-style messages when a saved child name is missing.
 - [x] Practice screen header removes the app name and uses compact game-style score icons.
 - [x] Separate level/options start screen with Candy Crush-style stage path.
 - [x] Remember the last screen and restore it after refresh.
@@ -53,6 +55,7 @@
 - [x] Feedback appears below the answer area so the written answer remains visible.
 - [x] Confidence review appears when recognition is unsure, with Correct/Wrong buttons.
 - [x] Feedback is inline on the board instead of a popup/overlay.
+- [x] Correct answers trigger animated celebration.
 - [x] Wrong answer and timeout feedback ask the child to retry without showing Next.
 - [x] Bottom action area shows only the needed full-width action for the current state.
 
@@ -126,6 +129,7 @@
 - [x] Replace external icon CDN with local icon rendering for Safari/local-file compatibility.
 - [x] Improve joined multi-digit recognition with valley-based splitting.
 - [x] Remove the side-switch control after toolbar simplification.
+- [x] Pencil options panel uses an opaque surface so board content does not show through.
 
 ### P3: Install And Share
 - [x] Add PWA manifest and service worker for offline install.
@@ -159,3 +163,4 @@
 - [x] Replace external icon CDN with local icon rendering for Safari/local-file compatibility.
 - [x] Improve joined multi-digit recognition with valley-based splitting.
 - [x] Add splash/refresh restore, separate level background, inline feedback, compact score icons, and state-only bottom actions.
+- [x] Add child-name personalization, fallback congratulations, correct-answer celebration, and opaque pencil overlay.

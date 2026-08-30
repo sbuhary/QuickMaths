@@ -21,6 +21,7 @@ async function main() {
   });
 
   await page.goto(fileUrl);
+  await page.getByRole("textbox", { name: /Name/i }).fill("Mia");
   await page.getByRole("button", { name: /Start stage 1/i }).click();
   await page.getByRole("button", { name: /Change timer style/i }).click();
   await page.getByRole("button", { name: /Mute sounds/i }).click();

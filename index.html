@@ -14,7 +14,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/quickmaths-icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/quickmaths-icon.svg">
-    <link rel="stylesheet" href="styles.css?v=20260830-04">
+    <link rel="stylesheet" href="styles.css?v=20260830-05">
   </head>
   <body>
     <main class="app-shell">
@@ -22,7 +22,7 @@
         <div class="splash-card">
           <p class="eyebrow">QuickMaths</p>
           <h1>QuickMaths</h1>
-          <p>Ready?</p>
+          <p id="splash-greeting">Ready?</p>
         </div>
       </section>
 
@@ -30,6 +30,10 @@
         <div class="start-card">
           <p class="eyebrow">QuickMaths</p>
           <h1>Pick a math path</h1>
+          <label>
+            Name
+            <input id="kid-name" type="text" inputmode="text" autocomplete="given-name" maxlength="24" placeholder="Child name">
+          </label>
           <label>
             Operation
             <select id="operation">
@@ -87,6 +91,9 @@
             <i class="timer-art" aria-hidden="true"></i>
           </button>
         </header>
+        <div id="celebration" class="celebration" aria-hidden="true" hidden>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
 
         <section class="board-toolbar" aria-label="Whiteboard tools">
           <button id="pencil" class="circle-button tool-button selected-tool" type="button" aria-label="Pencil and colors"><i data-lucide="pencil"></i></button>
@@ -140,7 +147,7 @@
     </main>
 
     <script src="version.js"></script>
-    <script src="icons.js?v=20260830-04"></script>
-    <script src="app.js?v=20260830-04"></script>
+    <script src="icons.js?v=20260830-05"></script>
+    <script src="app.js?v=20260830-05"></script>
   </body>
 </html>

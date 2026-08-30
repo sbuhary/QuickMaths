@@ -11,6 +11,8 @@ QuickMaths is a mobile-first arithmetic practice app for children. It runs as a 
 - Countdown timer per question. Tap the timer to cycle between digital, analog, and hourglass styles.
 - Optional sound effects with a mute toggle.
 - State-aware bottom actions: Check while answering, Try again after a wrong answer or timeout, and Next after a correct answer.
+- Optional child name for personalized greetings and feedback, with a friendly fallback when no name is saved.
+- Animated celebration when an answer is correct.
 - Confidence review when handwriting recognition is unsure, so an adult can mark the read as correct or wrong.
 - Full session summary with practice time and stars earned, retry missed questions, and parent reset for local progress.
 - Written-answer checking from the answer box using local canvas-based digit recognition, with browser handwriting recognition as an optional fallback. Joined digits are split using low-ink valleys before scoring.

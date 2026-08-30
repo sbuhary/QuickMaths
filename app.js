@@ -1,5 +1,6 @@
 const splashScreen = document.querySelector("#splash-screen");
 const startScreen = document.querySelector("#start-screen");
+const splashGreetingEl = document.querySelector("#splash-greeting");
 const practiceBoard = document.querySelector("#practice-board");
 const board = document.querySelector("#board");
 const ctx = board.getContext("2d", { willReadFrequently: true });
@@ -13,8 +14,10 @@ const closeFeedbackButton = document.querySelector("#close-feedback");
 const markCorrectButton = document.querySelector("#mark-correct");
 const markWrongButton = document.querySelector("#mark-wrong");
 const answerBox = document.querySelector("#answer-box");
+const celebrationEl = document.querySelector("#celebration");
 const operationEl = document.querySelector("#operation");
 const difficultyEl = document.querySelector("#difficulty");
+const kidNameEl = document.querySelector("#kid-name");
 const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
 const stageSummaryEl = document.querySelector("#stage-summary");
@@ -96,8 +99,41 @@ const state = {
   soundEnabled: localStorage.getItem("quickmaths-sound") !== "off",
   audioContext: null,
   answerState: "ready",
+  kidName: localStorage.getItem("quickmaths-kid-name") || "",
 };
 
+function cleanKidName(value) {
+  return String(value || "").replace(/[^a-zA-Z0-9 .'-]/g, "").trim().slice(0, 24);
+}
+
+function updatePersonalGreeting() {
+  state.kidName = cleanKidName(state.kidName);
+  if (kidNameEl && kidNameEl.value !== state.kidName) kidNameEl.value = state.kidName;
+  if (splashGreetingEl) splashGreetingEl.textContent = state.kidName ? `Hi, ${state.kidName}!` : "Ready?";
+}
+
+function namePrefix(fallback) {
+  return state.kidName ? `${fallback}, ${state.kidName}!` : `${fallback}!`;
+}
+
+function saveKidName() {
+  state.kidName = cleanKidName(kidNameEl?.value || "");
+  if (state.kidName) localStorage.setItem("quickmaths-kid-name", state.kidName);
+  else localStorage.removeItem("quickmaths-kid-name");
+  updatePersonalGreeting();
+}
+
+function celebrateCorrectAnswer() {
+  if (!celebrationEl) return;
+  celebrationEl.hidden = false;
+  celebrationEl.classList.remove("burst");
+  void celebrationEl.offsetWidth;
+  celebrationEl.classList.add("burst");
+  window.setTimeout(() => {
+    celebrationEl.hidden = true;
+    celebrationEl.classList.remove("burst");
+  }, 1100);
+}
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   navigator.serviceWorker.register("./sw.js").catch(() => {});
@@ -288,6 +324,10 @@ function renderStackedQuestion(question) {
 
 function hideFeedback() {
   feedbackPanel.hidden = true;
+  if (celebrationEl) {
+    celebrationEl.hidden = true;
+    celebrationEl.classList.remove("burst");
+  }
 }
 
 function setActionState(mode) {
@@ -399,7 +439,7 @@ function resetTimer() {
       recordMissOnce();
       updateProgressUi();
       playTone("timeout");
-      showFeedback("Time is up. Try this one again.", "timeout");
+      showFeedback(state.kidName ? `Time is up, ${state.kidName}. Try this one again.` : "Time is up. Try this one again.", "timeout");
     }
   }, 1000);
 }
@@ -848,12 +888,13 @@ function awardCorrectAnswer(readText) {
   saveProgress();
   updateProgressUi();
   playTone("correct");
-  showFeedback(`Correct. I read ${readText}. ${formatTime(state.timeLeft)} left.`, "correct");
+  celebrateCorrectAnswer();
+  showFeedback(`${namePrefix(state.kidName ? "Great work" : "Congratulations")} I read ${readText}. ${formatTime(state.timeLeft)} left.`, "correct");
 }
 
 function askForRecognitionReview(recognized) {
   state.pendingReview = recognized;
-  showFeedback(`I think it says ${recognized.text}. Is that right?`, "review");
+  showFeedback(`${state.kidName ? `${state.kidName}, I think` : "I think"} it says ${recognized.text}. Is that right?`, "review");
 }
 
 async function checkAnswer() {
@@ -875,8 +916,8 @@ async function checkAnswer() {
     state.progress.streak = 0;
     recordMissOnce();
     const message = recognized.status === "empty"
-      ? "Write the final answer inside the box, then try again."
-      : `I read ${recognized.text || "nothing"}. Try this one again.`;
+      ? state.kidName ? `Write the final answer inside the box, ${state.kidName}.` : "Write the final answer inside the box, then try again."
+      : state.kidName ? `I read ${recognized.text || "nothing"}. Try again, ${state.kidName}.` : `I read ${recognized.text || "nothing"}. Try this one again.`;
     playTone("wrong");
     showFeedback(message, "wrong");
   }
@@ -942,7 +983,7 @@ markWrongButton.addEventListener("click", () => {
   saveProgress();
   updateProgressUi();
   playTone("wrong");
-  showFeedback("Try this one again.", "wrong");
+  showFeedback(state.kidName ? `Try this one again, ${state.kidName}.` : "Try this one again.", "wrong");
 });
 nextMainButton.addEventListener("click", () => showQuestion());
 pencilButton.addEventListener("click", togglePenPanel);
@@ -961,6 +1002,7 @@ undoButton.addEventListener("click", () => {
 });
 clearButton.addEventListener("click", clearBoardWithConfirmation);
 checkButton.addEventListener("click", checkAnswer);
+kidNameEl.addEventListener("input", saveKidName);
 document.addEventListener("pointerdown", (event) => {
   if (penPanel.hidden) return;
   if (penPanel.contains(event.target) || pencilButton.contains(event.target)) return;
@@ -979,6 +1021,7 @@ levelButtons.forEach((button) => {
 });
 
 registerServiceWorker();
+updatePersonalGreeting();
 updateSoundButton();
 updateProgressUi();
 if (window.lucide) window.lucide.createIcons();

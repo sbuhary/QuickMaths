@@ -68,6 +68,7 @@ assert(serviceWorker.includes("self.addEventListener(\"fetch\"") && js.includes(
 assert(html.includes("id=\"sound-toggle\"") && js.includes("playTone") && js.includes("toggleSound"), "Sound toggle behavior missing");
 assert(css.includes(".answer-box.active"), "Answer box highlight style missing");
 assert(html.includes("id=\"pencil\"") && html.includes("id=\"pen-panel\"") && html.includes("id=\"try-main\""), "Pencil panel and state actions missing");
+assert(css.includes(".pen-panel") && css.includes("background: #fffef8") && css.includes("z-index: 5"), "Pencil panel must hide board content behind it");
 assert(html.includes("data-size=\"11\"") && html.includes("aria-label=\"Thick pen\""), "Pen size controls missing");
 assert(html.includes("id=\"retry-missed\""), "Retry missed control missing");
 assert(js.includes("retryMissedQuestions") && js.includes("missedQuestions"), "Retry missed behavior missing");
@@ -78,6 +79,8 @@ assert(js.includes("normalizeProgress") && js.includes("Math.min(unlockedStages"
 assert(!html.includes("id=\"clear-answer\"") && js.includes("clearBoardWithConfirmation"), "Compact UI should keep one confirmed clear-all control");
 assert(!html.includes("id=\"hand-toggle\"") && !js.includes("toggleHandedness") && !css.includes("data-controls=\"left\""), "Removed side-toggle controls should stay out of the compact UI");
 assert(html.includes("id=\"splash-screen\"") && js.includes("showSplashThenRestore") && js.includes("quickmaths-view"), "Splash and refresh-view restore behavior missing");
+assert(html.includes("id=\"kid-name\"") && js.includes("quickmaths-kid-name") && js.includes("Congratulations"), "Personalized/fallback messages missing");
+assert(html.includes("id=\"celebration\"") && css.includes("confetti-pop") && js.includes("celebrateCorrectAnswer"), "Correct-answer celebration missing");
 assert(html.includes("data-lucide=\"star\"") && html.includes("data-lucide=\"flame\""), "Game-style score icons missing");
 assert(serviceWorker.includes("backgrounds/levels.svg"), "Level background must be cached by service worker");
 for (const width of [320, 375, 430]) assert(width <= 520, `Smoke viewport ${width}px must use mobile layout rules`);

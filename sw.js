@@ -1,11 +1,11 @@
-const CACHE_VERSION = "quickmaths-20260830-04";
+const CACHE_VERSION = "quickmaths-20260830-05";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20260830-04",
+  "./styles.css?v=20260830-05",
   "./version.js",
-  "./icons.js?v=20260830-04",
-  "./app.js?v=20260830-04",
+  "./icons.js?v=20260830-05",
+  "./app.js?v=20260830-05",
   "./manifest.webmanifest",
   "./icons/quickmaths-icon.svg",
   "./backgrounds/levels.svg"
