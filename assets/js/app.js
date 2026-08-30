@@ -53,6 +53,7 @@ const eraserButton = document.querySelector("#eraser");
 const colorButtons = [...document.querySelectorAll(".color")];
 const sizeButtons = [...document.querySelectorAll(".size")];
 const levelButtons = [...document.querySelectorAll(".level-node")];
+const difficultyStarts = { easy: 1, medium: 5, difficult: 9 };
 
 const settings = {
   starter: { label: "Starter", unlockAt: 0 },
@@ -62,18 +63,18 @@ const settings = {
 };
 
 const stagePlans = [
-  { stage: 1, level: "starter", title: "Tiny sums", operation: "addition", max: 5, sumMax: 5, seconds: 60 },
-  { stage: 2, level: "starter", title: "Facts to 10", operation: "addition", max: 9, sumMax: 10, seconds: 60 },
-  { stage: 3, level: "starter", title: "Take away", operation: "subtraction", max: 10, seconds: 60 },
-  { stage: 4, level: "starter", title: "Add or subtract", operation: "add-sub", max: 10, sumMax: 10, seconds: 65 },
-  { stage: 5, level: "explorer", title: "Teen sums", operation: "addition", max: 12, sumMax: 20, seconds: 70 },
-  { stage: 6, level: "explorer", title: "Teen subtraction", operation: "subtraction", max: 20, seconds: 70 },
-  { stage: 7, level: "explorer", title: "Two-digit plus ones", operation: "addition", max: 89, addendMax: 9, seconds: 75 },
-  { stage: 8, level: "explorer", title: "Two-digit take away", operation: "subtraction", max: 99, subtractMax: 9, seconds: 75 },
-  { stage: 9, level: "builder", title: "Times 2, 5, 10", operation: "multiplication", factors: [2, 5, 10], max: 10, seconds: 80 },
-  { stage: 10, level: "builder", title: "Small times tables", operation: "multiplication", multiplicationMax: 6, seconds: 85 },
-  { stage: 11, level: "wizard", title: "Exact sharing", operation: "division", divisionMax: 6, seconds: 90 },
-  { stage: 12, level: "wizard", title: "Mixed challenge", operation: "mixed", multiplicationMax: 10, divisionMax: 10, max: 30, seconds: 90 },
+  { stage: 1, level: "starter", title: "Tiny sums", operation: "addition", max: 5, sumMax: 5, seconds: 60, unlockStars: 50 },
+  { stage: 2, level: "starter", title: "Facts to 10", operation: "addition", max: 9, sumMax: 10, seconds: 60, unlockStars: 50 },
+  { stage: 3, level: "starter", title: "Take away", operation: "subtraction", max: 10, seconds: 60, unlockStars: 50 },
+  { stage: 4, level: "starter", title: "Add or subtract", operation: "add-sub", max: 10, sumMax: 10, seconds: 65, unlockStars: 50 },
+  { stage: 5, level: "explorer", title: "Teen sums", operation: "addition", max: 12, sumMax: 20, seconds: 70, unlockStars: 75 },
+  { stage: 6, level: "explorer", title: "Teen subtraction", operation: "subtraction", max: 20, seconds: 70, unlockStars: 75 },
+  { stage: 7, level: "explorer", title: "Two-digit plus ones", operation: "addition", max: 89, addendMax: 9, seconds: 75, unlockStars: 75 },
+  { stage: 8, level: "explorer", title: "Two-digit take away", operation: "subtraction", max: 99, subtractMax: 9, seconds: 75, unlockStars: 75 },
+  { stage: 9, level: "builder", title: "Times 2, 5, 10", operation: "multiplication", factors: [2, 5, 10], max: 10, seconds: 80, unlockStars: 100 },
+  { stage: 10, level: "builder", title: "Small times tables", operation: "multiplication", multiplicationMax: 6, seconds: 85, unlockStars: 100 },
+  { stage: 11, level: "wizard", title: "Exact sharing", operation: "division", divisionMax: 6, seconds: 90, unlockStars: 100 },
+  { stage: 12, level: "wizard", title: "Mixed challenge", operation: "mixed", multiplicationMax: 10, divisionMax: 10, max: 30, seconds: 90, unlockStars: 0 },
 ];
 
 const digitTemplates = {
@@ -320,33 +321,54 @@ function formatElapsed(milliseconds) {
   return `${minutes}:${seconds}`;
 }
 
+function normalizeDifficulty(value) {
+  return Object.prototype.hasOwnProperty.call(difficultyStarts, value) ? value : "easy";
+}
+
+function normalizeStageStars(value) {
+  const source = value && typeof value === "object" ? value : {};
+  return stagePlans.reduce((map, plan) => {
+    map[plan.stage] = Math.max(0, Number(source[plan.stage]) || 0);
+    return map;
+  }, {});
+}
+
+function baseUnlockedForDifficulty(difficulty) {
+  return difficultyStarts[normalizeDifficulty(difficulty)] || 1;
+}
+
 function normalizeProgress(progress) {
   const maxStage = stagePlans.length;
-  const unlockedStages = Math.max(1, Math.min(maxStage, Number(progress.unlockedStages) || 1));
-  const currentStage = Math.max(1, Math.min(unlockedStages, Number(progress.currentStage) || 1));
+  const difficulty = normalizeDifficulty(progress.difficulty);
+  const baseUnlocked = baseUnlockedForDifficulty(difficulty);
+  const unlockedStages = Math.max(baseUnlocked, Math.min(maxStage, Number(progress.unlockedStages) || baseUnlocked));
+  const currentStage = Math.max(1, Math.min(unlockedStages, Number(progress.currentStage) || baseUnlocked));
   return {
     stars: Math.max(0, Number(progress.stars) || 0),
+    stageStars: normalizeStageStars(progress.stageStars),
     streak: Math.max(0, Number(progress.streak) || 0),
     answered: Math.max(0, Number(progress.answered) || 0),
     celebratedMilestones: Array.isArray(progress.celebratedMilestones) ? progress.celebratedMilestones.map(Number).filter(Number.isFinite) : [],
+    difficulty,
     unlockedStages,
     currentStage,
   };
 }
 
 function loadProgress() {
-  const fallback = { stars: 0, streak: 0, answered: 0, celebratedMilestones: [], unlockedStages: 1, currentStage: 1 };
+  const fallback = { stars: 0, stageStars: {}, streak: 0, answered: 0, celebratedMilestones: [], difficulty: localStorage.getItem("quickmaths-difficulty") || "easy", unlockedStages: 1, currentStage: 1 };
   try {
     const stored = localStorage.getItem("quickmaths-progress") || localStorage.getItem("mathsprout-progress");
     return normalizeProgress({ ...fallback, ...JSON.parse(stored || "{}") });
   } catch {
-    return fallback;
+    return normalizeProgress(fallback);
   }
 }
 
 function saveProgress() {
   state.progress = normalizeProgress(state.progress);
   localStorage.setItem("quickmaths-progress", JSON.stringify(state.progress));
+  localStorage.setItem("quickmaths-difficulty", state.progress.difficulty);
 }
 
 function currentPlan() {
@@ -354,13 +376,20 @@ function currentPlan() {
   return stagePlans[state.progress.currentStage - 1];
 }
 
+function stageProgressText(plan, compact = false) {
+  if (!plan.unlockStars) return compact ? "Final" : "Final stage";
+  const earned = state.progress.stageStars[plan.stage] || 0;
+  return compact ? `${earned}/${plan.unlockStars}` : `${earned}/${plan.unlockStars} stars in this stage`;
+}
+
 function updateProgressUi() {
   const plan = currentPlan();
   starsEl.textContent = String(state.progress.stars);
   streakEl.textContent = String(state.progress.streak);
+  if (difficultyEl) difficultyEl.value = state.progress.difficulty;
   if (stageSummaryEl) stageSummaryEl.textContent = `Stage ${plan.stage}: ${plan.title}`;
   if (sessionSummaryEl) sessionSummaryEl.textContent = `${state.session.correct} right / ${state.session.missed} missed`;
-  if (sessionDetailEl) sessionDetailEl.textContent = `${formatElapsed(Date.now() - state.session.startedAt)} practiced / ${state.session.starsEarned} stars earned`;
+  if (sessionDetailEl) sessionDetailEl.textContent = `${stageProgressText(plan)} / ${formatElapsed(Date.now() - state.session.startedAt)} practiced`;
   if (retryMissedButton) retryMissedButton.disabled = state.session.missedQuestions.length === 0;
   startPracticeButton.textContent = `Start stage ${plan.stage}`;
   levelButtons.forEach((button) => {
@@ -371,15 +400,19 @@ function updateProgressUi() {
     button.disabled = !isUnlocked;
     button.dataset.level = stagePlan.level;
     button.classList.toggle("active", state.progress.currentStage === stage);
-    button.setAttribute("aria-label", `Stage ${stage}, ${stagePlan.title}${isUnlocked ? "" : " locked"}`);
+    button.setAttribute("aria-label", `Stage ${stage}, ${stagePlan.title}${isUnlocked ? `, ${stageProgressText(stagePlan)}` : " locked"}`);
     const small = button.querySelector("small");
-    if (small) small.textContent = settings[stagePlan.level].label;
+    if (small) small.textContent = isUnlocked ? stageProgressText(stagePlan, true) : "Locked";
   });
 }
 
 function unlockEligibleLevels() {
+  const plan = currentPlan();
   const previousUnlocked = state.progress.unlockedStages;
-  state.progress.unlockedStages = Math.min(stagePlans.length, Math.max(state.progress.unlockedStages, state.progress.currentStage + 1));
+  const earned = state.progress.stageStars[plan.stage] || 0;
+  if (plan.unlockStars && earned >= plan.unlockStars) {
+    state.progress.unlockedStages = Math.min(stagePlans.length, Math.max(state.progress.unlockedStages, state.progress.currentStage + 1));
+  }
   return state.progress.unlockedStages > previousUnlocked ? state.progress.unlockedStages : null;
 }
 
@@ -421,6 +454,15 @@ function resetProgress() {
   updateProgressUi();
 }
 
+function selectDifficulty() {
+  const difficulty = normalizeDifficulty(difficultyEl.value);
+  const startStage = baseUnlockedForDifficulty(difficulty);
+  state.progress.difficulty = difficulty;
+  state.progress.unlockedStages = Math.max(state.progress.unlockedStages, startStage);
+  state.progress.currentStage = startStage;
+  saveProgress();
+  updateProgressUi();
+}
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -571,7 +613,6 @@ function startPractice() {
 function showQuestion(question = null) {
   const hasQuestion = question && typeof question === "object" && Number.isFinite(question.answer);
   state.current = hasQuestion ? { plan: currentPlan(), ...question } : makeQuestion();
-  difficultyEl.value = state.current.plan.level;
   questionEl.innerHTML = renderStackedQuestion(state.current);
   hideFeedback();
   closePenPanel();
@@ -1060,6 +1101,7 @@ function awardCorrectAnswer(readText) {
   const streakBonus = state.progress.streak % 3 === 0 ? 2 : 0;
   const earnedStars = 1 + streakBonus;
   state.progress.stars += earnedStars;
+  state.progress.stageStars[state.progress.currentStage] = (state.progress.stageStars[state.progress.currentStage] || 0) + earnedStars;
   state.session.starsEarned += earnedStars;
   state.progress.answered += 1;
   state.session.correct += 1;
@@ -1214,6 +1256,7 @@ document.addEventListener("pointerdown", (event) => {
 operationEl.addEventListener("change", () => {
   if (!practiceBoard.hidden) showQuestion();
 });
+difficultyEl.addEventListener("change", selectDifficulty);
 levelButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (button.disabled) return;

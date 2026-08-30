@@ -14,7 +14,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="assets/icons/quickmaths-icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icons/quickmaths-icon.svg">
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260830-09">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260830-10">
   </head>
   <body>
     <main class="app-shell">
@@ -44,12 +44,14 @@
               <option value="division">Division</option>
             </select>
           </label>
-          <select id="difficulty" class="sr-only" aria-label="Difficulty">
-            <option value="starter">Starter</option>
-            <option value="explorer">Explorer</option>
-            <option value="builder">Builder</option>
-            <option value="wizard">Wizard</option>
-          </select>
+          <label>
+            Difficulty
+            <select id="difficulty" aria-label="Difficulty">
+              <option value="easy">Easy: start at tiny sums</option>
+              <option value="medium">Medium: start at teen sums</option>
+              <option value="difficult">Difficult: start at times tables</option>
+            </select>
+          </label>
           <p id="stage-summary" class="stage-summary">Stage 1: Tiny sums</p>
           <p id="session-summary" class="session-summary">0 right / 0 missed</p>
           <p id="session-detail" class="session-detail">0:00 practiced / 0 stars earned</p>
@@ -182,7 +184,7 @@
     </main>
 
     <script src="assets/js/version.js"></script>
-    <script src="assets/js/icons.js?v=20260830-09"></script>
-    <script src="assets/js/app.js?v=20260830-09"></script>
+    <script src="assets/js/icons.js?v=20260830-10"></script>
+    <script src="assets/js/app.js?v=20260830-10"></script>
   </body>
 </html>

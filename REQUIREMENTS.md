@@ -24,6 +24,7 @@
 - [x] Writing works with one finger or pen only; two-finger gestures do not draw and remain available for browser zoom.
 - [x] Practice modes: addition, subtraction, multiplication, and division.
 - [x] Planned stages start with tiny one-digit addition before introducing subtraction, within-20 facts, two-digit practice, multiplication, and division.
+- [x] Easy, Medium, and Difficult choices start children at stages 1, 5, and 9.
 - [x] One random question shown at a time.
 - [x] Old-school stacked question layout with one large question on the whiteboard.
 - [x] Operator aligns to the left of the longer number column.
@@ -77,6 +78,8 @@
 - [x] Stars and score displayed with game-style icons.
 - [x] Streak reward.
 - [x] Locked level progression saved on the device.
+- [x] Selected difficulty is remembered on the device.
+- [x] Stage unlocks require stars earned in the current stage: 50 for Starter, 75 for Explorer, and 100 for Builder/Wizard.
 - [x] Children are told immediately when the next stage unlocks.
 - [x] Disabled levels show a lock icon.
 - [x] Cheerful colors for children.
@@ -120,6 +123,7 @@
 
 ### P1: Better Learning Experience
 - [x] Add Candy Crush-style stage path with progressive unlocks.
+- [x] Add stage-star unlock requirements and remembered Easy/Medium/Difficult entry points.
 - [x] Add operation-specific stage tuning for first addition, subtraction, multiplication, and division progressions.
 - [x] Add a session summary with correct count and missed questions.
 - [x] Add full session summary with time and stars earned.
@@ -175,5 +179,6 @@
 - [x] Add splash/refresh restore, separate level background, inline feedback, compact score icons, and state-only bottom actions.
 - [x] Add child-name personalization, fallback congratulations, correct-answer celebration, and opaque pencil overlay.
 - [x] Add star milestone and stage-unlock achievement popups.
+- [x] Add per-stage star-gated unlocks and remembered difficulty selection.
 - [x] Require missing names before practice, add lock icons, brighter level nodes, kid-friendly time-left wording, and pencil/eraser cursors.
 - [x] Add low-confidence answer-choice boxes and help overlays.

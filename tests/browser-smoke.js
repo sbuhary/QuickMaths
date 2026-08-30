@@ -42,7 +42,9 @@ async function main() {
   await page.mouse.move(canvas.x + 130, canvas.y + 450);
   await page.mouse.up();
 
-  await page.evaluate(() => window.awardCorrectAnswer("5"));
+  await page.evaluate(() => {
+    window.eval('state.progress.stageStars[1] = 49; awardCorrectAnswer("5");');
+  });
   await page.locator("#reward-gate").waitFor({ state: "visible" });
   const rewardTitle = await page.locator("#reward-title").textContent();
   if (!/Stage 2 unlocked/.test(rewardTitle || "")) throw new Error(`Unexpected reward title: ${rewardTitle}`);

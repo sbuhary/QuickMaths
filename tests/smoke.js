@@ -57,6 +57,7 @@ const digitTemplates = extractConst("digitTemplates");
 
 assert(stagePlans.length === 12, "Expected 12 stages");
 assert(stagePlans[0].operation === "addition" && stagePlans[0].sumMax === 5, "Stage 1 should be tiny addition");
+assert(stagePlans[0].unlockStars === 50 && stagePlans[4].unlockStars === 75 && stagePlans[8].unlockStars === 100, "Stage unlock star thresholds missing");
 assert(stagePlans[10].operation === "division", "Stage 11 should introduce division");
 assert(version, "Release version constant missing");
 assert(html.includes(`assets/css/styles.css?v=${version}`), "CSS cache version does not match release version");
@@ -79,8 +80,9 @@ assert(js.includes("retryMissedQuestions") && js.includes("missedQuestions"), "R
 assert(js.includes("componentColumnInk") && js.includes("findSplitColumn"), "Valley-based digit splitting missing");
 assert(js.includes("expected.average > 0.74") && js.includes("minimumMargin < 0.08") && js.includes("confidence >= 0.62"), "Conservative recognition confidence guard missing");
 assert(js.includes("hasQuestion") && js.includes("() => showQuestion()"), "Next handlers must not pass click events as questions");
+assert(html.includes("Easy: start at tiny sums") && html.includes("Medium: start at teen sums") && html.includes("Difficult: start at times tables") && js.includes("difficultyStarts = { easy: 1, medium: 5, difficult: 9 }") && js.includes("selectDifficulty"), "Difficulty entry selection missing");
 assert(js.includes("setActionState(type)") && js.includes("tryMainButton.hidden") && js.includes("nextMainButton.hidden") && js.includes("checkButton.hidden"), "Answer actions must follow feedback state");
-assert(js.includes("normalizeProgress") && js.includes("Math.min(unlockedStages"), "Saved progress must be clamped to available stages");
+assert(js.includes("normalizeProgress") && js.includes("Math.min(unlockedStages") && js.includes("stageStars") && js.includes("quickmaths-difficulty"), "Saved progress must include stage stars and remembered difficulty");
 assert(!html.includes("id=\"clear-answer\"") && js.includes("clearBoardWithConfirmation"), "Compact UI should keep one confirmed clear-all control");
 assert(!html.includes("id=\"hand-toggle\"") && !js.includes("toggleHandedness") && !css.includes("data-controls=\"left\""), "Removed side-toggle controls should stay out of the compact UI");
 assert(html.includes("id=\"splash-screen\"") && js.includes("showSplashThenRestore") && js.includes("quickmaths-view"), "Splash and refresh-view restore behavior missing");
