@@ -35,6 +35,7 @@
 - [x] Undo.
 - [x] Circular tool buttons.
 - [x] Lucide icon buttons for back, eraser, undo, clear, and feedback.
+- [x] Local icon renderer avoids CDN/CORS issues in Safari and file URLs.
 - [x] Tool buttons moved away from the primary Check/Next action stack.
 - [x] Separate answer-only clear from whole-board clear.
 - [x] Add pen thickness controls.
@@ -56,7 +57,7 @@
 - [x] Browser handwriting recognition remains optional when available.
 - [x] Multiple template styles exist for each digit.
 - [x] Expected-answer scoring improves recognition for child handwriting variations.
-- [x] Recognition now tries to split wide joined digits and merge over-split strokes before scoring.
+- [x] Recognition now tries to split wide joined digits using low-ink valleys and merge over-split strokes before scoring.
 
 ### Gamification
 - [x] Stars and score.
@@ -75,6 +76,7 @@
 - [x] Runs by opening `index.html` locally and when hosted on GitHub Pages.
 - [x] Uses local recognition fallback for Safari and browsers without handwriting APIs.
 - [x] Version JavaScript and CSS file references to avoid browser cache issues after updates.
+- [x] Version the local icon JavaScript file too.
 - [x] Include MIT license.
 - [x] Add PWA manifest, service worker, and app icon metadata.
 - [x] Add release version constant checked against CSS/JS cache versions.
@@ -83,13 +85,15 @@
 - [ ] Local digit recognition is heuristic and cannot guarantee every handwriting style.
 - [ ] Multi-digit segmentation can still fail when digits touch or overlap heavily.
 - [x] Static smoke test covers layout breakpoints and app wiring.
-- [ ] No automated visual regression tests with screenshots yet.
+- [x] Automated Playwright visual regression test covers the mobile board UI.
 - [x] PWA install/offline app-shell behavior is available after first hosted load.
 - [ ] Progress is device-local only and does not sync across browsers or devices.
 
 ## Next Priority Features
 
 ### P0: Production Stability
+- [x] Add deterministic Playwright visual regression coverage for the mobile board.
+- [x] Improve joined multi-digit answer splitting before recognition scoring.
 - [x] Add a recognition confidence review state: if the app is unsure, show "I think it says X" with Correct/Wrong buttons for adult-assisted correction.
 - [x] Add a small on-device recognition test harness with saved synthetic digit samples for regression checks.
 - [x] Add a low-height mobile layout smoke test for 320px, 375px, and 430px wide screens.
@@ -110,6 +114,9 @@
 - [x] Add answer-box-only clear button.
 - [x] Add full-board clear button separate from answer clear.
 - [x] Add visual answer-box highlight while writing inside it.
+- [x] Add deterministic Playwright mobile UI coverage with visual screenshots.
+- [x] Replace external icon CDN with local icon rendering for Safari/local-file compatibility.
+- [x] Improve joined multi-digit recognition with valley-based splitting.
 - [x] Add left/right handed layout option for controls.
 
 ### P3: Install And Share
@@ -139,3 +146,6 @@
 - [x] Add muteable sounds, PWA shell, app icon, version checks, and optional browser smoke test.
 - [x] Add GitHub Pages deployment guide and `.nojekyll`.
 - [x] Add visual answer-box highlight while writing inside it.
+- [x] Add deterministic Playwright mobile UI coverage with visual screenshots.
+- [x] Replace external icon CDN with local icon rendering for Safari/local-file compatibility.
+- [x] Improve joined multi-digit recognition with valley-based splitting.

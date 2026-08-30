@@ -15,7 +15,7 @@ async function main() {
   const page = await browser.newPage({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
   const fileUrl = pathToFileURL(path.resolve("index.html")).href;
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("pageerror", (error) => errors.push(error.stack || error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });

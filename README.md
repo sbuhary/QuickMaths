@@ -3,7 +3,7 @@
 QuickMaths is a mobile-first arithmetic practice app for children. It runs as a static website and can be hosted directly on GitHub Pages.
 
 ## Features
-- Lucide-powered icons for whiteboard controls.
+- Lucide-style icons for whiteboard controls. Icons are rendered from a local script so Safari and file URLs do not depend on a CDN.
 - Addition, subtraction, multiplication, and division.
 - Research-informed stage plan that starts with very small one-digit addition before moving into subtraction, within-20 facts, two-digit practice, multiplication, and division.
 - Writable whiteboard with pen colors, pen thickness, eraser, undo, answer-only clear, and whole-board clear. Writing uses one finger or pen; two-finger gestures stay available for browser zoom.
@@ -13,7 +13,7 @@ QuickMaths is a mobile-first arithmetic practice app for children. It runs as a 
 - Main Check and Next buttons, plus feedback actions near the answer box.
 - Confidence review when handwriting recognition is unsure, so an adult can mark the read as correct or wrong.
 - Full session summary with practice time and stars earned, retry missed questions, and parent reset for local progress.
-- Written-answer checking from the answer box using local canvas-based digit recognition, with browser handwriting recognition as an optional fallback.
+- Written-answer checking from the answer box using local canvas-based digit recognition, with browser handwriting recognition as an optional fallback. Joined digits are split using low-ink valleys before scoring.
 - Candy Crush-style level path with stars, streaks, and locked progression saved on the device.
 - PWA metadata, app icon, and service worker for installable/offline-friendly use after first hosted load.
 

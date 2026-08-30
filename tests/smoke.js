@@ -44,6 +44,8 @@ function scoreTemplate(grid, template) {
 }
 
 execFileSync(process.execPath, ["--check", "app.js"], { stdio: "pipe" });
+execFileSync(process.execPath, ["--check", "icons.js"], { stdio: "pipe" });
+execFileSync(process.execPath, ["--check", "tests/static-server.js"], { stdio: "pipe" });
 
 const stagePlans = extractConst("stagePlans");
 const digitTemplates = extractConst("digitTemplates");
@@ -54,18 +56,24 @@ assert(stagePlans[10].operation === "division", "Stage 11 should introduce divis
 assert(version, "Release version constant missing");
 assert(html.includes(`styles.css?v=${version}`), "CSS cache version does not match release version");
 assert(html.includes(`app.js?v=${version}`), "JS cache version does not match release version");
+assert(html.includes(`icons.js?v=${version}`), "Icon JavaScript cache version does not match release version");
 assert(serviceWorker.includes(`quickmaths-${version}`), "Service worker cache version does not match release version");
+assert(serviceWorker.includes(`icons.js?v=${version}`), "Service worker must cache local icon renderer");
 assert(css.includes("touch-action: pinch-zoom"), "Canvas must allow pinch zoom");
 assert(html.includes("manifest.webmanifest"), "PWA manifest link missing");
+assert(!html.includes("unpkg.com"), "Icon renderer must be local for Safari file URLs");
 assert(manifest.icons?.some((icon) => icon.src.includes("quickmaths-icon.svg")), "PWA icon missing from manifest");
 assert(serviceWorker.includes("self.addEventListener(\"fetch\"") && js.includes("registerServiceWorker"), "Service worker wiring missing");
 assert(html.includes("id=\"sound-toggle\"") && js.includes("playTone") && js.includes("toggleSound"), "Sound toggle behavior missing");
 assert(css.includes(".answer-box.active"), "Answer box highlight style missing");
 assert(html.includes("id=\"clear-answer\""), "Answer-only clear control missing");
 assert(html.includes("id=\"hand-toggle\""), "Handedness toggle missing");
-assert(html.includes("class=\"pen-sizes\""), "Pen size controls missing");
+assert(html.includes("data-size=\"11\"") && html.includes("aria-label=\"Thick pen\""), "Pen size controls missing");
 assert(html.includes("id=\"retry-missed\""), "Retry missed control missing");
 assert(js.includes("retryMissedQuestions") && js.includes("missedQuestions"), "Retry missed behavior missing");
+assert(js.includes("componentColumnInk") && js.includes("findSplitColumn"), "Valley-based digit splitting missing");
+assert(js.includes("hasQuestion") && js.includes("() => showQuestion()"), "Next handlers must not pass click events as questions");
+assert(js.includes("normalizeProgress") && js.includes("Math.min(unlockedStages"), "Saved progress must be clamped to available stages");
 assert(js.includes("clearAnswerOnly") && js.includes("pathTouchesAnswer"), "Answer-only clear behavior missing");
 assert(js.includes("toggleHandedness") && css.includes("data-controls=\"left\""), "Handedness behavior missing");
 for (const width of [320, 375, 430]) assert(width <= 520, `Smoke viewport ${width}px must use mobile layout rules`);

@@ -153,22 +153,37 @@ function updateHandedness() {
   localStorage.setItem("quickmaths-handedness", state.handedness);
   if (window.lucide) window.lucide.createIcons();
 }
+function normalizeProgress(progress) {
+  const maxStage = stagePlans.length;
+  const unlockedStages = Math.max(1, Math.min(maxStage, Number(progress.unlockedStages) || 1));
+  const currentStage = Math.max(1, Math.min(unlockedStages, Number(progress.currentStage) || 1));
+  return {
+    stars: Math.max(0, Number(progress.stars) || 0),
+    streak: Math.max(0, Number(progress.streak) || 0),
+    answered: Math.max(0, Number(progress.answered) || 0),
+    unlockedStages,
+    currentStage,
+  };
+}
+
 function loadProgress() {
   const fallback = { stars: 0, streak: 0, answered: 0, unlockedStages: 1, currentStage: 1 };
   try {
     const stored = localStorage.getItem("quickmaths-progress") || localStorage.getItem("mathsprout-progress");
-    return { ...fallback, ...JSON.parse(stored || "{}") };
+    return normalizeProgress({ ...fallback, ...JSON.parse(stored || "{}") });
   } catch {
     return fallback;
   }
 }
 
 function saveProgress() {
+  state.progress = normalizeProgress(state.progress);
   localStorage.setItem("quickmaths-progress", JSON.stringify(state.progress));
 }
 
 function currentPlan() {
-  return stagePlans[Math.max(0, Math.min(stagePlans.length - 1, state.progress.currentStage - 1))];
+  state.progress = normalizeProgress(state.progress);
+  return stagePlans[state.progress.currentStage - 1];
 }
 
 function updateProgressUi() {
@@ -183,6 +198,7 @@ function updateProgressUi() {
   levelButtons.forEach((button) => {
     const stage = Number(button.dataset.stage || 1);
     const stagePlan = stagePlans[stage - 1];
+    if (!stagePlan) return;
     const isUnlocked = stage <= state.progress.unlockedStages;
     button.disabled = !isUnlocked;
     button.dataset.level = stagePlan.level;
@@ -298,7 +314,8 @@ function startPractice() {
 }
 
 function showQuestion(question = null) {
-  state.current = question || makeQuestion();
+  const hasQuestion = question && typeof question === "object" && Number.isFinite(question.answer);
+  state.current = hasQuestion ? { plan: currentPlan(), ...question } : makeQuestion();
   difficultyEl.value = state.current.plan.level;
   questionEl.innerHTML = renderStackedQuestion(state.current);
   hideFeedback();
@@ -576,12 +593,37 @@ function cloneComponent(component, minX, maxX) {
   return { ...component, minX, maxX };
 }
 
+function componentColumnInk(component) {
+  const alphaAt = (x, y) => component.image.data[(y * component.width + x) * 4 + 3];
+  const columns = [];
+  for (let x = component.minX; x <= component.maxX; x += 1) {
+    let ink = 0;
+    for (let y = component.minY; y <= component.maxY; y += 1) {
+      if (alphaAt(x, y) > 24) ink += 1;
+    }
+    columns.push({ x, ink });
+  }
+  return columns;
+}
+
+function findSplitColumn(component) {
+  const columns = componentColumnInk(component);
+  const width = Math.max(1, component.maxX - component.minX);
+  const leftLimit = component.minX + width * 0.28;
+  const rightLimit = component.minX + width * 0.72;
+  const candidates = columns.filter((column) => column.x >= leftLimit && column.x <= rightLimit);
+  if (!candidates.length) return Math.round((component.minX + component.maxX) / 2);
+  const valley = candidates.reduce((best, column) => (column.ink < best.ink ? column : best), candidates[0]);
+  return valley.x;
+}
+
 function splitWidestComponent(components) {
   const sorted = [...components].sort((a, b) => (b.maxX - b.minX) - (a.maxX - a.minX));
   const target = sorted[0];
   if (!target || target.maxX - target.minX < 20) return components;
-  const middle = Math.round((target.minX + target.maxX) / 2);
-  const replacement = [cloneComponent(target, target.minX, middle - 2), cloneComponent(target, middle + 2, target.maxX)];
+  const splitX = findSplitColumn(target);
+  if (splitX - target.minX < 6 || target.maxX - splitX < 6) return components;
+  const replacement = [cloneComponent(target, target.minX, splitX - 1), cloneComponent(target, splitX + 1, target.maxX)];
   return components.flatMap((component) => (component === target ? replacement : [component]));
 }
 
@@ -857,7 +899,7 @@ retryFeedbackButton.addEventListener("click", () => {
   clearBoard();
   resetTimer();
 });
-nextFeedbackButton.addEventListener("click", showQuestion);
+nextFeedbackButton.addEventListener("click", () => showQuestion());
 markCorrectButton.addEventListener("click", () => awardCorrectAnswer(state.pendingReview?.text || String(state.current.answer)));
 markWrongButton.addEventListener("click", () => {
   state.pendingReview = null;
@@ -868,7 +910,7 @@ markWrongButton.addEventListener("click", () => {
   playTone("wrong");
   showFeedback("Try this one again.", "wrong");
 });
-nextMainButton.addEventListener("click", showQuestion);
+nextMainButton.addEventListener("click", () => showQuestion());
 colorButtons.forEach((button) => button.addEventListener("click", () => selectColor(button)));
 sizeButtons.forEach((button) => button.addEventListener("click", () => selectSize(button)));
 eraserButton.addEventListener("click", () => {
