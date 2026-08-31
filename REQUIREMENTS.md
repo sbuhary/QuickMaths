@@ -26,6 +26,7 @@
 - [x] Planned stages start with tiny one-digit addition before introducing subtraction, within-20 facts, two-digit practice, multiplication, and division.
 - [x] Easy, Medium, and Difficult choices start children at stages 1, 5, and 9.
 - [x] One random question shown at a time.
+- [x] Session question history avoids repeating recent questions until the current stage pool is mostly used.
 - [x] Old-school stacked question layout with one large question on the whiteboard.
 - [x] Operator aligns to the left of the longer number column.
 - [x] Dedicated final-answer box on the whiteboard.

@@ -109,7 +109,7 @@ const state = {
   timerId: null,
   timerStyle: 0,
   progress: loadProgress(),
-  session: { correct: 0, missed: 0, starsEarned: 0, missedQuestions: [], startedAt: Date.now() },
+  session: { correct: 0, missed: 0, starsEarned: 0, missedQuestions: [], seenQuestions: [], startedAt: Date.now() },
   pendingReview: null,
   soundEnabled: localStorage.getItem("quickmaths-sound") !== "off",
   audioContext: null,
@@ -453,7 +453,7 @@ function resetProgress() {
   localStorage.removeItem("quickmaths-progress");
   localStorage.removeItem("mathsprout-progress");
   state.progress = loadProgress();
-  state.session = { correct: 0, missed: 0, starsEarned: 0, missedQuestions: [], startedAt: Date.now() };
+  state.session = { correct: 0, missed: 0, starsEarned: 0, missedQuestions: [], seenQuestions: [], startedAt: Date.now() };
   updateProgressUi();
 }
 
@@ -478,6 +478,50 @@ function chooseOperation(plan) {
   return plan.operation;
 }
 
+
+function operationsForPlan(plan) {
+  const selected = operationEl.value;
+  if (selected !== "stage") return [selected];
+  if (plan.operation === "mixed") return ["multiplication", "division"];
+  if (plan.operation === "add-sub") return ["addition", "subtraction"];
+  return [plan.operation];
+}
+
+function buildQuestionsForOperation(plan, operation) {
+  const questions = [];
+  if (operation === "addition") {
+    const max = plan.max || 10;
+    for (let a = 1; a <= max; a += 1) {
+      const maxB = plan.sumMax ? Math.max(0, plan.sumMax - a) : (plan.addendMax || max);
+      for (let b = 1; b <= maxB; b += 1) questions.push({ a, b, answer: a + b, symbol: "+", plan });
+    }
+  }
+  if (operation === "subtraction") {
+    const max = plan.max || 10;
+    const subtractMax = plan.subtractMax || max;
+    for (let a = 2; a <= max; a += 1) {
+      for (let b = 1; b <= Math.min(a, subtractMax); b += 1) questions.push({ a, b, answer: a - b, symbol: "-", plan });
+    }
+  }
+  if (operation === "multiplication") {
+    const factors = plan.factors || Array.from({ length: plan.multiplicationMax || 10 }, (_, index) => index + 1);
+    const maxB = plan.max || plan.multiplicationMax || 10;
+    factors.forEach((a) => {
+      for (let b = 1; b <= maxB; b += 1) questions.push({ a, b, answer: a * b, symbol: "x", plan });
+    });
+  }
+  if (operation === "division") {
+    const max = plan.divisionMax || 10;
+    for (let b = 1; b <= max; b += 1) {
+      for (let answer = 1; answer <= max; answer += 1) questions.push({ a: b * answer, b, answer, symbol: "/", plan });
+    }
+  }
+  return questions;
+}
+
+function questionPool(plan) {
+  return operationsForPlan(plan).flatMap((operation) => buildQuestionsForOperation(plan, operation));
+}
 function makeQuestion() {
   const plan = currentPlan();
   const operation = chooseOperation(plan);
@@ -525,6 +569,42 @@ function makeQuestion() {
   return { a, b, answer, symbol, plan };
 }
 
+
+function questionKey(question) {
+  return `${state.progress.currentStage}:${question.symbol}:${question.a}:${question.b}`;
+}
+
+function estimatedQuestionPool(plan) {
+  if (plan.operation === "add-sub") return Math.max(8, (plan.sumMax || plan.max || 10) * 2);
+  if (plan.operation === "mixed") return Math.max(20, (plan.multiplicationMax || 10) * (plan.divisionMax || 10));
+  if (plan.operation === "addition") return Math.max(5, plan.sumMax ? Math.round((plan.sumMax * plan.sumMax) / 2) : (plan.max || 10) * (plan.addendMax || plan.max || 10));
+  if (plan.operation === "subtraction") return Math.max(5, (plan.max || 10) * (plan.subtractMax || plan.max || 10) / 2);
+  if (plan.operation === "multiplication") return Math.max(5, (plan.factors?.length || plan.multiplicationMax || 10) * (plan.max || plan.multiplicationMax || 10));
+  if (plan.operation === "division") return Math.max(5, (plan.divisionMax || 10) * (plan.divisionMax || 10));
+  return 10;
+}
+
+function rememberQuestion(question) {
+  const key = questionKey(question);
+  const limit = Math.max(3, Math.min(40, Math.floor(estimatedQuestionPool(question.plan) * 0.75)));
+  state.session.seenQuestions = (state.session.seenQuestions || []).filter((item) => item !== key);
+  state.session.seenQuestions.push(key);
+  if (state.session.seenQuestions.length > limit) state.session.seenQuestions.splice(0, state.session.seenQuestions.length - limit);
+}
+
+function makeFreshQuestion() {
+  const plan = currentPlan();
+  const pool = questionPool(plan);
+  if (!pool.length) return makeQuestion();
+  let seen = new Set(state.session.seenQuestions || []);
+  let unseen = pool.filter((question) => !seen.has(questionKey(question)));
+  if (!unseen.length) {
+    state.session.seenQuestions = [];
+    seen = new Set();
+    unseen = pool;
+  }
+  return unseen[randomInt(0, unseen.length - 1)];
+}
 function renderStackedQuestion(question) {
   const digits = Math.max(String(question.a).length, String(question.b).length);
   questionEl.style.setProperty("--digits", `${digits}ch`);
@@ -615,7 +695,8 @@ function startPractice() {
 
 function showQuestion(question = null) {
   const hasQuestion = question && typeof question === "object" && Number.isFinite(question.answer);
-  state.current = hasQuestion ? { plan: currentPlan(), ...question } : makeQuestion();
+  state.current = hasQuestion ? { plan: currentPlan(), ...question } : makeFreshQuestion();
+  rememberQuestion(state.current);
   questionEl.innerHTML = renderStackedQuestion(state.current);
   hideFeedback();
   closePenPanel();

@@ -203,6 +203,22 @@ async function main() {
   const wrongFeedback = await page.locator("#feedback").textContent();
   if (/Great work|Congratulations/.test(wrongFeedback || "")) throw new Error(`Wrong handwritten answer was accepted: ${wrongFeedback}`);
 
+  const repeatedQuestions = await page.evaluate(() => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.12;
+    state.session.seenQuestions = [];
+    state.progress.currentStage = 1;
+    const questions = [];
+    for (let index = 0; index < 4; index += 1) {
+      showQuestion();
+      questions.push(questionKey(state.current));
+      clearInterval(state.timerId);
+    }
+    Math.random = originalRandom;
+    return questions;
+  });
+  if (new Set(repeatedQuestions).size < 3) throw new Error(`Question repeat guard failed: ${JSON.stringify(repeatedQuestions)}`);
+
   const canvas = await page.locator("#board").boundingBox();
   if (!canvas) throw new Error("Canvas not visible");
   await page.mouse.move(canvas.x + 80, canvas.y + 420);
