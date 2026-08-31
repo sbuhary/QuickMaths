@@ -120,6 +120,7 @@
 - [x] Add a real browser-loaded TensorFlow.js MNIST digit model for client-side recognition.
 - [ ] Add a labeled in-app handwriting sample set for digits 0-9 from real child/parent writing styles.
 - [x] Use model confidence plus the current rule-based guard before awarding stars, so wrong answers are not accepted only because the model guessed.
+- [x] Add regression coverage for clear child-style digits and wrong lookalike digits before changing recognition thresholds.
 
 
 ### P0: Production Stability

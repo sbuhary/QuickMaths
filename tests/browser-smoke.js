@@ -46,14 +46,14 @@ async function main() {
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       strokes.forEach((stroke) => {
+        const points = stroke.map((point) => ({ x: rect.left + point[0] * width, y: rect.top + point[1] * height }));
         ctx.beginPath();
-        stroke.forEach((point, index) => {
-          const x = rect.left + point[0] * width;
-          const y = rect.top + point[1] * height;
-          if (index) ctx.lineTo(x, y);
-          else ctx.moveTo(x, y);
+        points.forEach((point, index) => {
+          if (index) ctx.lineTo(point.x, point.y);
+          else ctx.moveTo(point.x, point.y);
         });
         ctx.stroke();
+        state.paths.push({ color: "#1f2937", size, erase: false, points });
       });
       ctx.restore();
     }
@@ -87,6 +87,62 @@ async function main() {
   const weakStrokes = strokeResults.filter((result) => directDigits.has(result.digit) && (result.text !== result.digit || result.status !== "local" || result.confidence < 0.64));
   const unsafeStrokes = strokeResults.filter((result) => !directDigits.has(result.digit) && result.text !== result.digit && result.status !== "ambiguous");
   if (weakStrokes.length || unsafeStrokes.length) throw new Error(`Stroke digits failed recognition policy: ${JSON.stringify({ weakStrokes, unsafeStrokes })}`);
+
+  const guardedResults = await page.evaluate(async () => {
+    function drawCase(strokes, expected) {
+      state.current = { a: Number(expected), b: 0, answer: Number(expected), symbol: "+", plan: currentPlan() };
+      questionEl.innerHTML = renderStackedQuestion(state.current);
+      clearBoard();
+      setActionState("ready");
+      clearInterval(state.timerId);
+      const rect = getAnswerRect();
+      const width = rect.right - rect.left;
+      const height = rect.bottom - rect.top;
+      strokes.forEach((stroke) => {
+        const points = stroke.map((point) => ({ x: rect.left + point[0] * width, y: rect.top + point[1] * height }));
+        ctx.save();
+        ctx.strokeStyle = "#1f2937";
+        ctx.lineWidth = 5;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        points.forEach((point, index) => {
+          if (index) ctx.lineTo(point.x, point.y);
+          else ctx.moveTo(point.x, point.y);
+        });
+        ctx.stroke();
+        ctx.restore();
+        state.paths.push({ color: "#1f2937", size: 5, erase: false, points });
+      });
+    }
+    const shapes = {
+      five: [[[0.52, 0.15], [0.46, 0.15], [0.45, 0.35], [0.63, 0.35], [0.78, 0.52], [0.75, 0.75], [0.5, 0.77]]],
+      four: [[[0.5, 0.15], [0.37, 0.55], [0.72, 0.55]], [[0.62, 0.2], [0.62, 0.86]]],
+      six: [[[0.61, 0.16], [0.44, 0.3], [0.43, 0.65], [0.58, 0.8], [0.72, 0.65], [0.65, 0.45], [0.48, 0.45]]],
+      three: [[[0.34, 0.22], [0.65, 0.22], [0.5, 0.47], [0.65, 0.47], [0.66, 0.7], [0.42, 0.78]]],
+      zero: [[[0.45, 0.18], [0.32, 0.25], [0.29, 0.5], [0.34, 0.76], [0.5, 0.84], [0.66, 0.76], [0.7, 0.5], [0.65, 0.24], [0.45, 0.18]]],
+      eight: [[[0.5, 0.48], [0.35, 0.34], [0.44, 0.19], [0.62, 0.24], [0.62, 0.39], [0.5, 0.48], [0.36, 0.6], [0.42, 0.79], [0.62, 0.75], [0.66, 0.58], [0.5, 0.48]]],
+      nine: [[[0.62, 0.5], [0.44, 0.5], [0.35, 0.36], [0.45, 0.2], [0.66, 0.25], [0.66, 0.58], [0.54, 0.76], [0.38, 0.82]]],
+    };
+    const cases = [
+      ["correct5", shapes.five, "5"],
+      ["correct4", shapes.four, "4"],
+      ["correct6", shapes.six, "6"],
+      ["wrong3as5", shapes.three, "5"],
+      ["wrong0as6", shapes.zero, "6"],
+      ["wrong8as6", shapes.eight, "6"],
+      ["wrong9as4", shapes.nine, "4"],
+    ];
+    const results = [];
+    for (const [name, strokes, expected] of cases) {
+      drawCase(strokes, expected);
+      results.push({ name, expected, ...(await recognizeWriting(expected)) });
+    }
+    return results;
+  });
+  const missedCorrect = guardedResults.filter((result) => result.name.startsWith("correct") && result.text !== result.expected);
+  const acceptedWrong = guardedResults.filter((result) => result.name.startsWith("wrong") && result.text === result.expected && result.status !== "ambiguous");
+  if (missedCorrect.length || acceptedWrong.length) throw new Error(`Guarded recognition failed: ${JSON.stringify({ missedCorrect, acceptedWrong, guardedResults })}`);
   await page.evaluate(async () => {
     state.current = { a: 3, b: 2, answer: 5, symbol: "+", plan: currentPlan() };
     questionEl.innerHTML = renderStackedQuestion(state.current);

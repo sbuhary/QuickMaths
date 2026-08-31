@@ -1048,13 +1048,15 @@ function scoreFiveStroke(points) {
   const minEarlyX = Math.min(...firstThird.map((point) => point.x));
   const maxLateX = Math.max(...secondHalf.map((point) => point.x));
   const lowestLateY = Math.max(...secondHalf.map((point) => point.y));
+  const leftWall = normalized.some((point) => point.x < 0.25 && point.y > 0.24 && point.y < 0.62);
   const topStart = first.y < 0.28;
   const topMovesLeft = first.x - minEarlyX > 0.18;
+  const hasFiveCorner = topMovesLeft || leftWall;
   const dropsDown = lowestLateY > 0.72;
   const swingsRight = maxLateX - minEarlyX > 0.34;
   const endsLow = last.y > 0.56;
   const endsLeftOfRightSwing = last.x < maxLateX - 0.08;
-  return [topStart, topMovesLeft, dropsDown, swingsRight, endsLow, endsLeftOfRightSwing].filter(Boolean).length / 6;
+  return [topStart, hasFiveCorner, leftWall, dropsDown, swingsRight, endsLow, endsLeftOfRightSwing].filter(Boolean).length / 7;
 }
 
 function strokeDigitScore(digit) {
@@ -1228,10 +1230,12 @@ function recognizeDigitsLocally(expectedText = "") {
 
   if (expected) {
     const expectedCloseToBest = expected.average >= bestScore - 0.1;
-    const expectedStrong = (expected.average > 0.78 && expected.min > 0.52) || (strokeScore > 0.82 && expected.average > 0.58);
+    const expectedCompetitive = expected.average >= bestScore - 0.28;
+    const expectedStrong = ((expected.average > 0.78 && expected.min > 0.52) || (text === expectedText && strokeScore > 0.82 && expected.average > 0.58)) && (expectedText !== "5" || strokeScore > 0.82);
     const expectedReadable = expected.average > 0.66 && expected.min > 0.42;
-    if (expectedStrong && expectedCloseToBest) {
-      return { text: expectedText, status: "local", confidence: Math.min(0.9, Math.max(confidence, expected.average - 0.02, strokeScore)), expectedScore: expected.average, visualText: text, strokeScore };
+    const expectedPlausible = text === expectedText && expectedText.length <= 2 && expected.average > 0.58 && expected.min > 0.34 && expectedCompetitive && (expectedText !== "5" || strokeScore > 0.82);
+    if ((expectedStrong && expectedCloseToBest) || expectedPlausible) {
+      return { text: expectedText, status: "local", confidence: Math.min(0.9, Math.max(0.66, confidence, expected.average - 0.02, strokeScore)), expectedScore: expected.average, visualText: text, strokeScore };
     }
     if (text !== expectedText && expected.average > 0.55 && expected.average >= bestScore - 0.34) {
       return { text, status: "ambiguous", confidence: Math.min(0.56, confidence), expectedScore: expected.average, visualText: text };
@@ -1239,8 +1243,11 @@ function recognizeDigitsLocally(expectedText = "") {
   }
 
   const adjustedConfidence = minimumMargin < 0.1 ? Math.min(confidence, 0.58) : confidence;
-  if (expected && text === expectedText && expected.average > 0.62 && bestScore > 0.6 && minimumMargin > 0.01) {
+  if (expected && text === expectedText && expected.average > 0.62 && bestScore > 0.6 && minimumMargin > 0.01 && (expectedText !== "5" || strokeScore > 0.82)) {
     return { text, status: "local", confidence: Math.max(0.64, adjustedConfidence, strokeScore), expectedScore: expected.average, visualText: text, strokeScore };
+  }
+  if (expected && expectedText === "5" && text === expectedText && strokeScore <= 0.82) {
+    return { text, status: "ambiguous", confidence: Math.min(0.56, adjustedConfidence), expectedScore: expected.average, visualText: text, strokeScore };
   }
   return { text, status: text ? "local" : "unreadable", confidence: adjustedConfidence };
 }
@@ -1277,9 +1284,10 @@ async function recognizeWriting(expectedText) {
   if (!answerInkComponents().length && !pathsInsideAnswerBox().length) return { text: "", status: "empty", confidence: 0 };
   const local = recognizeDigitsLocally(expectedText);
   if (local.text === expectedText && local.confidence >= 0.64) return local;
+  if (local.status === "ambiguous" && local.text && local.text !== expectedText) return local;
 
   const tensorflow = await recognizeWithTensorFlow(expectedText);
-  if (tensorflow.text === expectedText && tensorflow.confidence >= 0.78 && tensorflow.margin >= 0.16) return tensorflow;
+  if (tensorflow.text === expectedText && tensorflow.confidence >= 0.78 && tensorflow.margin >= 0.16 && (!local.text || (local.text === expectedText && local.status !== "ambiguous"))) return tensorflow;
   if (tensorflow.text && local.text && tensorflow.text !== local.text) {
     return {
       ...local,
