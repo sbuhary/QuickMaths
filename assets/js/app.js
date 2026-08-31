@@ -83,7 +83,7 @@ const digitTemplates = {
   2: [["01110", "10001", "00001", "00010", "00100", "01000", "11111"], ["11110", "00001", "00001", "01110", "10000", "10000", "11111"], ["01110", "10001", "00001", "00110", "01000", "10000", "11111"], ["00110", "01001", "00001", "00010", "00100", "01000", "01111"]],
   3: [["11110", "00001", "00001", "01110", "00001", "00001", "11110"], ["01110", "10001", "00001", "00110", "00001", "10001", "01110"], ["11110", "00001", "00010", "00110", "00001", "00001", "11110"]],
   4: [["10010", "10010", "10010", "11111", "00010", "00010", "00010"], ["10001", "10001", "10001", "11111", "00001", "00001", "00001"], ["00100", "01100", "10100", "11111", "00100", "00100", "00100"]],
-  5: [["11111", "10000", "10000", "11110", "00001", "00001", "11110"], ["11111", "10000", "11110", "00001", "00001", "10001", "01110"]],
+  5: [["11111", "10000", "10000", "11110", "00001", "00001", "11110"], ["11111", "10000", "11110", "00001", "00001", "10001", "01110"], ["01111", "01000", "01000", "01110", "00001", "00001", "11110"], ["11110", "10000", "10000", "11110", "00001", "00001", "01110"], ["01110", "10000", "10000", "11110", "00001", "00001", "01110"]],
   6: [["01110", "10000", "10000", "11110", "10001", "10001", "01110"], ["00110", "01000", "10000", "11110", "10001", "10001", "01110"], ["01110", "10000", "10000", "11110", "10001", "10001", "11110"]],
   7: [["11111", "00001", "00010", "00100", "01000", "01000", "01000"], ["11111", "00001", "00010", "00100", "00100", "00100", "00100"], ["11111", "00010", "00010", "00100", "00100", "01000", "01000"]],
   8: [["01110", "10001", "10001", "01110", "10001", "10001", "01110"], ["11111", "10001", "10001", "11111", "10001", "10001", "11111"]],
@@ -987,7 +987,10 @@ function scoreDigit(component, digit) {
   if (digit === "4" && middleInk >= 3 && rightInk >= 3 && topInk >= 1 && bottomInk <= 4) score += 0.06;
   if (digit === "4" && (bottomInk > 7 || (leftInk < 2 && aspect > 0.55))) score -= 0.18;
   if (digit === "0" && topInk >= 2 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2 && middleInk <= 9) score += 0.1;
+  if (digit === "5" && topInk >= 2 && middleInk >= 2 && bottomInk >= 1 && leftInk >= 2 && rightInk >= 1 && aspect >= 0.42) score += 0.18;
+  if (digit === "5" && leftInk >= rightInk && topInk >= 2 && middleInk >= 2 && bottomInk >= 1) score += 0.08;
   if (digit === "8" && topInk >= 2 && middleInk >= 3 && bottomInk >= 2 && leftInk >= 2 && rightInk >= 2) score += 0.12;
+  if (digit === "8" && (leftInk < 3 || bottomInk < 2)) score -= 0.16;
   if (digit === "7" && topInk >= 3 && bottomInk <= 2 && leftInk <= 4) score += 0.14;
   return score;
 }
@@ -1023,11 +1026,19 @@ function recognizeDigitsLocally(expectedText = "") {
   const confidence = recognized.reduce((sum, item) => sum + item.confidence, 0) / Math.max(1, recognized.length);
   const minimumMargin = Math.min(...recognized.map((item) => item.margin ?? 0));
 
-  if (expected && expected.average > 0.74 && expected.min > 0.48 && expected.average >= bestScore - 0.04) {
-    return { text: expectedText, status: "local", confidence: Math.min(0.88, Math.max(confidence, expected.average - 0.04)) };
+  if (expected) {
+    const expectedCloseToBest = expected.average >= bestScore - 0.1;
+    const expectedStrong = expected.average > 0.82 && expected.min > 0.56;
+    const expectedReadable = expected.average > 0.68 && expected.min > 0.42;
+    if (expectedStrong && expectedCloseToBest) {
+      return { text: expectedText, status: "local", confidence: Math.min(0.9, Math.max(confidence, expected.average - 0.02)), expectedScore: expected.average, visualText: text };
+    }
+    if (text !== expectedText && expectedReadable && expected.average >= bestScore - 0.16) {
+      return { text, status: "ambiguous", confidence: Math.min(0.56, confidence), expectedScore: expected.average, visualText: text };
+    }
   }
 
-  const adjustedConfidence = minimumMargin < 0.08 ? Math.min(confidence, 0.58) : confidence;
+  const adjustedConfidence = minimumMargin < 0.1 ? Math.min(confidence, 0.58) : confidence;
   return { text, status: text ? "local" : "unreadable", confidence: adjustedConfidence };
 }
 
@@ -1062,7 +1073,8 @@ async function recognizeWithBrowserApi(paths) {
 async function recognizeWriting(expectedText) {
   if (!answerInkComponents().length) return { text: "", status: "empty", confidence: 0 };
   const local = recognizeDigitsLocally(expectedText);
-  if (local.text && local.confidence >= 0.62) return local;
+  if (local.status === "ambiguous") return local;
+  if (local.text && local.confidence >= 0.66) return local;
   const browser = await recognizeWithBrowserApi(pathsInsideAnswerBox());
   if (browser.text && browser.confidence > local.confidence) return browser;
   return local.text ? local : { text: "", status: "unreadable", confidence: 0 };
@@ -1131,7 +1143,7 @@ async function checkAnswer() {
   const given = normalizeAnswer(recognized.text);
   const correct = given === state.current.answer;
 
-  if (recognized.status !== "empty" && recognized.confidence < 0.62) {
+  if (recognized.status !== "empty" && (recognized.status === "ambiguous" || recognized.confidence < 0.66)) {
     askForRecognitionReview(recognized);
     return;
   }

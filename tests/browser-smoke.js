@@ -35,6 +35,66 @@ async function main() {
   await page.getByRole("button", { name: /Pencil and colors/i }).click();
   await page.getByRole("button", { name: /Medium pen/i }).click();
 
+  await page.evaluate(async () => {
+    state.current = { a: 3, b: 2, answer: 5, symbol: "+", plan: currentPlan() };
+    questionEl.innerHTML = renderStackedQuestion(state.current);
+    clearBoard();
+    setActionState("ready");
+    clearInterval(state.timerId);
+    state.timeLeft = 49;
+    updateTimerDisplay();
+    const rect = getAnswerRect();
+    const width = rect.right - rect.left;
+    const height = rect.bottom - rect.top;
+    ctx.save();
+    ctx.strokeStyle = "#1f2937";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(rect.left + width * 0.6, rect.top + height * 0.22);
+    ctx.lineTo(rect.left + width * 0.42, rect.top + height * 0.22);
+    ctx.lineTo(rect.left + width * 0.39, rect.top + height * 0.46);
+    ctx.lineTo(rect.left + width * 0.57, rect.top + height * 0.46);
+    ctx.quadraticCurveTo(rect.left + width * 0.72, rect.top + height * 0.48, rect.left + width * 0.7, rect.top + height * 0.66);
+    ctx.quadraticCurveTo(rect.left + width * 0.66, rect.top + height * 0.83, rect.left + width * 0.43, rect.top + height * 0.78);
+    ctx.stroke();
+    ctx.restore();
+    await checkAnswer();
+  });
+  const feedback = await page.locator("#feedback").textContent();
+  if (!/I read 5/.test(feedback || "")) throw new Error(`Expected handwritten 5 to be recognized, got: ${feedback}`);
+
+  await page.evaluate(async () => {
+    state.current = { a: 2, b: 1, answer: 3, symbol: "+", plan: currentPlan() };
+    questionEl.innerHTML = renderStackedQuestion(state.current);
+    clearBoard();
+    setActionState("ready");
+    clearInterval(state.timerId);
+    state.timeLeft = 49;
+    updateTimerDisplay();
+    const rect = getAnswerRect();
+    const width = rect.right - rect.left;
+    const height = rect.bottom - rect.top;
+    ctx.save();
+    ctx.strokeStyle = "#1f2937";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(rect.left + width * 0.6, rect.top + height * 0.22);
+    ctx.lineTo(rect.left + width * 0.42, rect.top + height * 0.22);
+    ctx.lineTo(rect.left + width * 0.39, rect.top + height * 0.46);
+    ctx.lineTo(rect.left + width * 0.57, rect.top + height * 0.46);
+    ctx.quadraticCurveTo(rect.left + width * 0.72, rect.top + height * 0.48, rect.left + width * 0.7, rect.top + height * 0.66);
+    ctx.quadraticCurveTo(rect.left + width * 0.66, rect.top + height * 0.83, rect.left + width * 0.43, rect.top + height * 0.78);
+    ctx.stroke();
+    ctx.restore();
+    await checkAnswer();
+  });
+  const wrongFeedback = await page.locator("#feedback").textContent();
+  if (/Great work|Congratulations/.test(wrongFeedback || "")) throw new Error(`Wrong handwritten answer was accepted: ${wrongFeedback}`);
+
   const canvas = await page.locator("#board").boundingBox();
   if (!canvas) throw new Error("Canvas not visible");
   await page.mouse.move(canvas.x + 80, canvas.y + 420);

@@ -73,6 +73,7 @@
 - [x] Expected-answer scoring is conservative so wrong handwriting is not accepted as correct too easily.
 - [x] Recognition now tries to split wide joined digits using low-ink valleys and merge over-split strokes before scoring.
 - [x] Ambiguous digit reads lower confidence and route to answer choices instead of marking too quickly.
+- [x] Recognition routes close expected/read disagreements to review instead of confidently marking them wrong.
 
 ### Gamification
 - [x] Stars and score displayed with game-style icons.
