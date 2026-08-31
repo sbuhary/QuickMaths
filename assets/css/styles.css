@@ -114,32 +114,30 @@ input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 
 .session-detail { background: #e9fff9; margin-top: -4px; }
 .level-path {
   position: relative;
-  min-height: 610px;
-  min-height: clamp(610px, 92vh, 720px);
-  min-height: clamp(610px, 92svh, 720px);
-  margin: 18px 0 34px;
+  min-height: 1140px;
+  margin: 22px 0 46px;
 }
 .level-road {
   position: absolute;
-  inset: 12px 0 34px;
+  inset: 18px 0 48px;
   width: 100%;
-  height: calc(100% - 46px);
+  height: calc(100% - 66px);
   overflow: visible;
   pointer-events: none;
 }
 .level-road path {
   fill: none;
-  stroke: rgba(108, 92, 231, 0.26);
-  stroke-width: 7;
+  stroke: rgba(108, 92, 231, 0.3);
+  stroke-width: 6;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 1 7;
+  stroke-dasharray: 1 10;
 }
 .level-node {
   position: absolute;
   z-index: 1;
-  width: clamp(64px, 23vw, 84px);
-  min-height: 64px;
+  width: clamp(74px, 24vw, 92px);
+  min-height: 74px;
   border: 3px solid rgba(255, 255, 255, 0.78);
   border-radius: 50%;
   aspect-ratio: 1;
@@ -149,23 +147,23 @@ input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 
   font-weight: 900;
   transform: translate(-50%, -50%);
 }
-.level-node[data-stage="1"] { left: 18%; top: 8%; }
-.level-node[data-stage="2"] { left: 50%; top: 15%; }
-.level-node[data-stage="3"] { left: 82%; top: 22%; }
-.level-node[data-stage="4"] { left: 82%; top: 32%; }
-.level-node[data-stage="5"] { left: 50%; top: 40%; }
-.level-node[data-stage="6"] { left: 18%; top: 48%; }
-.level-node[data-stage="7"] { left: 18%; top: 58%; }
-.level-node[data-stage="8"] { left: 50%; top: 66%; }
-.level-node[data-stage="9"] { left: 82%; top: 74%; }
-.level-node[data-stage="10"] { left: 82%; top: 84%; }
-.level-node[data-stage="11"] { left: 50%; top: 91%; }
-.level-node[data-stage="12"] { left: 18%; top: 96%; }
+.level-node[data-stage="1"] { left: 50%; top: 5%; }
+.level-node[data-stage="2"] { left: 50%; top: 13%; }
+.level-node[data-stage="3"] { left: 50%; top: 21%; }
+.level-node[data-stage="4"] { left: 50%; top: 29%; }
+.level-node[data-stage="5"] { left: 50%; top: 37%; }
+.level-node[data-stage="6"] { left: 50%; top: 45%; }
+.level-node[data-stage="7"] { left: 50%; top: 53%; }
+.level-node[data-stage="8"] { left: 50%; top: 61%; }
+.level-node[data-stage="9"] { left: 50%; top: 69%; }
+.level-node[data-stage="10"] { left: 50%; top: 77%; }
+.level-node[data-stage="11"] { left: 50%; top: 85%; }
+.level-node[data-stage="12"] { left: 50%; top: 93%; }
 .level-node[data-level="explorer"] { background: linear-gradient(145deg, #24a8ff, #0984e3); box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18), 0 12px 22px rgba(9, 132, 227, 0.28); }
 .level-node[data-level="builder"] { background: linear-gradient(145deg, #24d6b4, #00a383); box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18), 0 12px 22px rgba(0, 184, 148, 0.28); }
 .level-node[data-level="wizard"] { background: linear-gradient(145deg, #8d7cff, #6c5ce7); box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18), 0 12px 22px rgba(108, 92, 231, 0.28); }
-.level-node span { display: block; font-size: 1.45rem; line-height: 1; }
-.level-node small { display: block; margin-top: 5px; font-size: 0.58rem; line-height: 1; }
+.level-node span { display: block; font-size: 1.55rem; line-height: 1; }
+.level-node small { display: block; margin-top: 5px; font-size: 0.6rem; line-height: 1; }
 .level-node.active { outline: 4px solid var(--yellow); transform: translate(-50%, -50%) scale(1.07); }
 .level-node:disabled { background: linear-gradient(145deg, #c8ced8, #9ca3af); opacity: 0.88; box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18); }
 .level-lock { position: absolute; top: 10px; right: 10px; display: none; width: 18px; height: 18px; }
@@ -482,7 +480,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   .app-shell { padding: 0; }
   .start-screen, .whiteboard, .splash-screen { width: 100%; height: 100vh; height: 100svh; border-width: 7px; border-radius: 0; }
   .start-screen { padding: 0; }
-  .start-card { padding: 20px 20px 136px; }
+  .start-card { padding: 20px 20px 146px; }
   .start-card::after { margin-left: -20px; margin-right: -20px; }
   .start-overlay { left: 28px; right: 28px; bottom: 18px; width: auto; }
   .topbar { top: 18px; left: 18px; right: 18px; grid-template-columns: 42px 1fr 40px auto; gap: 7px; }
