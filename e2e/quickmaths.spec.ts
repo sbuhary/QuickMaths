@@ -52,4 +52,49 @@ test.describe('QuickMaths app', () => {
     expect(errors).toEqual([]);
     await expect(page).toHaveScreenshot('quickmaths-mobile-board.png', { maxDiffPixelRatio: 0.08, timeout: 15000 });
   });
+  test('loads TensorFlow model and keeps clear handwritten answers correct', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openStableStage(page);
+
+    const result = await page.evaluate(async () => {
+      await new Promise<void>((resolve) => {
+        const started = Date.now();
+        const wait = () => (state.digitModelReady || Date.now() - started > 10000 ? resolve() : setTimeout(wait, 100));
+        wait();
+      });
+      state.current = { a: 3, b: 2, answer: 5, symbol: '+', plan: currentPlan() };
+      questionEl.innerHTML = renderStackedQuestion(state.current);
+      clearBoard();
+      const rect = getAnswerRect();
+      const width = rect.right - rect.left;
+      const height = rect.bottom - rect.top;
+      const points = [[0.6, 0.22], [0.42, 0.22], [0.39, 0.46], [0.57, 0.46], [0.7, 0.66], [0.43, 0.78]].map((point) => ({
+        x: rect.left + point[0] * width,
+        y: rect.top + point[1] * height,
+      }));
+      ctx.save();
+      ctx.strokeStyle = '#1f2937';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      points.forEach((point, index) => {
+        if (index) ctx.lineTo(point.x, point.y);
+        else ctx.moveTo(point.x, point.y);
+      });
+      ctx.stroke();
+      ctx.restore();
+      state.paths.push({ color: '#1f2937', size: 5, erase: false, points });
+
+      return {
+        modelReady: state.digitModelReady,
+        tensorflow: await recognizeWithTensorFlow('5'),
+        combined: await recognizeWriting('5'),
+      };
+    });
+
+    expect(result.modelReady).toBe(true);
+    expect(result.tensorflow.status).toBe('tensorflow');
+    expect(result.combined.text).toBe('5');
+  });
 });

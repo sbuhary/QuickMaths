@@ -117,9 +117,9 @@
 
 ### P0: Recognition Upgrade
 - [x] Add client-side TensorFlow.js placeholder recognizer using `tf.loadLayersModel('./model/model.json')` with local fallback.
-- [ ] Train/convert and add a real EMNIST or math-symbol TensorFlow.js model for browser-only recognition.
+- [x] Add a real browser-loaded TensorFlow.js MNIST digit model for client-side recognition.
 - [ ] Add a labeled in-app handwriting sample set for digits 0-9 from real child/parent writing styles.
-- [ ] Use model confidence plus the current rule-based guard before awarding stars, so wrong answers are not accepted only because the model guessed.
+- [x] Use model confidence plus the current rule-based guard before awarding stars, so wrong answers are not accepted only because the model guessed.
 
 
 ### P0: Production Stability

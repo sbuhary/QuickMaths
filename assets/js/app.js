@@ -1129,7 +1129,7 @@ function recognizeInkComponent(component) {
      tensorflowjs_converter --input_format=tf_saved_model path/to/saved_model ./model
   4. Commit the generated ./model/model.json and shard .bin files.
   5. Set window.QUICKMATHS_ENABLE_TF_MODEL = true after the model files are committed.
-  6. The model should accept a [1, 28, 28, 1] grayscale tensor and return 10 digit probabilities.
+  6. The app supports either a [1, 784] flat tensor or [1, 28, 28, 1] grayscale tensor with raw 0-255 pixel values and 10 digit probabilities.
 */
 async function loadTensorFlowDigitModel() {
   state.digitModelTried = true;
@@ -1151,17 +1151,6 @@ function answerImageCanvas(size = 28) {
   const strokes = pathsInsideAnswerBox().filter((path) => !path.erase);
   const points = strokes.flatMap((path) => path.points);
   if (points.length < 2) return null;
-  let minX = rect.right;
-  let minY = rect.bottom;
-  let maxX = 0;
-  let maxY = 0;
-  points.forEach((point) => {
-    minX = Math.min(minX, point.x);
-    minY = Math.min(minY, point.y);
-    maxX = Math.max(maxX, point.x);
-    maxY = Math.max(maxY, point.y);
-  });
-  if (maxX <= minX || maxY <= minY) return null;
 
   const target = document.createElement("canvas");
   target.width = size;
@@ -1169,20 +1158,17 @@ function answerImageCanvas(size = 28) {
   const targetCtx = target.getContext("2d");
   targetCtx.fillStyle = "black";
   targetCtx.fillRect(0, 0, size, size);
-  const inkWidth = maxX - minX + 1;
-  const inkHeight = maxY - minY + 1;
-  const scale = Math.min((size - 6) / inkWidth, (size - 6) / inkHeight);
-  const dx = (size - inkWidth * scale) / 2;
-  const dy = (size - inkHeight * scale) / 2;
   targetCtx.strokeStyle = "white";
   targetCtx.lineCap = "round";
   targetCtx.lineJoin = "round";
+  const width = Math.max(1, rect.right - rect.left);
+  const height = Math.max(1, rect.bottom - rect.top);
   strokes.forEach((path) => {
-    targetCtx.lineWidth = Math.max(2, Math.min(7, path.size * scale));
+    targetCtx.lineWidth = Math.max(2, Math.min(4, (path.size / height) * size));
     targetCtx.beginPath();
     path.points.forEach((point, index) => {
-      const x = dx + (point.x - minX) * scale;
-      const y = dy + (point.y - minY) * scale;
+      const x = ((point.x - rect.left) / width) * size;
+      const y = ((point.y - rect.top) / height) * size;
       if (index) targetCtx.lineTo(x, y);
       else targetCtx.moveTo(x, y);
     });
@@ -1200,7 +1186,10 @@ async function recognizeWithTensorFlow(expectedText = "") {
   if (!inputCanvas) return { text: "", status: "empty", confidence: 0 };
   try {
     const prediction = window.tf.tidy(() => {
-      const tensor = window.tf.browser.fromPixels(inputCanvas, 1).toFloat().div(255).reshape([1, 28, 28, 1]);
+      const pixels = window.tf.browser.fromPixels(inputCanvas, 1).toFloat();
+      const inputShape = state.digitModel.inputs?.[0]?.shape || [];
+      const size = inputCanvas.width;
+      const tensor = inputShape.length === 2 ? pixels.reshape([1, size * size]) : pixels.reshape([1, size, size, 1]);
       return state.digitModel.predict(tensor);
     });
     const scores = Array.from(await prediction.data());
@@ -1223,10 +1212,13 @@ function scoreExpected(components, expectedText) {
 
 function recognizeDigitsLocally(expectedText = "") {
   const components = answerInkComponents();
-  if (!components.length) return { text: "", status: "empty", confidence: 0 };
+  const strokeScore = expectedText.length === 1 ? strokeDigitScore(expectedText) : 0;
+  if (!components.length) {
+    if (strokeScore > 0.82) return { text: expectedText, status: "local", confidence: strokeScore, strokeScore };
+    return { text: "", status: "empty", confidence: 0 };
+  }
 
   const expected = /^\d+$/.test(expectedText) ? scoreExpected(components, expectedText) : null;
-  const strokeScore = expectedText.length === 1 ? strokeDigitScore(expectedText) : 0;
   const componentsForReading = expected?.components || components;
   const recognized = componentsForReading.map(recognizeInkComponent);
   const bestScore = recognized.reduce((sum, item) => sum + item.score, 0) / recognized.length;
@@ -1282,14 +1274,17 @@ async function recognizeWithBrowserApi(paths) {
 }
 
 async function recognizeWriting(expectedText) {
-  if (!answerInkComponents().length) return { text: "", status: "empty", confidence: 0 };
-  const tensorflow = await recognizeWithTensorFlow(expectedText);
+  if (!answerInkComponents().length && !pathsInsideAnswerBox().length) return { text: "", status: "empty", confidence: 0 };
   const local = recognizeDigitsLocally(expectedText);
-  if (tensorflow.text && tensorflow.confidence >= 0.78 && tensorflow.margin >= 0.16) return tensorflow;
-  if (tensorflow.text && tensorflow.confidence >= 0.52 && tensorflow.text !== local.text) {
+  if (local.text === expectedText && local.confidence >= 0.64) return local;
+
+  const tensorflow = await recognizeWithTensorFlow(expectedText);
+  if (tensorflow.text === expectedText && tensorflow.confidence >= 0.78 && tensorflow.margin >= 0.16) return tensorflow;
+  if (tensorflow.text && local.text && tensorflow.text !== local.text) {
     return {
       ...local,
       status: "ambiguous",
+      confidence: Math.min(0.56, local.confidence || tensorflow.confidence),
       tensorflowText: tensorflow.text,
       tensorflowConfidence: tensorflow.confidence,
     };
