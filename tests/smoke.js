@@ -79,7 +79,7 @@ assert(html.includes("data-size=\"11\"") && html.includes("aria-label=\"Thick pe
 assert(html.includes("id=\"retry-missed\""), "Retry missed control missing");
 assert(js.includes("retryMissedQuestions") && js.includes("missedQuestions"), "Retry missed behavior missing");
 assert(js.includes("componentColumnInk") && js.includes("findSplitColumn"), "Valley-based digit splitting missing");
-assert(js.includes("expectedStrong") && js.includes("status: \"ambiguous\"") && js.includes("minimumMargin < 0.1") && js.includes("confidence >= 0.66"), "Conservative recognition confidence guard missing");
+assert(js.includes("scoreDigitFeatures") && js.includes("scoreComponentAsDigit") && js.includes("status: \"ambiguous\"") && js.includes("minimumMargin < 0.1") && js.includes("confidence >= 0.64"), "Conservative recognition confidence guard missing");
 assert(js.includes("hasQuestion") && js.includes("() => showQuestion()"), "Next handlers must not pass click events as questions");
 assert(html.includes("Easy: start at tiny sums") && html.includes("Medium: start at teen sums") && html.includes("Difficult: start at times tables") && js.includes("difficultyStarts = { easy: 1, medium: 5, difficult: 9 }") && js.includes("selectDifficulty"), "Difficulty entry selection missing");
 assert(js.includes("setActionState(type)") && js.includes("tryMainButton.hidden") && js.includes("nextMainButton.hidden") && js.includes("checkButton.hidden"), "Answer actions must follow feedback state");

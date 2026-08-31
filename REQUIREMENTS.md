@@ -74,6 +74,7 @@
 - [x] Recognition now tries to split wide joined digits using low-ink valleys and merge over-split strokes before scoring.
 - [x] Ambiguous digit reads lower confidence and route to answer choices instead of marking too quickly.
 - [x] Recognition routes close expected/read disagreements to review instead of confidently marking them wrong.
+- [x] Recognition combines template matching with structural digit features before accepting an answer.
 
 ### Gamification
 - [x] Stars and score displayed with game-style icons.
