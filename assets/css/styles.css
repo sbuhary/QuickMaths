@@ -225,7 +225,8 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 .stat-pill { display: inline-flex; align-items: center; gap: 4px; min-width: 54px; justify-content: center; color: var(--ink); font-size: 0.98rem; font-weight: 900; }
 .stat-pill svg { width: 20px; height: 20px; stroke-width: 3; }
 .stat-pill:first-child svg { color: var(--yellow); fill: var(--yellow); }
-.stat-pill:last-child svg { color: var(--pink); fill: var(--pink); }
+.stat-pill:nth-child(2) svg { color: var(--pink); fill: var(--pink); }
+.freeze-pill svg { color: var(--blue); fill: rgba(9, 132, 227, 0.18); }
 
 .timer {
   --time-progress: 1;

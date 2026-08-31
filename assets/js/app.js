@@ -33,6 +33,7 @@ const rewardOkButton = document.querySelector("#reward-ok");
 const rewardNextButton = document.querySelector("#reward-next");
 const starsEl = document.querySelector("#stars");
 const streakEl = document.querySelector("#streak");
+const streakFreezesEl = document.querySelector("#streak-freezes");
 const stageSummaryEl = document.querySelector("#stage-summary");
 const sessionSummaryEl = document.querySelector("#session-summary");
 const sessionDetailEl = document.querySelector("#session-detail");
@@ -235,12 +236,12 @@ function verifyChosenAnswer(value) {
     awardCorrectAnswer(String(value));
     return;
   }
-  state.progress.streak = 0;
+  const streakProtected = protectOrResetStreak();
   recordMissOnce();
   saveProgress();
   updateProgressUi();
   playTone("wrong");
-  showFeedback(state.kidName ? `You picked ${value}. Try again, ${state.kidName}.` : `You picked ${value}. Try this one again.`, "wrong");
+  showFeedback((state.kidName ? `You picked ${value}. Try again, ${state.kidName}.` : `You picked ${value}. Try this one again.`) + (streakProtected ? freezeMessage() : ""), "wrong");
 }
 function formatKidTimeLeft(seconds) {
   const safeSeconds = Math.max(0, Number(seconds) || 0);
@@ -350,6 +351,7 @@ function normalizeProgress(progress) {
     stars: Math.max(0, Number(progress.stars) || 0),
     stageStars: normalizeStageStars(progress.stageStars),
     streak: Math.max(0, Number(progress.streak) || 0),
+    streakFreezes: Math.max(0, Math.min(3, Number(progress.streakFreezes) || 0)),
     answered: Math.max(0, Number(progress.answered) || 0),
     celebratedMilestones: Array.isArray(progress.celebratedMilestones) ? progress.celebratedMilestones.map(Number).filter(Number.isFinite) : [],
     difficulty,
@@ -359,7 +361,7 @@ function normalizeProgress(progress) {
 }
 
 function loadProgress() {
-  const fallback = { stars: 0, stageStars: {}, streak: 0, answered: 0, celebratedMilestones: [], difficulty: localStorage.getItem("quickmaths-difficulty") || "easy", unlockedStages: 1, currentStage: 1 };
+  const fallback = { stars: 0, stageStars: {}, streak: 0, streakFreezes: 0, answered: 0, celebratedMilestones: [], difficulty: localStorage.getItem("quickmaths-difficulty") || "easy", unlockedStages: 1, currentStage: 1 };
   try {
     const stored = localStorage.getItem("quickmaths-progress") || localStorage.getItem("mathsprout-progress");
     return normalizeProgress({ ...fallback, ...JSON.parse(stored || "{}") });
@@ -389,6 +391,7 @@ function updateProgressUi() {
   const plan = currentPlan();
   starsEl.textContent = String(state.progress.stars);
   streakEl.textContent = String(state.progress.streak);
+  if (streakFreezesEl) streakFreezesEl.textContent = String(state.progress.streakFreezes);
   if (difficultyEl) difficultyEl.value = state.progress.difficulty;
   if (stageSummaryEl) stageSummaryEl.textContent = `Stage ${plan.stage}: ${plan.title}`;
   if (sessionSummaryEl) sessionSummaryEl.textContent = `${state.session.correct} right / ${state.session.missed} missed`;
@@ -734,10 +737,12 @@ function resetTimer() {
     updateTimerDisplay();
     if (state.timeLeft <= 0) {
       clearInterval(state.timerId);
+      const streakProtected = protectOrResetStreak();
       recordMissOnce();
+      saveProgress();
       updateProgressUi();
       playTone("timeout");
-      showFeedback(state.kidName ? `Time is up, ${state.kidName}. Try this one again.` : "Time is up. Try this one again.", "timeout");
+      showFeedback((state.kidName ? `Time is up, ${state.kidName}. Try this one again.` : "Time is up. Try this one again.") + (streakProtected ? freezeMessage() : ""), "timeout");
     }
   }, 1000);
 }
@@ -1399,6 +1404,25 @@ function showFeedback(message, type) {
   if (window.lucide) window.lucide.createIcons();
 }
 
+
+function awardStreakFreezeIfEarned() {
+  if (state.progress.streak <= 0 || state.progress.streak % 5 !== 0 || state.progress.streakFreezes >= 3) return false;
+  state.progress.streakFreezes += 1;
+  return true;
+}
+
+function protectOrResetStreak() {
+  if (state.progress.streakFreezes > 0 && state.progress.streak > 0) {
+    state.progress.streakFreezes -= 1;
+    return true;
+  }
+  state.progress.streak = 0;
+  return false;
+}
+
+function freezeMessage() {
+  return state.kidName ? ` A freeze saved your streak, ${state.kidName}.` : " A freeze saved your streak.";
+}
 function recordMissOnce() {
   if (!state.current || state.current.missedRecorded) return;
   state.current.missedRecorded = true;
@@ -1415,6 +1439,7 @@ function recordMissOnce() {
 function awardCorrectAnswer(readText) {
   const previousStars = state.progress.stars;
   state.progress.streak += 1;
+  const earnedFreeze = awardStreakFreezeIfEarned();
   const streakBonus = state.progress.streak % 3 === 0 ? 2 : 0;
   const earnedStars = 1 + streakBonus;
   state.progress.stars += earnedStars;
@@ -1430,7 +1455,7 @@ function awardCorrectAnswer(readText) {
   updateProgressUi();
   playTone("correct");
   celebrateCorrectAnswer();
-  showFeedback(`${namePrefix(state.kidName ? "Great work" : "Congratulations")} I read ${readText}.` + "\n" + formatKidTimeLeft(state.timeLeft), "correct");
+  showFeedback(`${namePrefix(state.kidName ? "Great work" : "Congratulations")} I read ${readText}.` + (earnedFreeze ? " You earned a streak freeze." : "") + "\n" + formatKidTimeLeft(state.timeLeft), "correct");
   if (unlockedStage || milestones.length) showRewardPopup({ earnedStars, milestones, unlockedStage });
 }
 function askForRecognitionReview(recognized) {
@@ -1456,13 +1481,13 @@ async function checkAnswer() {
   if (correct) {
     awardCorrectAnswer(recognized.text);
   } else {
-    state.progress.streak = 0;
+    const streakProtected = protectOrResetStreak();
     recordMissOnce();
     const message = recognized.status === "empty"
       ? state.kidName ? `Write the final answer inside the box, ${state.kidName}.` : "Write the final answer inside the box, then try again."
       : state.kidName ? `I read ${recognized.text || "nothing"}. Try again, ${state.kidName}.` : `I read ${recognized.text || "nothing"}. Try this one again.`;
     playTone("wrong");
-    showFeedback(message, "wrong");
+    showFeedback(message + (streakProtected ? freezeMessage() : ""), "wrong");
   }
 
   saveProgress();
@@ -1523,12 +1548,12 @@ nextFeedbackButton.addEventListener("click", () => showQuestion());
 markCorrectButton.addEventListener("click", () => awardCorrectAnswer(state.pendingReview?.text || String(state.current.answer)));
 markWrongButton.addEventListener("click", () => {
   state.pendingReview = null;
-  state.progress.streak = 0;
+  const streakProtected = protectOrResetStreak();
   recordMissOnce();
   saveProgress();
   updateProgressUi();
   playTone("wrong");
-  showFeedback(state.kidName ? `Try this one again, ${state.kidName}.` : "Try this one again.", "wrong");
+  showFeedback((state.kidName ? `Try this one again, ${state.kidName}.` : "Try this one again.") + (streakProtected ? freezeMessage() : ""), "wrong");
 });
 nextMainButton.addEventListener("click", () => showQuestion());
 pencilButton.addEventListener("click", togglePenPanel);

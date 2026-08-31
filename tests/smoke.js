@@ -76,6 +76,7 @@ assert(modelJson.includes("weightsManifest") && modelShard.size > 30000 && servi
 assert(manifest.icons?.some((icon) => icon.src.includes("quickmaths-icon.svg")), "PWA icon missing from manifest");
 assert(serviceWorker.includes("self.addEventListener(\"fetch\"") && js.includes("registerServiceWorker"), "Service worker wiring missing");
 assert(html.includes("id=\"sound-toggle\"") && js.includes("playTone") && js.includes("toggleSound"), "Sound toggle behavior missing");
+assert(html.includes("id=\"streak-freezes\"") && js.includes("streakFreezes") && js.includes("protectOrResetStreak") && js.includes("awardStreakFreezeIfEarned"), "Streak freeze behavior missing");
 assert(css.includes(".answer-box.active"), "Answer box highlight style missing");
 assert(html.includes("id=\"pencil\"") && html.includes("id=\"pen-panel\"") && html.includes("id=\"try-main\""), "Pencil panel and state actions missing");
 assert(css.includes(".pen-panel") && css.includes("background: #fffef8") && css.includes("z-index: 5"), "Pencil panel must hide board content behind it");

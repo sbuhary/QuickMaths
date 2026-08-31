@@ -203,6 +203,29 @@ async function main() {
   const wrongFeedback = await page.locator("#feedback").textContent();
   if (/Great work|Congratulations/.test(wrongFeedback || "")) throw new Error(`Wrong handwritten answer was accepted: ${wrongFeedback}`);
 
+  const freezeResult = await page.evaluate(() => {
+    state.progress.streak = 4;
+    state.progress.streakFreezes = 0;
+    state.current = { a: 2, b: 3, answer: 5, symbol: "+", plan: currentPlan() };
+    awardCorrectAnswer("5");
+    const earned = { streak: state.progress.streak, freezes: state.progress.streakFreezes };
+    state.progress.streak = 9;
+    state.progress.streakFreezes = 3;
+    awardCorrectAnswer("10");
+    const capped = { streak: state.progress.streak, freezes: state.progress.streakFreezes };
+    state.progress.streak = 8;
+    state.progress.streakFreezes = 2;
+    const protectedStreak = protectOrResetStreak();
+    const protectedState = { protectedStreak, streak: state.progress.streak, freezes: state.progress.streakFreezes };
+    state.progress.streak = 8;
+    state.progress.streakFreezes = 0;
+    const resetStreak = protectOrResetStreak();
+    return { earned, capped, protectedState, reset: { resetStreak, streak: state.progress.streak, freezes: state.progress.streakFreezes } };
+  });
+  if (freezeResult.earned.freezes !== 1 || freezeResult.capped.freezes !== 3 || !freezeResult.protectedState.protectedStreak || freezeResult.protectedState.streak !== 8 || freezeResult.protectedState.freezes !== 1 || freezeResult.reset.resetStreak || freezeResult.reset.streak !== 0) {
+    throw new Error(`Streak freeze policy failed: ${JSON.stringify(freezeResult)}`);
+  }
+
   const repeatedQuestions = await page.evaluate(() => {
     const originalRandom = Math.random;
     Math.random = () => 0.12;

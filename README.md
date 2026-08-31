@@ -14,6 +14,7 @@ QuickMaths is a mobile-first arithmetic practice app for children. It runs as a 
 - State-aware bottom actions: Check while answering, Try again after a wrong answer or timeout, and Next after a correct answer.
 - Required `Your name` field for personalized greetings and feedback, with a prompt for older saved users who do not have a name yet.
 - Animated celebration when an answer is correct, with achievement popups for star milestones and newly unlocked stages.
+- Streak-freeze points are earned from continuous correct answers, capped at 3, and automatically protect the current streak after a miss.
 - Low-confidence handwriting review shows tappable answer choices, including the correct answer and nearby values, so the child can choose what they meant.
 - Full session summary with practice time and stars earned, retry missed questions, and parent reset for local progress.
 - Written-answer checking from the answer box using an active browser-only TensorFlow.js MNIST model, conservative local stroke/canvas checks, and browser handwriting recognition as an optional fallback. Joined digits are split using low-ink valleys before scoring, and ambiguous reads ask the child to choose.

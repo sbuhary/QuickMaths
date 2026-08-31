@@ -80,6 +80,7 @@
 
 ### Gamification
 - [x] Stars and score displayed with game-style icons.
+- [x] Earn up to 3 streak-freeze points from continuous correct answers; spend one automatically to protect a streak after a miss.
 - [x] Streak reward.
 - [x] Locked level progression saved on the device.
 - [x] Selected difficulty is remembered on the device.
