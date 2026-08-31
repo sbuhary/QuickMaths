@@ -182,5 +182,6 @@
 - [x] Add star milestone and stage-unlock achievement popups.
 - [x] Add per-stage star-gated unlocks and remembered difficulty selection.
 - [x] Present stages on a vertical scrolling path layout.
+- [x] Active stage is larger and animated, with extra spacing between stage circles.
 - [x] Require missing names before practice, add lock icons, brighter level nodes, kid-friendly time-left wording, and pencil/eraser cursors.
 - [x] Add low-confidence answer-choice boxes and help overlays.

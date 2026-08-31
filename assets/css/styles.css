@@ -114,7 +114,7 @@ input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 
 .session-detail { background: #e9fff9; margin-top: -4px; }
 .level-path {
   position: relative;
-  min-height: 1140px;
+  min-height: 1580px;
   margin: 22px 0 46px;
 }
 .level-road {
@@ -146,28 +146,44 @@ input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 
   box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18), 0 10px 22px rgba(255, 95, 158, 0.28);
   font-weight: 900;
   transform: translate(-50%, -50%);
+  animation: stage-pop 420ms ease-out both;
 }
-.level-node[data-stage="1"] { left: 50%; top: 5%; }
-.level-node[data-stage="2"] { left: 50%; top: 13%; }
-.level-node[data-stage="3"] { left: 50%; top: 21%; }
-.level-node[data-stage="4"] { left: 50%; top: 29%; }
-.level-node[data-stage="5"] { left: 50%; top: 37%; }
-.level-node[data-stage="6"] { left: 50%; top: 45%; }
-.level-node[data-stage="7"] { left: 50%; top: 53%; }
-.level-node[data-stage="8"] { left: 50%; top: 61%; }
-.level-node[data-stage="9"] { left: 50%; top: 69%; }
-.level-node[data-stage="10"] { left: 50%; top: 77%; }
-.level-node[data-stage="11"] { left: 50%; top: 85%; }
-.level-node[data-stage="12"] { left: 50%; top: 93%; }
+.level-node:nth-of-type(3n) { animation-delay: 40ms; }
+.level-node:nth-of-type(3n+1) { animation-delay: 80ms; }
+.level-node[data-stage="1"] { left: 50%; top: 4%; }
+.level-node[data-stage="2"] { left: 50%; top: 12%; }
+.level-node[data-stage="3"] { left: 50%; top: 20%; }
+.level-node[data-stage="4"] { left: 50%; top: 28%; }
+.level-node[data-stage="5"] { left: 50%; top: 36%; }
+.level-node[data-stage="6"] { left: 50%; top: 44%; }
+.level-node[data-stage="7"] { left: 50%; top: 52%; }
+.level-node[data-stage="8"] { left: 50%; top: 60%; }
+.level-node[data-stage="9"] { left: 50%; top: 68%; }
+.level-node[data-stage="10"] { left: 50%; top: 76%; }
+.level-node[data-stage="11"] { left: 50%; top: 84%; }
+.level-node[data-stage="12"] { left: 50%; top: 92%; }
 .level-node[data-level="explorer"] { background: linear-gradient(145deg, #24a8ff, #0984e3); box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18), 0 12px 22px rgba(9, 132, 227, 0.28); }
 .level-node[data-level="builder"] { background: linear-gradient(145deg, #24d6b4, #00a383); box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18), 0 12px 22px rgba(0, 184, 148, 0.28); }
 .level-node[data-level="wizard"] { background: linear-gradient(145deg, #8d7cff, #6c5ce7); box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18), 0 12px 22px rgba(108, 92, 231, 0.28); }
 .level-node span { display: block; font-size: 1.55rem; line-height: 1; }
 .level-node small { display: block; margin-top: 5px; font-size: 0.6rem; line-height: 1; }
-.level-node.active { outline: 4px solid var(--yellow); transform: translate(-50%, -50%) scale(1.07); }
-.level-node:disabled { background: linear-gradient(145deg, #c8ced8, #9ca3af); opacity: 0.88; box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18); }
+.level-node.active { outline: 5px solid var(--yellow); transform: translate(-50%, -50%) scale(1.2); animation: active-stage-pulse 1.45s ease-in-out infinite; box-shadow: 0 0 0 8px rgba(255, 209, 102, 0.22), 0 18px 28px rgba(255, 95, 158, 0.32); }
+.level-node:disabled { background: linear-gradient(145deg, #c8ced8, #9ca3af); opacity: 0.88; box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18); animation: none; }
 .level-lock { position: absolute; top: 10px; right: 10px; display: none; width: 18px; height: 18px; }
 .level-node:disabled .level-lock { display: block; }
+.level-node:active { transform: translate(-50%, -50%) scale(0.96); }
+.level-node.active:active { transform: translate(-50%, -50%) scale(1.12); }
+@keyframes stage-pop {
+  from { opacity: 0; transform: translate(-50%, -40%) scale(0.88); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes active-stage-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1.16); }
+  50% { transform: translate(-50%, -50%) scale(1.24); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .level-node, .level-node.active { animation: none; }
+}
 .start-overlay::before {
   content: "";
   position: absolute;
