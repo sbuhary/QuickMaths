@@ -36,13 +36,13 @@ async function main() {
   await page.getByRole("button", { name: /Medium pen/i }).click();
 
   const strokeResults = await page.evaluate(async () => {
-    function drawDigit(strokes) {
+    function drawDigit(strokes, size = 6) {
       const rect = getAnswerRect();
       const width = rect.right - rect.left;
       const height = rect.bottom - rect.top;
       ctx.save();
       ctx.strokeStyle = "#1f2937";
-      ctx.lineWidth = 6;
+      ctx.lineWidth = size;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       strokes.forEach((stroke) => {
@@ -98,20 +98,20 @@ async function main() {
     const rect = getAnswerRect();
     const width = rect.right - rect.left;
     const height = rect.bottom - rect.top;
+    const points = [[0.6, 0.22], [0.42, 0.22], [0.39, 0.46], [0.57, 0.46], [0.7, 0.66], [0.43, 0.78]].map((point) => ({ x: rect.left + point[0] * width, y: rect.top + point[1] * height }));
     ctx.save();
     ctx.strokeStyle = "#1f2937";
     ctx.lineWidth = 5;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.beginPath();
-    ctx.moveTo(rect.left + width * 0.6, rect.top + height * 0.22);
-    ctx.lineTo(rect.left + width * 0.42, rect.top + height * 0.22);
-    ctx.lineTo(rect.left + width * 0.39, rect.top + height * 0.46);
-    ctx.lineTo(rect.left + width * 0.57, rect.top + height * 0.46);
-    ctx.quadraticCurveTo(rect.left + width * 0.72, rect.top + height * 0.48, rect.left + width * 0.7, rect.top + height * 0.66);
-    ctx.quadraticCurveTo(rect.left + width * 0.66, rect.top + height * 0.83, rect.left + width * 0.43, rect.top + height * 0.78);
+    points.forEach((point, index) => {
+      if (index) ctx.lineTo(point.x, point.y);
+      else ctx.moveTo(point.x, point.y);
+    });
     ctx.stroke();
     ctx.restore();
+    state.paths.push({ color: "#1f2937", size: 5, erase: false, points });
     await checkAnswer();
   });
   const feedback = await page.locator("#feedback").textContent();
@@ -128,20 +128,20 @@ async function main() {
     const rect = getAnswerRect();
     const width = rect.right - rect.left;
     const height = rect.bottom - rect.top;
+    const points = [[0.6, 0.22], [0.42, 0.22], [0.39, 0.46], [0.57, 0.46], [0.7, 0.66], [0.43, 0.78]].map((point) => ({ x: rect.left + point[0] * width, y: rect.top + point[1] * height }));
     ctx.save();
     ctx.strokeStyle = "#1f2937";
     ctx.lineWidth = 5;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.beginPath();
-    ctx.moveTo(rect.left + width * 0.6, rect.top + height * 0.22);
-    ctx.lineTo(rect.left + width * 0.42, rect.top + height * 0.22);
-    ctx.lineTo(rect.left + width * 0.39, rect.top + height * 0.46);
-    ctx.lineTo(rect.left + width * 0.57, rect.top + height * 0.46);
-    ctx.quadraticCurveTo(rect.left + width * 0.72, rect.top + height * 0.48, rect.left + width * 0.7, rect.top + height * 0.66);
-    ctx.quadraticCurveTo(rect.left + width * 0.66, rect.top + height * 0.83, rect.left + width * 0.43, rect.top + height * 0.78);
+    points.forEach((point, index) => {
+      if (index) ctx.lineTo(point.x, point.y);
+      else ctx.moveTo(point.x, point.y);
+    });
     ctx.stroke();
     ctx.restore();
+    state.paths.push({ color: "#1f2937", size: 5, erase: false, points });
     await checkAnswer();
   });
   const wrongFeedback = await page.locator("#feedback").textContent();

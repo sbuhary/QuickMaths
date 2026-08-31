@@ -116,6 +116,9 @@ const state = {
   answerState: "ready",
   kidName: localStorage.getItem("quickmaths-kid-name") || "",
   pendingNameAction: null,
+  digitModel: null,
+  digitModelReady: false,
+  digitModelTried: false,
 };
 
 function cleanKidName(value) {
@@ -1020,6 +1023,45 @@ function scoreComponentAsDigit(component, digit) {
   const featureScore = scoreDigitFeatures(component, digit);
   return templateScore * 0.72 + featureScore * 0.28;
 }
+function answerStrokePoints() {
+  return pathsInsideAnswerBox().flatMap((path) => path.points);
+}
+
+function normalizeStrokePoints(points) {
+  if (!points.length) return [];
+  const minX = Math.min(...points.map((point) => point.x));
+  const maxX = Math.max(...points.map((point) => point.x));
+  const minY = Math.min(...points.map((point) => point.y));
+  const maxY = Math.max(...points.map((point) => point.y));
+  const width = Math.max(1, maxX - minX);
+  const height = Math.max(1, maxY - minY);
+  return points.map((point) => ({ x: (point.x - minX) / width, y: (point.y - minY) / height }));
+}
+
+function scoreFiveStroke(points) {
+  const normalized = normalizeStrokePoints(points);
+  if (normalized.length < 5) return 0;
+  const first = normalized[0];
+  const last = normalized[normalized.length - 1];
+  const firstThird = normalized.slice(0, Math.max(2, Math.floor(normalized.length / 3)));
+  const secondHalf = normalized.slice(Math.floor(normalized.length / 2));
+  const minEarlyX = Math.min(...firstThird.map((point) => point.x));
+  const maxLateX = Math.max(...secondHalf.map((point) => point.x));
+  const lowestLateY = Math.max(...secondHalf.map((point) => point.y));
+  const topStart = first.y < 0.28;
+  const topMovesLeft = first.x - minEarlyX > 0.18;
+  const dropsDown = lowestLateY > 0.72;
+  const swingsRight = maxLateX - minEarlyX > 0.34;
+  const endsLow = last.y > 0.56;
+  const endsLeftOfRightSwing = last.x < maxLateX - 0.08;
+  return [topStart, topMovesLeft, dropsDown, swingsRight, endsLow, endsLeftOfRightSwing].filter(Boolean).length / 6;
+}
+
+function strokeDigitScore(digit) {
+  const points = answerStrokePoints();
+  if (digit === "5") return scoreFiveStroke(points);
+  return 0;
+}
 
 function scoreDigit(component, digit) {
   const grid = rasterizeInkComponent(component);
@@ -1076,6 +1118,101 @@ function recognizeInkComponent(component) {
   return { digit: top.digit, score: top.score, confidence, margin, nextDigit: next.digit || "", templateScore: top.templateScore, featureScore: top.featureScore };
 }
 
+
+/*
+  TensorFlow.js model setup:
+  1. Train or download an EMNIST/MNIST/math-symbol Keras model that classifies digits 0-9.
+  2. Install the converter locally in Python: pip install tensorflowjs
+  3. Convert the saved Keras model:
+     tensorflowjs_converter --input_format=keras path/to/digit_model.keras ./model
+     or:
+     tensorflowjs_converter --input_format=tf_saved_model path/to/saved_model ./model
+  4. Commit the generated ./model/model.json and shard .bin files.
+  5. Set window.QUICKMATHS_ENABLE_TF_MODEL = true after the model files are committed.
+  6. The model should accept a [1, 28, 28, 1] grayscale tensor and return 10 digit probabilities.
+*/
+async function loadTensorFlowDigitModel() {
+  state.digitModelTried = true;
+  if (!window.QUICKMATHS_ENABLE_TF_MODEL) return null;
+  if (!window.tf?.loadLayersModel || window.location.protocol === "file:") return null;
+  try {
+    state.digitModel = await window.tf.loadLayersModel("./model/model.json");
+    state.digitModelReady = true;
+    return state.digitModel;
+  } catch {
+    state.digitModel = null;
+    state.digitModelReady = false;
+    return null;
+  }
+}
+
+function answerImageCanvas(size = 28) {
+  const rect = getAnswerRect();
+  const strokes = pathsInsideAnswerBox().filter((path) => !path.erase);
+  const points = strokes.flatMap((path) => path.points);
+  if (points.length < 2) return null;
+  let minX = rect.right;
+  let minY = rect.bottom;
+  let maxX = 0;
+  let maxY = 0;
+  points.forEach((point) => {
+    minX = Math.min(minX, point.x);
+    minY = Math.min(minY, point.y);
+    maxX = Math.max(maxX, point.x);
+    maxY = Math.max(maxY, point.y);
+  });
+  if (maxX <= minX || maxY <= minY) return null;
+
+  const target = document.createElement("canvas");
+  target.width = size;
+  target.height = size;
+  const targetCtx = target.getContext("2d");
+  targetCtx.fillStyle = "black";
+  targetCtx.fillRect(0, 0, size, size);
+  const inkWidth = maxX - minX + 1;
+  const inkHeight = maxY - minY + 1;
+  const scale = Math.min((size - 6) / inkWidth, (size - 6) / inkHeight);
+  const dx = (size - inkWidth * scale) / 2;
+  const dy = (size - inkHeight * scale) / 2;
+  targetCtx.strokeStyle = "white";
+  targetCtx.lineCap = "round";
+  targetCtx.lineJoin = "round";
+  strokes.forEach((path) => {
+    targetCtx.lineWidth = Math.max(2, Math.min(7, path.size * scale));
+    targetCtx.beginPath();
+    path.points.forEach((point, index) => {
+      const x = dx + (point.x - minX) * scale;
+      const y = dy + (point.y - minY) * scale;
+      if (index) targetCtx.lineTo(x, y);
+      else targetCtx.moveTo(x, y);
+    });
+    targetCtx.stroke();
+  });
+  return target;
+}
+
+async function recognizeWithTensorFlow(expectedText = "") {
+  if (!window.tf?.browser?.fromPixels) return { text: "", status: "tf-unavailable", confidence: 0 };
+  if (!state.digitModelTried) await loadTensorFlowDigitModel();
+  if (!state.digitModelReady || !state.digitModel) return { text: "", status: "tf-missing", confidence: 0 };
+  if (!/^\d$/.test(expectedText)) return { text: "", status: "tf-skipped", confidence: 0 };
+  const inputCanvas = answerImageCanvas(28);
+  if (!inputCanvas) return { text: "", status: "empty", confidence: 0 };
+  try {
+    const prediction = window.tf.tidy(() => {
+      const tensor = window.tf.browser.fromPixels(inputCanvas, 1).toFloat().div(255).reshape([1, 28, 28, 1]);
+      return state.digitModel.predict(tensor);
+    });
+    const scores = Array.from(await prediction.data());
+    prediction.dispose();
+    const ranked = scores.map((score, digit) => ({ digit: String(digit), score })).sort((a, b) => b.score - a.score);
+    const top = ranked[0] || { digit: "", score: 0 };
+    const next = ranked[1] || { digit: "", score: 0 };
+    return { text: top.digit, status: "tensorflow", confidence: top.score, margin: top.score - next.score };
+  } catch {
+    return { text: "", status: "tf-error", confidence: 0 };
+  }
+}
 function scoreExpected(components, expectedText) {
   const normalized = normalizeComponentsForExpected(components, expectedText);
   if (normalized.length !== expectedText.length) return null;
@@ -1089,6 +1226,7 @@ function recognizeDigitsLocally(expectedText = "") {
   if (!components.length) return { text: "", status: "empty", confidence: 0 };
 
   const expected = /^\d+$/.test(expectedText) ? scoreExpected(components, expectedText) : null;
+  const strokeScore = expectedText.length === 1 ? strokeDigitScore(expectedText) : 0;
   const componentsForReading = expected?.components || components;
   const recognized = componentsForReading.map(recognizeInkComponent);
   const bestScore = recognized.reduce((sum, item) => sum + item.score, 0) / recognized.length;
@@ -1098,10 +1236,10 @@ function recognizeDigitsLocally(expectedText = "") {
 
   if (expected) {
     const expectedCloseToBest = expected.average >= bestScore - 0.1;
-    const expectedStrong = expected.average > 0.78 && expected.min > 0.52;
+    const expectedStrong = (expected.average > 0.78 && expected.min > 0.52) || (strokeScore > 0.82 && expected.average > 0.58);
     const expectedReadable = expected.average > 0.66 && expected.min > 0.42;
     if (expectedStrong && expectedCloseToBest) {
-      return { text: expectedText, status: "local", confidence: Math.min(0.9, Math.max(confidence, expected.average - 0.02)), expectedScore: expected.average, visualText: text };
+      return { text: expectedText, status: "local", confidence: Math.min(0.9, Math.max(confidence, expected.average - 0.02, strokeScore)), expectedScore: expected.average, visualText: text, strokeScore };
     }
     if (text !== expectedText && expected.average > 0.55 && expected.average >= bestScore - 0.34) {
       return { text, status: "ambiguous", confidence: Math.min(0.56, confidence), expectedScore: expected.average, visualText: text };
@@ -1110,7 +1248,7 @@ function recognizeDigitsLocally(expectedText = "") {
 
   const adjustedConfidence = minimumMargin < 0.1 ? Math.min(confidence, 0.58) : confidence;
   if (expected && text === expectedText && expected.average > 0.62 && bestScore > 0.6 && minimumMargin > 0.01) {
-    return { text, status: "local", confidence: Math.max(0.64, adjustedConfidence), expectedScore: expected.average, visualText: text };
+    return { text, status: "local", confidence: Math.max(0.64, adjustedConfidence, strokeScore), expectedScore: expected.average, visualText: text, strokeScore };
   }
   return { text, status: text ? "local" : "unreadable", confidence: adjustedConfidence };
 }
@@ -1145,7 +1283,17 @@ async function recognizeWithBrowserApi(paths) {
 
 async function recognizeWriting(expectedText) {
   if (!answerInkComponents().length) return { text: "", status: "empty", confidence: 0 };
+  const tensorflow = await recognizeWithTensorFlow(expectedText);
   const local = recognizeDigitsLocally(expectedText);
+  if (tensorflow.text && tensorflow.confidence >= 0.78 && tensorflow.margin >= 0.16) return tensorflow;
+  if (tensorflow.text && tensorflow.confidence >= 0.52 && tensorflow.text !== local.text) {
+    return {
+      ...local,
+      status: "ambiguous",
+      tensorflowText: tensorflow.text,
+      tensorflowConfidence: tensorflow.confidence,
+    };
+  }
   if (local.status === "ambiguous") return local;
   if (local.text && local.confidence >= 0.64) return local;
   const browser = await recognizeWithBrowserApi(pathsInsideAnswerBox());
@@ -1351,6 +1499,7 @@ levelButtons.forEach((button) => {
   });
 });
 
+loadTensorFlowDigitModel();
 registerServiceWorker();
 updatePersonalGreeting();
 updateToolUi();

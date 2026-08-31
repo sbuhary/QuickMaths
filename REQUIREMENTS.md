@@ -75,6 +75,7 @@
 - [x] Ambiguous digit reads lower confidence and route to answer choices instead of marking too quickly.
 - [x] Recognition routes close expected/read disagreements to review instead of confidently marking them wrong.
 - [x] Recognition combines template matching with structural digit features before accepting an answer.
+- [x] Recognition uses stroke-geometry evidence for clear handwritten digit shapes.
 
 ### Gamification
 - [x] Stars and score displayed with game-style icons.
@@ -113,6 +114,13 @@
 - [ ] Progress is device-local only and does not sync across browsers or devices.
 
 ## Next Priority Features
+
+### P0: Recognition Upgrade
+- [x] Add client-side TensorFlow.js placeholder recognizer using `tf.loadLayersModel('./model/model.json')` with local fallback.
+- [ ] Train/convert and add a real EMNIST or math-symbol TensorFlow.js model for browser-only recognition.
+- [ ] Add a labeled in-app handwriting sample set for digits 0-9 from real child/parent writing styles.
+- [ ] Use model confidence plus the current rule-based guard before awarding stars, so wrong answers are not accepted only because the model guessed.
+
 
 ### P0: Production Stability
 - [x] Add deterministic Playwright visual regression coverage for the mobile board.
