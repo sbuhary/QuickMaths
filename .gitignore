@@ -33,3 +33,6 @@ Desktop.ini
 *.tgz
 .model-*/
 model-tmp/
+
+# Local model/test archives
+assets/models/*.tar.gz
