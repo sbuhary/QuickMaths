@@ -14,7 +14,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="assets/icons/quickmaths-icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icons/quickmaths-icon.svg">
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260901-onnx-2">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260901-onnx-3">
   </head>
   <body>
     <main class="app-shell">
@@ -127,10 +127,9 @@
 
         <section class="problem-card" aria-live="polite">
           <div id="question" class="question">Tap Start</div>
-        </section>
-
-        <section id="answer-box" class="answer-box" aria-label="Write final answer here">
-          <span>Answer</span>
+          <section id="answer-box" class="answer-box" aria-label="Write final answer here">
+            <span>Answer</span>
+          </section>
         </section>
 
         <section id="feedback-panel" class="feedback-panel" hidden>
@@ -190,7 +189,7 @@
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
     <script>window.QUICKMATHS_ENABLE_ONNX_MODEL = true; if (window.ort?.env?.wasm) { window.ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/"; window.ort.env.wasm.numThreads = 1; }</script>
     <script src="assets/js/version.js"></script>
-    <script src="assets/js/icons.js?v=20260901-onnx-2"></script>
-    <script src="assets/js/app.js?v=20260901-onnx-2"></script>
+    <script src="assets/js/icons.js?v=20260901-onnx-3"></script>
+    <script src="assets/js/app.js?v=20260901-onnx-3"></script>
   </body>
 </html>

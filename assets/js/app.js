@@ -213,12 +213,17 @@ function nearbyAnswerChoices(readText, correctAnswer) {
 }
 
 function renderAnswerDigitBoxes(expectedText = state.current ? String(state.current.answer) : "") {
-  const digits = Math.max(1, String(expectedText || "").length);
+  const text = String(expectedText || "");
+  const digits = Math.max(1, text.length);
+  const resultDigits = Math.max(digits, Number(answerBox.style.getPropertyValue("--result-digits")) || digits);
+  const start = resultDigits - digits;
   answerBox.style.setProperty("--answer-digits", String(digits));
+  answerBox.style.setProperty("--result-digits", String(resultDigits));
   [...answerBox.querySelectorAll(".answer-digit-slot")].forEach((slot) => slot.remove());
   for (let index = 0; index < digits; index += 1) {
     const slot = document.createElement("i");
     slot.className = "answer-digit-slot";
+    slot.style.gridColumn = String(2 + start + index);
     slot.setAttribute("aria-hidden", "true");
     answerBox.appendChild(slot);
   }
@@ -640,13 +645,25 @@ function makeFreshQuestion() {
   }
   return unseen[randomInt(0, unseen.length - 1)];
 }
+function renderNumberCells(value, row, resultDigits, className) {
+  const text = String(value);
+  const start = resultDigits - text.length;
+  return [...text].map((digit, index) => `<span class="${className} digit-cell" style="grid-row:${row};grid-column:${2 + start + index}">${digit}</span>`).join("");
+}
+
+function renderOperator(symbol) {
+  if (symbol === "/") return `<span class="operator division-symbol" aria-label="divided by"><i></i></span>`;
+  return `<span class="operator">${symbol === "x" ? "x" : symbol}</span>`;
+}
+
 function renderStackedQuestion(question) {
-  const digits = Math.max(String(question.a).length, String(question.b).length);
-  questionEl.style.setProperty("--digits", `${digits}ch`);
+  const resultDigits = Math.max(String(question.a).length, String(question.b).length, String(question.answer).length);
+  questionEl.style.setProperty("--result-digits", String(resultDigits));
+  answerBox.style.setProperty("--result-digits", String(resultDigits));
   return `
-    <span class="top">${question.a}</span>
-    <span class="operator">${question.symbol}</span>
-    <span class="bottom-number">${question.b}</span>
+    ${renderNumberCells(question.a, 1, resultDigits, "top")}
+    ${renderOperator(question.symbol)}
+    ${renderNumberCells(question.b, 2, resultDigits, "bottom-number")}
     <span class="bar"></span>
   `;
 }

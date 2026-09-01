@@ -7,7 +7,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   timeout: 45000,
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [['list'], ['html', { outputFolder: 'artifacts/playwright-report', open: 'never' }]],
+  outputDir: 'artifacts/test-results',
   webServer: {
     command: 'node tests/support/static-server.js',
     cwd: process.cwd(),
