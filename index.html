@@ -188,7 +188,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
-    <script>window.QUICKMATHS_ENABLE_ONNX_MODEL = true; if (window.ort?.env?.wasm) window.ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/";</script>
+    <script>window.QUICKMATHS_ENABLE_ONNX_MODEL = true; if (window.ort?.env?.wasm) { window.ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/"; window.ort.env.wasm.numThreads = 1; }</script>
     <script src="assets/js/version.js"></script>
     <script src="assets/js/icons.js?v=20260901-onnx-2"></script>
     <script src="assets/js/app.js?v=20260901-onnx-2"></script>

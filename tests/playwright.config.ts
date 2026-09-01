@@ -9,7 +9,8 @@ export default defineConfig({
   timeout: 45000,
   reporter: [['list'], ['html', { open: 'never' }]],
   webServer: {
-    command: 'node tests/static-server.js',
+    command: 'node tests/support/static-server.js',
+    cwd: process.cwd(),
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 10000,

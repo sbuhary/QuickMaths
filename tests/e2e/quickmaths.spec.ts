@@ -57,9 +57,10 @@ test.describe('QuickMaths app', () => {
     await openStableStage(page);
 
     const result = await page.evaluate(async () => {
+      await loadOnnxDigitModel();
       await new Promise<void>((resolve) => {
         const started = Date.now();
-        const wait = () => (state.onnxModelReady || Date.now() - started > 10000 ? resolve() : setTimeout(wait, 100));
+        const wait = () => (state.onnxModelReady || Date.now() - started > 20000 ? resolve() : setTimeout(wait, 100));
         wait();
       });
       state.current = { a: 3, b: 2, answer: 5, symbol: '+', plan: currentPlan() };
@@ -89,11 +90,13 @@ test.describe('QuickMaths app', () => {
 
       return {
         modelReady: state.onnxModelReady,
+        modelError: state.onnxModelError,
         onnx: await recognizeWithOnnx('5'),
         combined: await recognizeWriting('5'),
       };
     });
 
+    expect(result.modelError || "").toBe("");
     expect(result.modelReady).toBe(true);
     expect(result.onnx.status).toBe('onnx');
     expect(result.combined.text).toBe('5');

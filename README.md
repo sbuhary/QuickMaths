@@ -28,7 +28,7 @@ QuickMaths is a mobile-first arithmetic practice app for children. It runs as a 
 - `assets/css/` contains the app stylesheet.
 - `assets/icons/` and `assets/backgrounds/` contain visual assets.
 - `assets/models/` contains the browser ONNX digit model used for handwritten answer recognition.
-- `tests/` contains smoke tests, and `e2e/` contains Playwright coverage and snapshots.
+- `tests/` contains smoke tests, Playwright coverage, fixtures, support helpers, and snapshots.
 ## Level Plan
 1. Tiny sums: addition with totals up to 5.
 2. Facts to 10: one-digit addition with totals up to 10.
@@ -57,4 +57,4 @@ Open `index.html` in a browser.
 3. Set the source to the default branch and root folder.
 4. Save and open the published Pages URL.
 
-See `docs/GITHUB_PAGES.md` for the deployment guide and official screenshot references.
+See `docs/GITHUB_PAGES.md` for the deployment guide and `docs/REQUIREMENTS.md` for the feature checklist.

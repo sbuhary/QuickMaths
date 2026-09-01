@@ -5,7 +5,7 @@ const { execFileSync } = require("node:child_process");
 const html = fs.readFileSync("index.html", "utf8");
 const css = fs.readFileSync("assets/css/styles.css", "utf8");
 const js = fs.readFileSync("assets/js/app.js", "utf8");
-const samples = JSON.parse(fs.readFileSync("tests/recognition-samples.json", "utf8"));
+const samples = JSON.parse(fs.readFileSync("tests/fixtures/recognition-samples.json", "utf8"));
 const manifest = JSON.parse(fs.readFileSync("manifest.webmanifest", "utf8"));
 const onnxModel = fs.statSync("assets/models/mnist-8.onnx");
 const serviceWorker = fs.readFileSync("sw.js", "utf8");
@@ -51,7 +51,7 @@ function scoreTemplate(grid, template) {
 
 execFileSync(process.execPath, ["--check", "assets/js/app.js"], { stdio: "pipe" });
 execFileSync(process.execPath, ["--check", "assets/js/icons.js"], { stdio: "pipe" });
-execFileSync(process.execPath, ["--check", "tests/static-server.js"], { stdio: "pipe" });
+execFileSync(process.execPath, ["--check", "tests/support/static-server.js"], { stdio: "pipe" });
 
 const stagePlans = extractConst("stagePlans");
 const digitTemplates = extractConst("digitTemplates");

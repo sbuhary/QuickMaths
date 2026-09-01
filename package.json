@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "node tests/smoke.js",
-    "test:browser": "node tests/browser-smoke.js",
-    "test:e2e": "playwright test",
-    "test:e2e:mobile": "playwright test --project=\"Mobile Chrome\" --project=\"Mobile Safari\""
+    "test": "node tests/smoke/static-smoke.js",
+    "test:browser": "node tests/smoke/browser-smoke.js",
+    "test:e2e": "playwright test -c tests/playwright.config.ts",
+    "test:e2e:mobile": "playwright test -c tests/playwright.config.ts --project=\"Mobile Chrome\" --project=\"Mobile Safari\""
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

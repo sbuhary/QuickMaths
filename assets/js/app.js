@@ -1704,7 +1704,6 @@ levelButtons.forEach((button) => {
   });
 });
 
-loadOnnxDigitModel();
 registerServiceWorker();
 updatePersonalGreeting();
 updateToolUi();
