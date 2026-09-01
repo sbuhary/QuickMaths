@@ -118,8 +118,8 @@
 ## Next Priority Features
 
 ### P0: Recognition Upgrade
-- [x] Add client-side TensorFlow.js placeholder recognizer using `tf.loadLayersModel('./model/model.json')` with local fallback.
-- [x] Add a real browser-loaded TensorFlow.js MNIST digit model for client-side recognition.
+- [x] Add client-side ONNX Runtime recognizer using `assets/models/mnist-8.onnx` with local fallback.
+- [x] Add per-digit answer boxes so each handwritten digit is cropped and recognized separately.
 - [ ] Add a labeled in-app handwriting sample set for digits 0-9 from real child/parent writing styles.
 - [x] Use model confidence plus the current rule-based guard before awarding stars, so wrong answers are not accepted only because the model guessed.
 - [x] Add regression coverage for clear child-style digits and wrong lookalike digits before changing recognition thresholds.

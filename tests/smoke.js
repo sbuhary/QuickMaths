@@ -7,8 +7,6 @@ const css = fs.readFileSync("assets/css/styles.css", "utf8");
 const js = fs.readFileSync("assets/js/app.js", "utf8");
 const samples = JSON.parse(fs.readFileSync("tests/recognition-samples.json", "utf8"));
 const manifest = JSON.parse(fs.readFileSync("manifest.webmanifest", "utf8"));
-const modelJson = fs.readFileSync("model/model.json", "utf8");
-const modelShard = fs.statSync("model/group1-shard1of1");
 const onnxModel = fs.statSync("assets/models/mnist-8.onnx");
 const serviceWorker = fs.readFileSync("sw.js", "utf8");
 const version = fs.readFileSync("assets/js/version.js", "utf8").match(/QUICKMATHS_RELEASE = "([^"]+)"/)?.[1];
@@ -72,9 +70,7 @@ assert(css.includes("touch-action: pinch-zoom"), "Canvas must allow pinch zoom")
 assert(html.includes("manifest.webmanifest"), "PWA manifest link missing");
 assert(html.includes("Winding stage path") && html.includes("class=\"level-road\"") && css.includes(".level-road path") && css.includes('.level-node[data-stage="12"] { left: 50%; top: 92%; }') && css.includes("min-height: 1580px") && css.includes("active-stage-pulse"), "Vertical stage path layout missing");
 assert(!html.includes("unpkg.com/lucide") && !html.includes("lucide-static"), "Icon renderer must be local for Safari file URLs");
-assert(html.includes("@tensorflow/tfjs") && html.includes("QUICKMATHS_ENABLE_TF_MODEL = true") && js.includes("tf.loadLayersModel(\"./model/model.json\")") && js.includes("recognizeWithTensorFlow"), "TensorFlow.js model wiring missing");
 assert(html.includes("onnxruntime-web") && html.includes("QUICKMATHS_ENABLE_ONNX_MODEL = true") && js.includes("ort.InferenceSession.create(\"./assets/models/mnist-8.onnx\"") && js.includes("recognizeWithOnnx"), "ONNX Runtime model wiring missing");
-assert(modelJson.includes("weightsManifest") && modelShard.size > 30000 && serviceWorker.includes("./model/model.json") && serviceWorker.includes("./model/group1-shard1of1"), "TensorFlow.js model assets must be committed and cached");
 assert(onnxModel.size > 20000 && serviceWorker.includes("./assets/models/mnist-8.onnx"), "ONNX model asset must be committed and cached");
 assert(manifest.icons?.some((icon) => icon.src.includes("quickmaths-icon.svg")), "PWA icon missing from manifest");
 assert(serviceWorker.includes("self.addEventListener(\"fetch\"") && js.includes("registerServiceWorker"), "Service worker wiring missing");

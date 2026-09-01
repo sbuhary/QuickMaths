@@ -117,9 +117,6 @@ const state = {
   answerState: "ready",
   kidName: localStorage.getItem("quickmaths-kid-name") || "",
   pendingNameAction: null,
-  digitModel: null,
-  digitModelReady: false,
-  digitModelTried: false,
   onnxModel: null,
   onnxModelReady: false,
   onnxModelTried: false,
@@ -1374,90 +1371,7 @@ async function recognizeWithOnnx(expectedText = "") {
     return { text: "", status: "onnx-error", confidence: 0 };
   }
 }
-/*
-  TensorFlow.js model setup:
-  1. Train or download an EMNIST/MNIST/math-symbol Keras model that classifies digits 0-9.
-  2. Install the converter locally in Python: pip install tensorflowjs
-  3. Convert the saved Keras model:
-     tensorflowjs_converter --input_format=keras path/to/digit_model.keras ./model
-     or:
-     tensorflowjs_converter --input_format=tf_saved_model path/to/saved_model ./model
-  4. Commit the generated ./model/model.json and shard .bin files.
-  5. Set window.QUICKMATHS_ENABLE_TF_MODEL = true after the model files are committed.
-  6. The app supports either a [1, 784] flat tensor or [1, 28, 28, 1] grayscale tensor with raw 0-255 pixel values and 10 digit probabilities.
-*/
-async function loadTensorFlowDigitModel() {
-  state.digitModelTried = true;
-  if (!window.QUICKMATHS_ENABLE_TF_MODEL) return null;
-  if (!window.tf?.loadLayersModel || window.location.protocol === "file:") return null;
-  try {
-    state.digitModel = await window.tf.loadLayersModel("./model/model.json");
-    state.digitModelReady = true;
-    return state.digitModel;
-  } catch {
-    state.digitModel = null;
-    state.digitModelReady = false;
-    return null;
-  }
-}
 
-function answerImageCanvas(size = 28) {
-  const rect = getAnswerRect();
-  const strokes = pathsInsideAnswerBox().filter((path) => !path.erase);
-  const points = strokes.flatMap((path) => path.points);
-  if (points.length < 2) return null;
-
-  const target = document.createElement("canvas");
-  target.width = size;
-  target.height = size;
-  const targetCtx = target.getContext("2d");
-  targetCtx.fillStyle = "black";
-  targetCtx.fillRect(0, 0, size, size);
-  targetCtx.strokeStyle = "white";
-  targetCtx.lineCap = "round";
-  targetCtx.lineJoin = "round";
-  const width = Math.max(1, rect.right - rect.left);
-  const height = Math.max(1, rect.bottom - rect.top);
-  strokes.forEach((path) => {
-    targetCtx.lineWidth = Math.max(2, Math.min(4, (path.size / height) * size));
-    targetCtx.beginPath();
-    path.points.forEach((point, index) => {
-      const x = ((point.x - rect.left) / width) * size;
-      const y = ((point.y - rect.top) / height) * size;
-      if (index) targetCtx.lineTo(x, y);
-      else targetCtx.moveTo(x, y);
-    });
-    targetCtx.stroke();
-  });
-  return target;
-}
-
-async function recognizeWithTensorFlow(expectedText = "") {
-  if (!window.tf?.browser?.fromPixels) return { text: "", status: "tf-unavailable", confidence: 0 };
-  if (!state.digitModelTried) await loadOnnxDigitModel();
-loadTensorFlowDigitModel();
-  if (!state.digitModelReady || !state.digitModel) return { text: "", status: "tf-missing", confidence: 0 };
-  if (!/^\d$/.test(expectedText)) return { text: "", status: "tf-skipped", confidence: 0 };
-  const inputCanvas = answerImageCanvas(28);
-  if (!inputCanvas) return { text: "", status: "empty", confidence: 0 };
-  try {
-    const prediction = window.tf.tidy(() => {
-      const pixels = window.tf.browser.fromPixels(inputCanvas, 1).toFloat();
-      const inputShape = state.digitModel.inputs?.[0]?.shape || [];
-      const size = inputCanvas.width;
-      const tensor = inputShape.length === 2 ? pixels.reshape([1, size * size]) : pixels.reshape([1, size, size, 1]);
-      return state.digitModel.predict(tensor);
-    });
-    const scores = Array.from(await prediction.data());
-    prediction.dispose();
-    const ranked = scores.map((score, digit) => ({ digit: String(digit), score })).sort((a, b) => b.score - a.score);
-    const top = ranked[0] || { digit: "", score: 0 };
-    const next = ranked[1] || { digit: "", score: 0 };
-    return { text: top.digit, status: "tensorflow", confidence: top.score, margin: top.score - next.score };
-  } catch {
-    return { text: "", status: "tf-error", confidence: 0 };
-  }
-}
 function scoreExpected(components, expectedText) {
   const normalized = normalizeComponentsForExpected(components, expectedText);
   if (normalized.length !== expectedText.length) return null;
@@ -1565,18 +1479,6 @@ async function recognizeWriting(expectedText) {
     };
   }
   if (local.status === "ambiguous" && local.text && local.text !== expectedText) return local;
-
-  const tensorflow = await recognizeWithTensorFlow(expectedText);
-  if (tensorflow.text === expectedText && tensorflow.confidence >= 0.78 && tensorflow.margin >= 0.16 && (!local.text || (local.text === expectedText && local.status !== "ambiguous"))) return tensorflow;
-  if (tensorflow.text && local.text && tensorflow.text !== local.text) {
-    return {
-      ...local,
-      status: "ambiguous",
-      confidence: Math.min(0.56, local.confidence || tensorflow.confidence),
-      tensorflowText: tensorflow.text,
-      tensorflowConfidence: tensorflow.confidence,
-    };
-  }
   if (local.status === "ambiguous") return local;
   if (local.text && local.confidence >= 0.64) return local;
   const browser = await recognizeWithBrowserApi(pathsInsideAnswerBox());
@@ -1803,7 +1705,6 @@ levelButtons.forEach((button) => {
 });
 
 loadOnnxDigitModel();
-loadTensorFlowDigitModel();
 registerServiceWorker();
 updatePersonalGreeting();
 updateToolUi();
