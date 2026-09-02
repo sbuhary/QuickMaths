@@ -1,1 +1,1 @@
-window.QUICKMATHS_RELEASE = "20260901-onnx-3";
+window.QUICKMATHS_RELEASE = "20260902-layout-1";

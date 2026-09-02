@@ -343,8 +343,8 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1) rotate(var(--r)); }
 }
 .problem-card {
-  --operator-cell: clamp(42px, 12vw, 58px);
-  --digit-cell: clamp(58px, 18vw, 78px);
+  --operator-cell: clamp(44px, 12vw, 60px);
+  --digit-cell: clamp(78px, 24vw, 112px);
   top: 164px;
   left: 50%;
   width: min(calc(100% - 36px), 420px);
@@ -359,7 +359,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 }
 .question {
   font-family: "Courier New", monospace;
-  font-size: clamp(4.8rem, 22vw, 7.4rem);
+  font-size: clamp(4.8rem, 24vw, 7.4rem);
   font-weight: 900;
   line-height: 0.9;
   letter-spacing: 0;
@@ -402,7 +402,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 .feedback-panel {
   left: 22px;
   right: 22px;
-  top: 535px;
+  top: 620px;
   min-height: 0;
   padding: 0;
   text-align: left;
@@ -532,8 +532,8 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   .board-toolbar { top: 82px; gap: 7px; max-width: calc(100% - 24px); overflow-x: auto; }
   .pen-panel { top: 138px; }
   .palette, .pen-sizes { gap: 8px; }
-  .problem-card { top: 160px; width: 86vw; }
-  .question { font-size: clamp(5rem, 27vw, 7.2rem); }
+  .problem-card { top: 150px; width: calc(100% - 28px); --operator-cell: clamp(40px, 12vw, 52px); --digit-cell: clamp(74px, 24vw, 94px); }
+  .question { font-size: clamp(4.6rem, 24vw, 6.8rem); }
   .feedback-panel { top: 506px; left: 22px; right: 22px; min-height: 0; }
   .action-stack { left: 22px; right: 22px; bottom: 16px; width: auto; }
 }
@@ -541,9 +541,9 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 @media (max-height: 690px) {
   .board-toolbar { top: 72px; }
   .pen-panel { top: 126px; }
-  .problem-card { top: 146px; }
-  .question { font-size: clamp(4.2rem, 22vw, 6rem); }
-  .feedback-panel { top: 404px; min-height: 0; padding: 0; }
+  .problem-card { top: 134px; --operator-cell: clamp(36px, 11vw, 46px); --digit-cell: clamp(64px, 22vw, 82px); }
+  .question { font-size: clamp(4rem, 22vw, 5.8rem); }
+  .feedback-panel { top: 470px; min-height: 0; padding: 0; }
   .feedback { font-size: 0.84rem; margin-bottom: 8px; }
   .feedback-actions .action-button { min-height: 38px; }
 }
