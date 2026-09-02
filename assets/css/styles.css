@@ -389,7 +389,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 .inline-answer-anchor { display: block; width: calc(var(--digit-cell) * var(--answer-digits, 1)); height: var(--digit-cell); visibility: hidden; }
 .answer-box.inline-answer { position: absolute; z-index: 3; display: grid; grid-template-columns: repeat(var(--answer-digits, 1), var(--digit-cell)); margin-top: 0; padding-top: 0; border: 0; background: transparent; }
 .answer-box.inline-answer span { display: none; }
-.answer-box.inline-answer .answer-digit-slot { background: rgba(255, 246, 204, 0.96); box-shadow: 0 10px 20px rgba(31, 41, 55, 0.12), inset 0 0 0 2px rgba(255, 255, 255, 0.38); }
+.answer-box.inline-answer .answer-digit-slot { background: rgba(255, 246, 204, 0.16); box-shadow: 0 10px 20px rgba(31, 41, 55, 0.08), inset 0 0 0 2px rgba(255, 255, 255, 0.18); }
 .answer-box {
   position: relative;
   margin-top: 20px;
