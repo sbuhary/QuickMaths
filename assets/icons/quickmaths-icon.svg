@@ -5,5 +5,4 @@
   <circle cx="146" cy="370" r="54" fill="#00b894"/>
   <circle cx="366" cy="370" r="54" fill="#0984e3"/>
   <path d="M179 257h154M256 180v154" stroke="#fffef8" stroke-width="42" stroke-linecap="round"/>
-  <path d="M178 430h156" stroke="#fffef8" stroke-width="28" stroke-linecap="round" opacity=".9"/>
 </svg>
