@@ -14,7 +14,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="assets/icons/quickmaths-icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icons/quickmaths-icon.svg">
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260902-ort-2">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260902-gameplay-2">
   </head>
   <body>
     <main class="app-shell">
@@ -30,10 +30,11 @@
         <div class="start-card">
           <p class="eyebrow">QuickMaths</p>
           <h1>Pick a math path</h1>
-          <label>
-            Your name
-            <input id="kid-name" type="text" inputmode="text" autocomplete="given-name" maxlength="24" placeholder="Your name" required>
-          </label>
+          <div class="player-row">
+            <p id="player-greeting" class="player-greeting">Ready to play?</p>
+            <button id="settings-name" class="circle-button reset-button" type="button" aria-label="Change name"><i data-lucide="settings"></i></button>
+            <input id="kid-name" type="hidden" autocomplete="given-name">
+          </div>
           <label>
             Operation
             <select id="operation">
@@ -49,7 +50,7 @@
             <select id="difficulty" aria-label="Difficulty">
               <option value="easy">Easy: start at tiny sums</option>
               <option value="medium">Medium: start at teen sums</option>
-              <option value="difficult">Difficult: start at times tables</option>
+              <option value="difficult">Difficult: start at skip counting</option>
             </select>
           </label>
           <p id="stage-summary" class="stage-summary">Stage 1: Tiny sums</p>
@@ -181,7 +182,7 @@
           <p class="eyebrow">QuickMaths</p>
           <h2>Your name</h2>
           <input id="gate-name" type="text" inputmode="text" autocomplete="given-name" maxlength="24" placeholder="Your name" required>
-          <button id="save-name" class="action-button primary" type="button">Start</button>
+          <button id="save-name" class="action-button primary" type="button">Save</button>
         </div>
       </section>
     </main>
@@ -189,7 +190,7 @@
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
     <script>window.QUICKMATHS_ENABLE_ONNX_MODEL = true; if (window.ort?.env?.wasm) { window.ort.env.wasm.wasmPaths = "./assets/vendor/onnxruntime-web/"; window.ort.env.wasm.numThreads = 1; window.ort.env.wasm.simd = false; }</script>
     <script src="assets/js/version.js"></script>
-    <script src="assets/js/icons.js?v=20260902-ort-2"></script>
-    <script src="assets/js/app.js?v=20260902-ort-2"></script>
+    <script src="assets/js/icons.js?v=20260902-gameplay-2"></script>
+    <script src="assets/js/app.js?v=20260902-gameplay-2"></script>
   </body>
 </html>

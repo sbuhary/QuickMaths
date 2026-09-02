@@ -101,6 +101,8 @@ select, input {
 }
 input::placeholder { color: #9aa3b2; }
 input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(255, 95, 158, 0.18); }
+.player-row { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; gap: 10px; margin: 0 0 12px; }
+.player-greeting { margin: 0; padding: 12px 14px; border-radius: 10px; background: #fff6cc; color: var(--ink); font-size: 1rem; font-weight: 900; box-shadow: inset 0 0 0 2px rgba(255, 209, 102, 0.28); }
 .stage-summary, .session-summary, .session-detail {
   margin: 0 0 12px;
   padding: 10px 12px;
@@ -114,7 +116,7 @@ input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 
 .session-detail { background: #e9fff9; margin-top: -4px; }
 .level-path {
   position: relative;
-  min-height: 1580px;
+  min-height: var(--path-height, 1580px);
   margin: 22px 0 46px;
 }
 .level-road {
@@ -167,6 +169,7 @@ input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 
 .level-node[data-level="wizard"] { background: linear-gradient(145deg, #8d7cff, #6c5ce7); box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18), 0 12px 22px rgba(108, 92, 231, 0.28); }
 .level-node span { display: block; font-size: 1.55rem; line-height: 1; }
 .level-node small { display: block; margin-top: 5px; font-size: 0.6rem; line-height: 1; }
+.level-node:not(:disabled):not(.active) { animation: stage-pop 420ms ease-out both, gentle-float 2.8s ease-in-out infinite; }
 .level-node.active { outline: 5px solid var(--yellow); transform: translate(-50%, -50%) scale(1.2); animation: active-stage-pulse 1.45s ease-in-out infinite; box-shadow: 0 0 0 8px rgba(255, 209, 102, 0.22), 0 18px 28px rgba(255, 95, 158, 0.32); }
 .level-node:disabled { background: linear-gradient(145deg, #c8ced8, #9ca3af); opacity: 0.88; box-shadow: 0 12px 22px rgba(31, 41, 55, 0.18); animation: none; }
 .level-lock { position: absolute; top: 10px; right: 10px; display: none; width: 18px; height: 18px; }
@@ -176,6 +179,10 @@ input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 
 @keyframes stage-pop {
   from { opacity: 0; transform: translate(-50%, -40%) scale(0.88); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes gentle-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-5px); }
 }
 @keyframes active-stage-pulse {
   0%, 100% { transform: translate(-50%, -50%) scale(1.16); }
@@ -221,8 +228,8 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-.game-stats { display: flex; gap: 4px; align-items: center; justify-content: center; padding: 7px 6px; min-height: 54px; min-width: 0; overflow: hidden; }
-.stat-pill { display: inline-flex; align-items: center; gap: 2px; min-width: 0; justify-content: center; color: var(--ink); font-size: 0.84rem; font-weight: 900; line-height: 1; }
+.game-stats { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 7px 6px; min-height: 54px; min-width: 0; overflow: hidden; }
+.stat-pill { display: inline-flex; align-items: center; gap: 4px; min-width: 0; justify-content: center; color: var(--ink); font-size: 0.84rem; font-weight: 900; line-height: 1; }
 .stat-pill svg { flex: 0 0 auto; width: 17px; height: 17px; stroke-width: 3; }
 .stat-pill:first-child svg { color: var(--yellow); fill: var(--yellow); }
 .stat-pill:nth-child(2) svg { color: var(--pink); fill: var(--pink); }
@@ -345,7 +352,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 .problem-card {
   --operator-cell: clamp(44px, 12vw, 60px);
   --digit-cell: clamp(78px, 24vw, 112px);
-  top: 164px;
+  top: clamp(190px, 28vh, 250px);
   left: 50%;
   width: min(calc(100% - 36px), 420px);
   transform: translateX(-50%);
@@ -372,6 +379,11 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 .question .division-symbol::before { top: 0.13em; }
 .question .division-symbol::after { bottom: 0.13em; }
 .question .bar { grid-row: 3; grid-column: 1 / -1; height: 8px; margin-top: 8px; background: var(--ink); }
+.sequence-question, .fill-question { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; font-family: inherit; font-size: clamp(2.1rem, 9vw, 3.8rem); line-height: 1.05; text-align: center; }
+.sequence-title { font-family: var(--font); font-size: clamp(1rem, 4vw, 1.3rem); font-weight: 900; color: var(--purple); }
+.sequence-row, .fill-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: clamp(8px, 3vw, 18px); }
+.sequence-row b, .fill-row b { min-width: 1.3em; }
+.blank-term { display: inline-grid; place-items: center; min-width: 1.35em; min-height: 1.25em; border: 4px dashed rgba(108, 92, 231, 0.58); border-radius: 10px; background: rgba(255, 246, 204, 0.9); color: var(--purple); }
 .answer-box {
   position: relative;
   margin-top: 20px;
@@ -532,7 +544,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   .board-toolbar { top: 82px; gap: 7px; max-width: calc(100% - 24px); overflow-x: auto; }
   .pen-panel { top: 138px; }
   .palette, .pen-sizes { gap: 8px; }
-  .problem-card { top: 150px; width: calc(100% - 28px); --operator-cell: clamp(38px, 11vw, 48px); --digit-cell: clamp(70px, 22vw, 88px); }
+  .problem-card { top: clamp(178px, 27vh, 228px); width: calc(100% - 28px); --operator-cell: clamp(38px, 11vw, 48px); --digit-cell: clamp(70px, 22vw, 88px); }
   .question { font-size: clamp(4.6rem, 24vw, 6.8rem); }
   .feedback-panel { top: 506px; left: 22px; right: 22px; min-height: 0; }
   .action-stack { left: 22px; right: 22px; bottom: 16px; width: auto; }
@@ -541,7 +553,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 @media (max-height: 690px) {
   .board-toolbar { top: 72px; }
   .pen-panel { top: 126px; }
-  .problem-card { top: 134px; --operator-cell: clamp(34px, 10vw, 44px); --digit-cell: clamp(64px, 22vw, 80px); }
+  .problem-card { top: 156px; --operator-cell: clamp(34px, 10vw, 44px); --digit-cell: clamp(64px, 22vw, 80px); }
   .question { font-size: clamp(4rem, 22vw, 5.8rem); }
   .feedback-panel { top: 470px; min-height: 0; padding: 0; }
   .feedback { font-size: 0.84rem; margin-bottom: 8px; }

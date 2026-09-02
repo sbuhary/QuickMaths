@@ -28,6 +28,8 @@ async function main() {
   await page.getByRole("button", { name: /Start stage 1/i }).click();
   await page.locator("#gate-name").fill("Mia");
   await page.locator("#save-name").click();
+  const candidatePolicy = await page.evaluate(() => answerChoicesFromRecognition({ text: "8", candidateTexts: ["5", "8"] }, 5));
+  if (candidatePolicy.includes("7") || candidatePolicy.includes("9") || !candidatePolicy.includes("5") || !candidatePolicy.includes("8")) throw new Error(`Answer choices should come from handwriting candidates plus the correct answer: ${candidatePolicy.join(",")}`);
   await page.getByRole("button", { name: /Change timer style/i }).click();
   await page.getByRole("button", { name: /Mute sounds/i }).click();
   await page.locator("#help-practice").click();

@@ -11,7 +11,7 @@
 ### Practice Flow
 - [x] App name: QuickMaths.
 - [x] Brief QuickMaths greeting splash appears on app load before restoring the last screen.
-- [x] Require and save a child name for personalized messages.
+- [x] Require and save a child name for personalized messages; later changes live behind settings.
 - [x] Prompt older saved users for a name before practice when no name exists.
 - [x] Practice screen header removes the app name and uses compact game-style score icons.
 - [x] Separate level/options start screen with a Candy Crush-style vertical scrolling stage path.
@@ -23,8 +23,8 @@
 - [x] Mobile-first layout with touch and pen support.
 - [x] Writing works with one finger or pen only; two-finger gestures do not draw and remain available for browser zoom.
 - [x] Practice modes: addition, subtraction, multiplication, and division.
-- [x] Planned stages start with tiny one-digit addition before introducing subtraction, within-20 facts, two-digit practice, multiplication, and division.
-- [x] Easy, Medium, and Difficult choices start children at stages 1, 5, and 9.
+- [x] Planned stages start with tiny one-digit addition before introducing counting, missing addends, subtraction, within-20 facts, two-digit practice, skip counting, multiplication, and division.
+- [x] Easy, Medium, and Difficult choices start children at stages 1, 7, and 13.
 - [x] One random question shown at a time.
 - [x] Session question history avoids repeating recent questions until the current stage pool is mostly used.
 - [x] Old-school stacked question layout with one large question on the whiteboard.
@@ -55,7 +55,7 @@
 - [x] Visible timer for the current question.
 - [x] Countdown timer with style cycling: digital, analog, and hourglass.
 - [x] Feedback appears below the answer area so the written answer remains visible.
-- [x] Low-confidence recognition shows tappable answer choices, including the correct answer and nearby values.
+- [x] Low-confidence recognition shows tappable answer choices from actual handwriting candidates, always including the correct answer.
 - [x] Feedback is inline on the board instead of a popup/overlay.
 - [x] Correct answers trigger animated celebration.
 - [x] Correct feedback explains remaining time in child-friendly words on a separate line.
@@ -88,7 +88,7 @@
 - [x] Children are told immediately when the next stage unlocks.
 - [x] Disabled levels show a lock icon.
 - [x] Cheerful colors for children.
-- [x] Four-stage-band level plan: Starter, Explorer, Builder, Wizard.
+- [x] Eighteen-stage plan across Starter, Explorer, Builder, and Wizard bands.
 
 ### Accessibility And Compatibility
 - [x] Large tap targets.
@@ -129,7 +129,7 @@
 - [x] Add deterministic Playwright visual regression coverage for the mobile board.
 - [x] Improve joined multi-digit answer splitting before recognition scoring.
 - [x] Reduce false correct/wrong recognition by tightening expected-answer bias and confidence thresholds.
-- [x] Add a recognition confidence review state: if the app is unsure, show answer-choice boxes with the correct answer and nearby values.
+- [x] Add a recognition confidence review state: if the app is unsure, show answer-choice boxes from recognized candidates plus the correct answer.
 - [x] Add a small on-device recognition test harness with saved synthetic digit samples for regression checks.
 - [x] Add a low-height mobile layout smoke test for 320px, 375px, and 430px wide screens.
 - [x] Add static smoke-test script for syntax, layout hooks, drawing policy, asset versions, and level progression.
@@ -138,7 +138,7 @@
 ### P1: Better Learning Experience
 - [x] Add Candy Crush-style vertical scrolling stage path with progressive unlocks.
 - [x] Add stage-star unlock requirements and remembered Easy/Medium/Difficult entry points.
-- [x] Add operation-specific stage tuning for first addition, subtraction, multiplication, and division progressions.
+- [x] Add operation-specific stage tuning for addition, counting up/down, missing addends, subtraction, multiplication, and division progressions.
 - [x] Add a session summary with correct count and missed questions.
 - [x] Add full session summary with time and stars earned.
 - [x] Add retry missed question flow.
@@ -197,4 +197,6 @@
 - [x] Present stages on a vertical scrolling path layout.
 - [x] Active stage is larger and animated, with extra spacing between stage circles.
 - [x] Require missing names before practice, add lock icons, brighter level nodes, kid-friendly time-left wording, and pencil/eraser cursors.
-- [x] Add low-confidence answer-choice boxes and help overlays.
+- [x] Add handwriting-candidate answer-choice boxes and help overlays.
+
+- [x] Add settings-based name editing, expanded kid math stages, candidate-only answer choices, and centered solve layout.

@@ -19,6 +19,8 @@ const celebrationEl = document.querySelector("#celebration");
 const operationEl = document.querySelector("#operation");
 const difficultyEl = document.querySelector("#difficulty");
 const kidNameEl = document.querySelector("#kid-name");
+const playerGreetingEl = document.querySelector("#player-greeting");
+const settingsNameButton = document.querySelector("#settings-name");
 const nameGate = document.querySelector("#name-gate");
 const gateNameEl = document.querySelector("#gate-name");
 const saveNameButton = document.querySelector("#save-name");
@@ -53,8 +55,9 @@ const undoButton = document.querySelector("#undo");
 const eraserButton = document.querySelector("#eraser");
 const colorButtons = [...document.querySelectorAll(".color")];
 const sizeButtons = [...document.querySelectorAll(".size")];
-const levelButtons = [...document.querySelectorAll(".level-node")];
-const difficultyStarts = { easy: 1, medium: 5, difficult: 9 };
+const levelPathEl = document.querySelector(".level-path");
+let levelButtons = [...document.querySelectorAll(".level-node")];
+const difficultyStarts = { easy: 1, medium: 7, difficult: 13 };
 
 const settings = {
   starter: { label: "Starter", unlockAt: 0 },
@@ -65,19 +68,24 @@ const settings = {
 
 const stagePlans = [
   { stage: 1, level: "starter", title: "Tiny sums", operation: "addition", max: 5, sumMax: 5, seconds: 60, unlockStars: 50 },
-  { stage: 2, level: "starter", title: "Facts to 10", operation: "addition", max: 9, sumMax: 10, seconds: 60, unlockStars: 50 },
-  { stage: 3, level: "starter", title: "Take away", operation: "subtraction", max: 10, seconds: 60, unlockStars: 50 },
-  { stage: 4, level: "starter", title: "Add or subtract", operation: "add-sub", max: 10, sumMax: 10, seconds: 65, unlockStars: 50 },
-  { stage: 5, level: "explorer", title: "Teen sums", operation: "addition", max: 12, sumMax: 20, seconds: 70, unlockStars: 75 },
-  { stage: 6, level: "explorer", title: "Teen subtraction", operation: "subtraction", max: 20, seconds: 70, unlockStars: 75 },
-  { stage: 7, level: "explorer", title: "Two-digit plus ones", operation: "addition", max: 89, addendMax: 9, seconds: 75, unlockStars: 75 },
-  { stage: 8, level: "explorer", title: "Two-digit take away", operation: "subtraction", max: 99, subtractMax: 9, seconds: 75, unlockStars: 75 },
-  { stage: 9, level: "builder", title: "Times 2, 5, 10", operation: "multiplication", factors: [2, 5, 10], max: 10, seconds: 80, unlockStars: 100 },
-  { stage: 10, level: "builder", title: "Small times tables", operation: "multiplication", multiplicationMax: 6, seconds: 85, unlockStars: 100 },
-  { stage: 11, level: "wizard", title: "Exact sharing", operation: "division", divisionMax: 6, seconds: 90, unlockStars: 100 },
-  { stage: 12, level: "wizard", title: "Mixed challenge", operation: "mixed", multiplicationMax: 10, divisionMax: 10, max: 30, seconds: 90, unlockStars: 0 },
+  { stage: 2, level: "starter", title: "Count up", operation: "ascending", sequenceMax: 9, stepMax: 1, seconds: 60, unlockStars: 50 },
+  { stage: 3, level: "starter", title: "Facts to 10", operation: "addition", max: 9, sumMax: 10, seconds: 60, unlockStars: 50 },
+  { stage: 4, level: "starter", title: "Missing addends", operation: "missing-addend", max: 9, sumMax: 10, seconds: 65, unlockStars: 50 },
+  { stage: 5, level: "starter", title: "Take away", operation: "subtraction", max: 10, seconds: 65, unlockStars: 50 },
+  { stage: 6, level: "starter", title: "Add or subtract", operation: "add-sub", max: 10, sumMax: 10, seconds: 65, unlockStars: 60 },
+  { stage: 7, level: "explorer", title: "Teen sums", operation: "addition", max: 12, sumMax: 20, seconds: 70, unlockStars: 75 },
+  { stage: 8, level: "explorer", title: "Count down", operation: "descending", sequenceMax: 20, stepMax: 2, seconds: 70, unlockStars: 75 },
+  { stage: 9, level: "explorer", title: "Teen subtraction", operation: "subtraction", max: 20, seconds: 70, unlockStars: 75 },
+  { stage: 10, level: "explorer", title: "Make 20", operation: "missing-addend", max: 20, sumMax: 20, seconds: 75, unlockStars: 75 },
+  { stage: 11, level: "explorer", title: "Two-digit plus ones", operation: "addition", max: 89, addendMax: 9, seconds: 75, unlockStars: 80 },
+  { stage: 12, level: "explorer", title: "Two-digit take away", operation: "subtraction", max: 99, subtractMax: 9, seconds: 75, unlockStars: 80 },
+  { stage: 13, level: "builder", title: "Skip count", operation: "ascending", sequenceMax: 60, stepMin: 2, stepMax: 10, seconds: 80, unlockStars: 100 },
+  { stage: 14, level: "builder", title: "Times 2, 5, 10", operation: "multiplication", factors: [2, 5, 10], max: 10, seconds: 80, unlockStars: 100 },
+  { stage: 15, level: "builder", title: "Small times tables", operation: "multiplication", multiplicationMax: 6, seconds: 85, unlockStars: 100 },
+  { stage: 16, level: "wizard", title: "Exact sharing", operation: "division", divisionMax: 6, seconds: 90, unlockStars: 100 },
+  { stage: 17, level: "wizard", title: "Bigger sharing", operation: "division", divisionMax: 10, seconds: 90, unlockStars: 120 },
+  { stage: 18, level: "wizard", title: "Mixed challenge", operation: "mixed", multiplicationMax: 10, divisionMax: 10, max: 30, seconds: 90, unlockStars: 0 },
 ];
-
 const digitTemplates = {
   0: [["01110", "10001", "10011", "10101", "11001", "10001", "01110"], ["11111", "10001", "10001", "10001", "10001", "10001", "11111"], ["01110", "10001", "10001", "10001", "10001", "10001", "01110"]],
   1: [["00100", "01100", "00100", "00100", "00100", "00100", "01110"], ["00100", "00100", "00100", "00100", "00100", "00100", "00100"], ["01000", "11000", "01000", "01000", "01000", "01000", "11100"], ["00010", "00110", "00010", "00010", "00010", "00010", "00111"]],
@@ -131,8 +139,8 @@ function updatePersonalGreeting() {
   state.kidName = cleanKidName(state.kidName);
   if (kidNameEl && kidNameEl.value !== state.kidName) kidNameEl.value = state.kidName;
   if (splashGreetingEl) splashGreetingEl.textContent = state.kidName ? `Hi, ${state.kidName}!` : "Ready?";
+  if (playerGreetingEl) playerGreetingEl.textContent = state.kidName ? `Hi, ${state.kidName}!` : "Ready to play?";
 }
-
 function namePrefix(fallback) {
   return state.kidName ? `${fallback}, ${state.kidName}!` : `${fallback}!`;
 }
@@ -152,10 +160,10 @@ function showNameGate(action) {
   state.pendingNameAction = action;
   nameGate.hidden = false;
   gateNameEl.value = cleanKidName(kidNameEl?.value || state.kidName);
+  if (saveNameButton) saveNameButton.textContent = action === "settings" ? "Save" : "Start";
   gateNameEl.classList.remove("invalid");
   window.setTimeout(() => gateNameEl.focus(), 30);
 }
-
 function closeNameGate() {
   nameGate.hidden = true;
   gateNameEl.classList.remove("invalid");
@@ -171,10 +179,14 @@ function saveNameFromGate() {
   localStorage.setItem("quickmaths-kid-name", state.kidName);
   closeNameGate();
   updatePersonalGreeting();
+  if (state.pendingNameAction === "settings") {
+    state.pendingNameAction = null;
+    updateProgressUi();
+    return;
+  }
   if (state.pendingNameAction === "retry") retryMissedQuestions();
   else startPractice();
 }
-
 function requireKidName(action) {
   saveKidName();
   if (hasKidName()) return true;
@@ -191,27 +203,47 @@ function hideHelp() {
   helpGate.hidden = true;
 }
 
-function nearbyAnswerChoices(readText, correctAnswer) {
-  const read = normalizeAnswer(readText);
-  const anchor = Number.isFinite(read) ? read : correctAnswer;
-  const choices = new Set([correctAnswer, anchor]);
-  for (const offset of [-2, -1, 1, 2]) {
-    const value = anchor + offset;
-    if (value >= 0) choices.add(value);
-  }
-  for (const offset of [-2, -1, 1, 2]) {
-    const value = correctAnswer + offset;
-    if (choices.size >= 4) break;
-    if (value >= 0) choices.add(value);
-  }
-  const sorted = [...choices]
-    .filter((value) => Number.isFinite(value) && value >= 0)
-    .sort((a, b) => Math.abs(a - anchor) - Math.abs(b - anchor) || a - b);
-  const limited = sorted.slice(0, 4);
-  if (!limited.includes(correctAnswer)) limited[limited.length - 1] = correctAnswer;
-  return [...new Set(limited)].sort((a, b) => a - b);
+function addChoiceText(target, value) {
+  const normalized = normalizeAnswer(value);
+  if (Number.isFinite(normalized) && normalized >= 0) target.add(String(normalized));
 }
 
+function answerChoicesFromRecognition(recognized, correctAnswer) {
+  const correctText = String(correctAnswer);
+  const choices = new Set();
+  addChoiceText(choices, recognized.text);
+  addChoiceText(choices, recognized.visualText);
+  addChoiceText(choices, recognized.localText);
+  addChoiceText(choices, recognized.onnxText);
+  addChoiceText(choices, recognized.browserText);
+  (recognized.candidateTexts || []).forEach((value) => addChoiceText(choices, value));
+  (recognized.candidates || []).forEach((value) => addChoiceText(choices, value));
+  addChoiceText(choices, correctText);
+  const scored = [...choices]
+    .filter((value) => value.length <= Math.max(correctText.length + 1, correctText.length))
+    .map((value) => ({ value, isCorrect: value === correctText, isRead: value === String(recognized.text || "") }))
+    .sort((a, b) => Number(b.isCorrect) - Number(a.isCorrect) || Number(b.isRead) - Number(a.isRead) || a.value.length - b.value.length || Number(a.value) - Number(b.value));
+  const limited = scored.slice(0, 4).map((item) => item.value);
+  if (!limited.includes(correctText)) limited[Math.max(0, limited.length - 1)] = correctText;
+  return [...new Set(limited)].sort((a, b) => Number(a) - Number(b));
+}
+
+function combineCandidateDigits(candidateLists, limit = 6) {
+  if (!candidateLists.length) return [];
+  let combos = [{ text: "", score: 1 }];
+  candidateLists.forEach((list) => {
+    const candidates = list.slice(0, 3);
+    combos = combos.flatMap((combo) => candidates.map((candidate) => ({
+      text: combo.text + candidate.digit,
+      score: combo.score * Math.max(0.01, candidate.score || candidate.confidence || 0.01),
+    })));
+  });
+  return combos
+    .sort((a, b) => b.score - a.score)
+    .map((combo) => combo.text)
+    .filter((value, index, all) => all.indexOf(value) === index)
+    .slice(0, limit);
+}
 function renderAnswerDigitBoxes(expectedText = state.current ? String(state.current.answer) : "") {
   const text = String(expectedText || "");
   const digits = Math.max(1, text.length);
@@ -418,6 +450,26 @@ function currentPlan() {
   return stagePlans[state.progress.currentStage - 1];
 }
 
+function ensureLevelButtons() {
+  if (!levelPathEl) return;
+  stagePlans.forEach((plan, index) => {
+    let button = levelPathEl.querySelector(`.level-node[data-stage="${plan.stage}"]`);
+    if (!button) {
+      button = document.createElement("button");
+      button.className = "level-node";
+      button.type = "button";
+      button.dataset.stage = String(plan.stage);
+      button.innerHTML = `<i class="level-lock" data-lucide="lock"></i><span>${plan.stage}</span><small>${settings[plan.level]?.label || plan.level}</small>`;
+      levelPathEl.appendChild(button);
+    }
+    const offset = index % 2 === 0 ? -11 : 11;
+    button.style.left = `calc(50% + ${offset}px)`;
+    button.style.top = `${70 + index * 104}px`;
+  });
+  levelPathEl.style.setProperty("--path-height", `${Math.max(1180, 180 + stagePlans.length * 104)}px`);
+  levelButtons = [...levelPathEl.querySelectorAll(".level-node")];
+  if (window.lucide) window.lucide.createIcons();
+}
 function stageProgressText(plan, compact = false) {
   if (!plan.unlockStars) return compact ? "Final" : "Final stage";
   const earned = state.progress.stageStars[plan.stage] || 0;
@@ -425,6 +477,7 @@ function stageProgressText(plan, compact = false) {
 }
 
 function updateProgressUi() {
+  ensureLevelButtons();
   const plan = currentPlan();
   starsEl.textContent = String(state.progress.stars);
   streakEl.textContent = String(state.progress.streak);
@@ -513,18 +566,28 @@ function randomInt(min, max) {
 function chooseOperation(plan) {
   const selected = operationEl.value;
   if (selected !== "stage") return selected;
-  if (plan.operation === "mixed") return Math.random() > 0.5 ? "multiplication" : "division";
+  if (plan.operation === "mixed") return ["addition", "subtraction", "multiplication", "division"][randomInt(0, 3)];
   if (plan.operation === "add-sub") return Math.random() > 0.5 ? "addition" : "subtraction";
   return plan.operation;
 }
 
-
 function operationsForPlan(plan) {
   const selected = operationEl.value;
   if (selected !== "stage") return [selected];
-  if (plan.operation === "mixed") return ["multiplication", "division"];
+  if (plan.operation === "mixed") return ["addition", "subtraction", "multiplication", "division"];
   if (plan.operation === "add-sub") return ["addition", "subtraction"];
   return [plan.operation];
+}
+function buildSequenceQuestion(plan, direction, start, step) {
+  const terms = direction === "descending"
+    ? [start, start - step, start - step * 2, start - step * 3]
+    : [start, start + step, start + step * 2, start + step * 3];
+  const answer = direction === "descending" ? start - step * 4 : start + step * 4;
+  return { kind: "sequence", direction, terms, answer, symbol: direction === "descending" ? "down" : "up", plan };
+}
+
+function buildMissingAddendQuestion(plan, a, answer, total) {
+  return { kind: "missing-addend", a, b: answer, total, answer, symbol: "?", plan };
 }
 
 function buildQuestionsForOperation(plan, operation) {
@@ -556,9 +619,28 @@ function buildQuestionsForOperation(plan, operation) {
       for (let answer = 1; answer <= max; answer += 1) questions.push({ a: b * answer, b, answer, symbol: "/", plan });
     }
   }
+  if (operation === "ascending" || operation === "descending") {
+    const max = plan.sequenceMax || 20;
+    const minStep = plan.stepMin || 1;
+    const maxStep = plan.stepMax || 1;
+    for (let step = minStep; step <= maxStep; step += 1) {
+      const minStart = operation === "descending" ? step * 4 : 1;
+      const maxStart = operation === "descending" ? max : Math.max(1, max - step * 4);
+      for (let start = minStart; start <= maxStart; start += 1) questions.push(buildSequenceQuestion(plan, operation, start, step));
+    }
+  }
+  if (operation === "missing-addend") {
+    const max = plan.max || 10;
+    const sumMax = plan.sumMax || max * 2;
+    for (let total = 2; total <= sumMax; total += 1) {
+      for (let a = 1; a <= Math.min(max, total - 1); a += 1) {
+        const answer = total - a;
+        if (answer > 0 && answer <= max) questions.push(buildMissingAddendQuestion(plan, a, answer, total));
+      }
+    }
+  }
   return questions;
 }
-
 function questionPool(plan) {
   return operationsForPlan(plan).flatMap((operation) => buildQuestionsForOperation(plan, operation));
 }
@@ -606,24 +688,40 @@ function makeQuestion() {
     symbol = "/";
   }
 
+  if (operation === "ascending" || operation === "descending") {
+    const step = randomInt(plan.stepMin || 1, plan.stepMax || 1);
+    const max = plan.sequenceMax || 20;
+    const start = operation === "descending" ? randomInt(step * 4, max) : randomInt(1, Math.max(1, max - step * 4));
+    return buildSequenceQuestion(plan, operation, start, step);
+  }
+
+  if (operation === "missing-addend") {
+    const max = plan.max || 10;
+    const total = randomInt(2, plan.sumMax || max * 2);
+    a = randomInt(1, Math.min(max, total - 1));
+    answer = Math.max(1, Math.min(max, total - a));
+    return buildMissingAddendQuestion(plan, a, answer, a + answer);
+  }
+
   return { a, b, answer, symbol, plan };
 }
-
-
 function questionKey(question) {
+  if (question.kind === "sequence") return `${state.progress.currentStage}:sequence:${question.direction}:${question.terms.join(",")}`;
+  if (question.kind === "missing-addend") return `${state.progress.currentStage}:missing:${question.a}:${question.total}`;
   return `${state.progress.currentStage}:${question.symbol}:${question.a}:${question.b}`;
 }
 
 function estimatedQuestionPool(plan) {
   if (plan.operation === "add-sub") return Math.max(8, (plan.sumMax || plan.max || 10) * 2);
-  if (plan.operation === "mixed") return Math.max(20, (plan.multiplicationMax || 10) * (plan.divisionMax || 10));
+  if (plan.operation === "mixed") return Math.max(30, (plan.multiplicationMax || 10) * (plan.divisionMax || 10));
+  if (plan.operation === "ascending" || plan.operation === "descending") return Math.max(8, (plan.sequenceMax || 20) * (plan.stepMax || 1));
+  if (plan.operation === "missing-addend") return Math.max(8, plan.sumMax || (plan.max || 10) * 2);
   if (plan.operation === "addition") return Math.max(5, plan.sumMax ? Math.round((plan.sumMax * plan.sumMax) / 2) : (plan.max || 10) * (plan.addendMax || plan.max || 10));
   if (plan.operation === "subtraction") return Math.max(5, (plan.max || 10) * (plan.subtractMax || plan.max || 10) / 2);
   if (plan.operation === "multiplication") return Math.max(5, (plan.factors?.length || plan.multiplicationMax || 10) * (plan.max || plan.multiplicationMax || 10));
   if (plan.operation === "division") return Math.max(5, (plan.divisionMax || 10) * (plan.divisionMax || 10));
   return 10;
 }
-
 function rememberQuestion(question) {
   const key = questionKey(question);
   const limit = Math.max(3, Math.min(40, Math.floor(estimatedQuestionPool(question.plan) * 0.75)));
@@ -668,6 +766,25 @@ function renderStackedQuestion(question) {
   `;
 }
 
+function renderSequenceQuestion(question) {
+  questionEl.style.removeProperty("--result-digits");
+  answerBox.style.setProperty("--result-digits", String(Math.max(1, String(question.answer).length)));
+  const prompt = question.direction === "descending" ? "Count down" : "Count up";
+  return `<span class="sequence-title">${prompt}. What comes next?</span><span class="sequence-row">${question.terms.map((term) => `<b>${term}</b>`).join(" ")} <b class="blank-term">?</b></span>`;
+}
+function renderMissingAddendQuestion(question) {
+  questionEl.style.removeProperty("--result-digits");
+  answerBox.style.setProperty("--result-digits", String(Math.max(1, String(question.answer).length)));
+  return `<span class="fill-row"><b>${question.a}</b><b>+</b><b class="blank-term">?</b><b>=</b><b>${question.total}</b></span>`;
+}
+
+function renderQuestion(question) {
+  questionEl.classList.toggle("sequence-question", question.kind === "sequence");
+  questionEl.classList.toggle("fill-question", question.kind === "missing-addend");
+  if (question.kind === "sequence") return renderSequenceQuestion(question);
+  if (question.kind === "missing-addend") return renderMissingAddendQuestion(question);
+  return renderStackedQuestion(question);
+}
 function hideFeedback() {
   feedbackPanel.hidden = true;
   hideAnswerChoices();
@@ -749,7 +866,7 @@ function showQuestion(question = null) {
   const hasQuestion = question && typeof question === "object" && Number.isFinite(question.answer);
   state.current = hasQuestion ? { plan: currentPlan(), ...question } : makeFreshQuestion();
   rememberQuestion(state.current);
-  questionEl.innerHTML = renderStackedQuestion(state.current);
+  questionEl.innerHTML = renderQuestion(state.current);
   renderAnswerDigitBoxes(String(state.current.answer));
   hideFeedback();
   closePenPanel();
@@ -1274,7 +1391,7 @@ function recognizeInkComponent(component) {
   const margin = top.score - next.score;
   const signalAgreement = top.templateScore > 0.62 && top.featureScore > 0.5;
   const confidence = Math.max(0, Math.min(1, top.score * 0.48 + margin * 1.25 + (signalAgreement ? 0.12 : 0)));
-  return { digit: top.digit, score: top.score, confidence, margin, nextDigit: next.digit || "", templateScore: top.templateScore, featureScore: top.featureScore };
+  return { digit: top.digit, score: top.score, confidence, margin, nextDigit: next.digit || "", templateScore: top.templateScore, featureScore: top.featureScore, alternatives: ranked.slice(0, 4).map((item) => ({ digit: item.digit, score: item.score })) };
 }
 
 
@@ -1370,6 +1487,7 @@ async function recognizeWithOnnx(expectedText = "") {
     const digits = [];
     const confidences = [];
     const margins = [];
+    const candidateLists = [];
     for (const rect of rects) {
       const canvas = digitImageCanvasFromRect(rect, 28);
       if (!canvas) return { text: "", status: "empty", confidence: 0 };
@@ -1382,8 +1500,10 @@ async function recognizeWithOnnx(expectedText = "") {
       digits.push(ranked[0]?.digit || "");
       confidences.push(ranked[0]?.score || 0);
       margins.push((ranked[0]?.score || 0) - (ranked[1]?.score || 0));
+      candidateLists.push(ranked.slice(0, 4));
     }
-    return { text: digits.join(""), status: "onnx", confidence: Math.min(...confidences), margin: Math.min(...margins) };
+    const text = digits.join("");
+    return { text, status: "onnx", confidence: Math.min(...confidences), margin: Math.min(...margins), candidateTexts: combineCandidateDigits(candidateLists) };
   } catch {
     return { text: "", status: "onnx-error", confidence: 0 };
   }
@@ -1408,6 +1528,7 @@ function recognizeDigitsLocally(expectedText = "") {
   const expected = /^\d+$/.test(expectedText) ? scoreExpected(components, expectedText) : null;
   const componentsForReading = expected?.components || components;
   const recognized = componentsForReading.map(recognizeInkComponent);
+  const candidateTexts = combineCandidateDigits(recognized.map((item) => item.alternatives || [{ digit: item.digit, score: item.score }]));
   const bestScore = recognized.reduce((sum, item) => sum + item.score, 0) / recognized.length;
   const text = recognized.map((item) => item.digit).join("");
   const confidence = recognized.reduce((sum, item) => sum + item.confidence, 0) / Math.max(1, recognized.length);
@@ -1420,21 +1541,21 @@ function recognizeDigitsLocally(expectedText = "") {
     const expectedReadable = expected.average > 0.66 && expected.min > 0.42;
     const expectedPlausible = text === expectedText && expectedText.length <= 2 && expected.average > 0.58 && expected.min > 0.34 && expectedCompetitive && (expectedText !== "5" || strokeScore > 0.82);
     if ((expectedStrong && expectedCloseToBest) || expectedPlausible) {
-      return { text: expectedText, status: "local", confidence: Math.min(0.9, Math.max(0.66, confidence, expected.average - 0.02, strokeScore)), expectedScore: expected.average, visualText: text, strokeScore };
+      return { text: expectedText, status: "local", confidence: Math.min(0.9, Math.max(0.66, confidence, expected.average - 0.02, strokeScore)), expectedScore: expected.average, visualText: text, strokeScore, candidateTexts };
     }
     if (text !== expectedText && expected.average > 0.55 && expected.average >= bestScore - 0.34) {
-      return { text, status: "ambiguous", confidence: Math.min(0.56, confidence), expectedScore: expected.average, visualText: text };
+      return { text, status: "ambiguous", confidence: Math.min(0.56, confidence), expectedScore: expected.average, visualText: text, candidateTexts };
     }
   }
 
   const adjustedConfidence = minimumMargin < 0.1 ? Math.min(confidence, 0.58) : confidence;
   if (expected && text === expectedText && expected.average > 0.62 && bestScore > 0.6 && minimumMargin > 0.01 && (expectedText !== "5" || strokeScore > 0.82)) {
-    return { text, status: "local", confidence: Math.max(0.64, adjustedConfidence, strokeScore), expectedScore: expected.average, visualText: text, strokeScore };
+    return { text, status: "local", confidence: Math.max(0.64, adjustedConfidence, strokeScore), expectedScore: expected.average, visualText: text, strokeScore, candidateTexts };
   }
   if (expected && expectedText === "5" && text === expectedText && strokeScore <= 0.82) {
-    return { text, status: "ambiguous", confidence: Math.min(0.56, adjustedConfidence), expectedScore: expected.average, visualText: text, strokeScore };
+    return { text, status: "ambiguous", confidence: Math.min(0.56, adjustedConfidence), expectedScore: expected.average, visualText: text, strokeScore, candidateTexts };
   }
-  return { text, status: text ? "local" : "unreadable", confidence: adjustedConfidence };
+  return { text, status: text ? "local" : "unreadable", confidence: adjustedConfidence, candidateTexts };
 }
 
 function pathsInRect(rect) {
@@ -1484,6 +1605,7 @@ async function recognizeWriting(expectedText) {
       margin: onnx.margin,
       localText: local.text,
       expectedScore: expectedLocalScore,
+      candidateTexts: [...new Set([...(local.candidateTexts || []), ...(onnx.candidateTexts || []), local.text, onnx.text].filter(Boolean))],
     };
   }
   if (onnx.text && local.text && onnx.text !== local.text && onnx.confidence >= 0.52) {
@@ -1493,13 +1615,14 @@ async function recognizeWriting(expectedText) {
       confidence: Math.min(0.56, local.confidence || onnx.confidence),
       onnxText: onnx.text,
       onnxConfidence: onnx.confidence,
+      candidateTexts: [...new Set([...(local.candidateTexts || []), ...(onnx.candidateTexts || []), local.text, onnx.text].filter(Boolean))],
     };
   }
   if (local.status === "ambiguous" && local.text && local.text !== expectedText) return local;
   if (local.status === "ambiguous") return local;
   if (local.text && local.confidence >= 0.64) return local;
   const browser = await recognizeWithBrowserApi(pathsInsideAnswerBox());
-  if (browser.text && browser.confidence > local.confidence) return browser;
+  if (browser.text && browser.confidence > local.confidence) return { ...browser, browserText: browser.text, candidateTexts: [...new Set([...(local.candidateTexts || []), browser.text].filter(Boolean))] };
   return local.text ? local : { text: "", status: "unreadable", confidence: 0 };
 }
 function showFeedback(message, type) {
@@ -1573,7 +1696,7 @@ function awardCorrectAnswer(readText) {
 }
 function askForRecognitionReview(recognized) {
   state.pendingReview = recognized;
-  const choices = nearbyAnswerChoices(recognized.text, state.current.answer);
+  const choices = answerChoicesFromRecognition(recognized, state.current.answer);
   showFeedback(state.kidName ? `${state.kidName}, pick the answer you meant.` : "Pick the answer you meant.", "choices");
   showAnswerChoices(choices);
 }
@@ -1686,7 +1809,8 @@ undoButton.addEventListener("click", () => {
 });
 clearButton.addEventListener("click", clearBoardWithConfirmation);
 checkButton.addEventListener("click", checkAnswer);
-kidNameEl.addEventListener("input", saveKidName);
+if (kidNameEl) kidNameEl.addEventListener("input", saveKidName);
+if (settingsNameButton) settingsNameButton.addEventListener("click", () => showNameGate("settings"));
 gateNameEl.addEventListener("input", () => gateNameEl.classList.remove("invalid"));
 gateNameEl.addEventListener("keydown", (event) => {
   if (event.key === "Enter") saveNameFromGate();
@@ -1702,6 +1826,9 @@ rewardGate.addEventListener("click", (event) => {
 });
 helpGate.addEventListener("click", (event) => {
   if (event.target === helpGate) hideHelp();
+});
+nameGate.addEventListener("click", (event) => {
+  if (event.target === nameGate && state.pendingNameAction === "settings") closeNameGate();
 });
 document.addEventListener("pointerdown", (event) => {
   if (penPanel.hidden) return;
