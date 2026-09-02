@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#6c5ce7">
+    <meta name="theme-color" content="#25145f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="QuickMaths">
     <meta
@@ -12,9 +12,9 @@
     >
     <title>QuickMaths</title>
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" href="assets/icons/quickmaths-icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="assets/icons/quickmaths-icon.svg">
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260902-gameplay-4">
+    <link rel="icon" href="assets/icons/quickmaths-icon.svg?v=20260902-gameplay-7" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="assets/icons/quickmaths-icon.svg?v=20260902-gameplay-7">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260902-gameplay-7">
   </head>
   <body>
     <main class="app-shell">
@@ -32,7 +32,8 @@
           <h1>Pick a math path</h1>
           <div class="player-row">
             <p id="player-greeting" class="player-greeting">Ready to play?</p>
-            <button id="settings-name" class="circle-button reset-button" type="button" aria-label="Change name"><i data-lucide="settings"></i></button>
+            <button id="scores-button" class="small-pill-button" type="button"><i data-lucide="trophy"></i><span>Scores</span></button>
+            <button id="settings-name" class="small-pill-button" type="button" aria-label="Change name"><i data-lucide="user-cog"></i><span>Settings</span></button>
             <input id="kid-name" type="hidden" autocomplete="given-name">
           </div>
           <label>
@@ -54,8 +55,6 @@
             </select>
           </label>
           <p id="stage-summary" class="stage-summary">Stage 1: Tiny sums</p>
-          <p id="session-summary" class="session-summary">0 right / 0 missed</p>
-          <p id="session-detail" class="session-detail">0:00 practiced / 0 stars earned</p>
           <div class="level-path" aria-label="Winding stage path">
             <svg class="level-road" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
               <path d="M50 4 C49 10 51 16 50 22 S49 34 50 40 S51 52 50 58 S49 70 50 76 S51 88 50 96" />
@@ -177,6 +176,21 @@
           <button id="close-help" class="action-button primary" type="button">OK</button>
         </div>
       </section>
+      <section id="scores-gate" class="scores-gate" aria-label="Scores" hidden>
+        <div class="scores-card">
+          <p class="eyebrow">Scores</p>
+          <h2>Your progress</h2>
+          <div class="score-grid">
+            <div><span>Stage stars</span><strong id="score-stage-stars">0/50</strong></div>
+            <div><span>Right</span><strong id="score-right">0</strong></div>
+            <div><span>Missed</span><strong id="score-missed">0</strong></div>
+            <div><span>Practiced</span><strong id="score-practiced">0:00</strong></div>
+            <div><span>Total stars</span><strong id="score-total-stars">0</strong></div>
+            <div><span>Streak</span><strong id="score-streak">0</strong></div>
+          </div>
+          <button id="close-scores" class="action-button primary" type="button">OK</button>
+        </div>
+      </section>
       <section id="name-gate" class="name-gate" aria-label="Enter your name" hidden>
         <div class="name-card">
           <p class="eyebrow">QuickMaths</p>
@@ -190,7 +204,7 @@
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
     <script>window.QUICKMATHS_ENABLE_ONNX_MODEL = true; if (window.ort?.env?.wasm) { window.ort.env.wasm.wasmPaths = "./assets/vendor/onnxruntime-web/"; window.ort.env.wasm.numThreads = 1; window.ort.env.wasm.simd = false; }</script>
     <script src="assets/js/version.js"></script>
-    <script src="assets/js/icons.js?v=20260902-gameplay-4"></script>
-    <script src="assets/js/app.js?v=20260902-gameplay-4"></script>
+    <script src="assets/js/icons.js?v=20260902-gameplay-7"></script>
+    <script src="assets/js/app.js?v=20260902-gameplay-7"></script>
   </body>
 </html>

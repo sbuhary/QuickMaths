@@ -29,6 +29,15 @@ const helpGate = document.querySelector("#help-gate");
 const helpStartButton = document.querySelector("#help-start");
 const helpPracticeButton = document.querySelector("#help-practice");
 const closeHelpButton = document.querySelector("#close-help");
+const scoresButton = document.querySelector("#scores-button");
+const scoresGate = document.querySelector("#scores-gate");
+const closeScoresButton = document.querySelector("#close-scores");
+const scoreStageStarsEl = document.querySelector("#score-stage-stars");
+const scoreRightEl = document.querySelector("#score-right");
+const scoreMissedEl = document.querySelector("#score-missed");
+const scorePracticedEl = document.querySelector("#score-practiced");
+const scoreTotalStarsEl = document.querySelector("#score-total-stars");
+const scoreStreakEl = document.querySelector("#score-streak");
 const rewardGate = document.querySelector("#reward-gate");
 const rewardTitleEl = document.querySelector("#reward-title");
 const rewardMessageEl = document.querySelector("#reward-message");
@@ -204,7 +213,27 @@ function hideHelp() {
   helpGate.hidden = true;
 }
 
+function updateScoresPopup() {
+  const plan = currentPlan();
+  if (scoreStageStarsEl) scoreStageStarsEl.textContent = stageProgressText(plan, true);
+  if (scoreRightEl) scoreRightEl.textContent = String(state.session.correct);
+  if (scoreMissedEl) scoreMissedEl.textContent = String(state.session.missed);
+  if (scorePracticedEl) scorePracticedEl.textContent = formatElapsed(Date.now() - state.session.startedAt);
+  if (scoreTotalStarsEl) scoreTotalStarsEl.textContent = String(state.progress.stars);
+  if (scoreStreakEl) scoreStreakEl.textContent = String(state.progress.streak);
+}
+
+function showScores() {
+  updateScoresPopup();
+  scoresGate.hidden = false;
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function hideScores() {
+  scoresGate.hidden = true;
+}
 function addChoiceText(target, value) {
+
   const normalized = normalizeAnswer(value);
   if (Number.isFinite(normalized) && normalized >= 0) target.add(String(normalized));
 }
@@ -517,7 +546,7 @@ function updateProgressUi() {
     button.classList.toggle("active", state.progress.currentStage === stage);
     button.setAttribute("aria-label", `Stage ${stage}, ${stagePlan.title}${isUnlocked ? `, ${stageProgressText(stagePlan)}` : " locked"}`);
     const small = button.querySelector("small");
-    if (small) small.textContent = isUnlocked ? stageProgressText(stagePlan, true) : "Locked";
+    if (small) small.textContent = isUnlocked ? stageProgressText(stagePlan, true) : "";
   });
 }
 
@@ -1847,6 +1876,8 @@ saveNameButton.addEventListener("click", saveNameFromGate);
 helpStartButton.addEventListener("click", showHelp);
 helpPracticeButton.addEventListener("click", showHelp);
 closeHelpButton.addEventListener("click", hideHelp);
+if (scoresButton) scoresButton.addEventListener("click", showScores);
+if (closeScoresButton) closeScoresButton.addEventListener("click", hideScores);
 rewardOkButton.addEventListener("click", hideRewardPopup);
 rewardNextButton.addEventListener("click", () => { hideRewardPopup(); showQuestion(); });
 rewardGate.addEventListener("click", (event) => {
@@ -1854,6 +1885,9 @@ rewardGate.addEventListener("click", (event) => {
 });
 helpGate.addEventListener("click", (event) => {
   if (event.target === helpGate) hideHelp();
+});
+if (scoresGate) scoresGate.addEventListener("click", (event) => {
+  if (event.target === scoresGate) hideScores();
 });
 nameGate.addEventListener("click", (event) => {
   if (event.target === nameGate && state.pendingNameAction === "settings") closeNameGate();
