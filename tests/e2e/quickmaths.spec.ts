@@ -19,10 +19,12 @@ async function openStableStage(page) {
 test.describe('QuickMaths app', () => {
   test('renders level picker and starts practice on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
+    await page.addInitScript(() => localStorage.setItem('quickmaths-kid-name', 'Mia'));
     await page.goto(appUrl);
     await expect(page).toHaveTitle(/QuickMaths/);
     await expect(page.getByRole('heading', { name: 'Pick a math path' })).toBeVisible();
-    await page.getByRole('textbox', { name: /Name/i }).fill('Mia');
+    await expect(page.locator('#player-greeting')).toHaveText('Hi, Mia!');
+    await expect(page.getByRole('button', { name: /Change name/i })).toBeVisible();
     await expect(page.locator('#start-screen')).toHaveScreenshot('quickmaths-level-picker.png', { maxDiffPixelRatio: 0.08, timeout: 15000 });
     await page.getByRole('button', { name: /Start stage 1/i }).click();
     await expect(page.getByLabel('Math practice whiteboard')).toBeVisible();

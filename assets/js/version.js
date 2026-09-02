@@ -1,1 +1,1 @@
-window.QUICKMATHS_RELEASE = "20260902-ort-2";
+window.QUICKMATHS_RELEASE = "20260902-gameplay-4";

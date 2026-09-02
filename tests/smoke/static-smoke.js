@@ -56,10 +56,11 @@ execFileSync(process.execPath, ["--check", "tests/support/static-server.js"], { 
 const stagePlans = extractConst("stagePlans");
 const digitTemplates = extractConst("digitTemplates");
 
-assert(stagePlans.length === 12, "Expected 12 stages");
+assert(stagePlans.length === 18, "Expected 18 stages");
 assert(stagePlans[0].operation === "addition" && stagePlans[0].sumMax === 5, "Stage 1 should be tiny addition");
-assert(stagePlans[0].unlockStars === 50 && stagePlans[4].unlockStars === 75 && stagePlans[8].unlockStars === 100, "Stage unlock star thresholds missing");
-assert(stagePlans[10].operation === "division", "Stage 11 should introduce division");
+assert(stagePlans[0].unlockStars === 50 && stagePlans[6].unlockStars === 75 && stagePlans[13].unlockStars === 100, "Stage unlock star thresholds missing");
+assert(stagePlans.some((stage) => stage.operation === "ascending") && stagePlans.some((stage) => stage.operation === "descending") && stagePlans.some((stage) => stage.operation === "missing-addend"), "Kid progression stages missing");
+assert(stagePlans[15].operation === "division", "Stage 16 should introduce division");
 assert(version, "Release version constant missing");
 assert(html.includes(`assets/css/styles.css?v=${version}`), "CSS cache version does not match release version");
 assert(html.includes(`assets/js/app.js?v=${version}`), "JS cache version does not match release version");
@@ -68,7 +69,7 @@ assert(serviceWorker.includes(`quickmaths-${version}`), "Service worker cache ve
 assert(serviceWorker.includes(`assets/js/icons.js?v=${version}`), "Service worker must cache local icon renderer");
 assert(css.includes("touch-action: pinch-zoom"), "Canvas must allow pinch zoom");
 assert(html.includes("manifest.webmanifest"), "PWA manifest link missing");
-assert(html.includes("Winding stage path") && html.includes("class=\"level-road\"") && css.includes(".level-road path") && css.includes('.level-node[data-stage="12"] { left: 50%; top: 92%; }') && css.includes("min-height: 1580px") && css.includes("active-stage-pulse"), "Vertical stage path layout missing");
+assert(html.includes("Winding stage path") && html.includes("class=\"level-road\"") && css.includes(".level-road path") && css.includes("min-height: var(--path-height") && css.includes("active-stage-pulse") && js.includes("ensureLevelButtons"), "Vertical stage path layout missing");
 assert(!html.includes("unpkg.com/lucide") && !html.includes("lucide-static"), "Icon renderer must be local for Safari file URLs");
 assert(html.includes("onnxruntime-web") && html.includes("QUICKMATHS_ENABLE_ONNX_MODEL = true") && js.includes("ort.InferenceSession.create(\"./assets/models/mnist-8.onnx\"") && js.includes("recognizeWithOnnx"), "ONNX Runtime model wiring missing");
 assert(onnxModel.size > 20000 && serviceWorker.includes("./assets/models/mnist-8.onnx"), "ONNX model asset must be committed and cached");
@@ -85,19 +86,19 @@ assert(js.includes("retryMissedQuestions") && js.includes("missedQuestions"), "R
 assert(js.includes("componentColumnInk") && js.includes("findSplitColumn"), "Valley-based digit splitting missing");
 assert(js.includes("scoreDigitFeatures") && js.includes("scoreComponentAsDigit") && js.includes("strokeDigitScore") && js.includes("status: \"ambiguous\"") && js.includes("minimumMargin < 0.1") && js.includes("confidence >= 0.64"), "Conservative recognition confidence guard missing");
 assert(js.includes("hasQuestion") && js.includes("() => showQuestion()"), "Next handlers must not pass click events as questions");
-assert(html.includes("Easy: start at tiny sums") && html.includes("Medium: start at teen sums") && html.includes("Difficult: start at times tables") && js.includes("difficultyStarts = { easy: 1, medium: 5, difficult: 9 }") && js.includes("selectDifficulty"), "Difficulty entry selection missing");
+assert(html.includes("Easy: start at tiny sums") && html.includes("Medium: start at teen sums") && html.includes("Difficult: start at skip counting") && js.includes("difficultyStarts = { easy: 1, medium: 7, difficult: 13 }") && js.includes("selectDifficulty"), "Difficulty entry selection missing");
 assert(js.includes("setActionState(type)") && js.includes("tryMainButton.hidden") && js.includes("nextMainButton.hidden") && js.includes("checkButton.hidden"), "Answer actions must follow feedback state");
 assert(js.includes("normalizeProgress") && js.includes("Math.min(unlockedStages") && js.includes("stageStars") && js.includes("quickmaths-difficulty"), "Saved progress must include stage stars and remembered difficulty");
 assert(!html.includes("id=\"clear-answer\"") && js.includes("clearBoardWithConfirmation"), "Compact UI should keep one confirmed clear-all control");
 assert(!html.includes("id=\"hand-toggle\"") && !js.includes("toggleHandedness") && !css.includes("data-controls=\"left\""), "Removed side-toggle controls should stay out of the compact UI");
 assert(html.includes("id=\"splash-screen\"") && js.includes("showSplashThenRestore") && js.includes("quickmaths-view"), "Splash and refresh-view restore behavior missing");
-assert(html.includes("id=\"kid-name\"") && html.includes("placeholder=\"Your name\"") && html.includes("required") && js.includes("quickmaths-kid-name") && js.includes("Congratulations"), "Required personalized/fallback messages missing");
+assert(html.includes("id=\"settings-name\"") && html.includes("id=\"gate-name\"") && html.includes("placeholder=\"Your name\"") && html.includes("required") && js.includes("quickmaths-kid-name") && js.includes("Congratulations"), "Required personalized/fallback messages missing");
 assert(html.includes("id=\"name-gate\"") && js.includes("requireKidName") && js.includes("saveNameFromGate"), "Missing required-name gate for old saved users");
 assert(html.includes("id=\"celebration\"") && css.includes("confetti-pop") && js.includes("celebrateCorrectAnswer"), "Correct-answer celebration missing");
 assert(html.includes('id="reward-gate"') && js.includes("starMilestones") && js.includes("earnedStarMilestones") && js.includes("Stage ${unlockedStage} unlocked!") && css.includes("reward-pop"), "Star milestone and stage-unlock reward popup missing");
 assert(html.includes("data-lucide=\"star\"") && html.includes("data-lucide=\"flame\"") && html.includes("data-lucide=\"lock\""), "Game-style score and lock icons missing");
 assert(js.includes("formatKidTimeLeft") && js.includes("You still had"), "Kid-friendly time-left wording missing");
-assert(html.includes('id="answer-choices"') && js.includes("nearbyAnswerChoices") && js.includes("verifyChosenAnswer"), "Low-confidence answer choices missing");
+assert(html.includes('id="answer-choices"') && js.includes("answerChoicesFromRecognition") && js.includes("candidateTexts") && js.includes("verifyChosenAnswer"), "Low-confidence answer choices missing");
 assert(js.includes('recognized.status !== "empty"') && js.includes("pick the answer you meant"), "Low-confidence choice prompt missing");
 assert(html.includes('id="help-start"') && html.includes('id="help-practice"') && html.includes('id="help-gate"') && js.includes("showHelp") && iconsSource.includes('"circle-help"'), "Help overlay missing");
 assert(css.includes("white-space: pre-line"), "Feedback must support line breaks");
