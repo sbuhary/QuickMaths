@@ -28,7 +28,17 @@ async function main() {
   await page.getByRole("button", { name: /Start stage 1/i }).click();
   await page.locator("#gate-name").fill("Mia");
   await page.locator("#save-name").click();
-  const candidatePolicy = await page.evaluate(() => answerChoicesFromRecognition({ text: "8", candidateTexts: ["5", "8"] }, 5));
+  const inlineBox = await page.evaluate(() => {
+    state.current = { kind: "missing-addend", a: 4, b: 6, total: 10, answer: 6, symbol: "?", plan: currentPlan() };
+    questionEl.innerHTML = renderQuestion(state.current);
+    renderAnswerDigitBoxes("6");
+    const boardRect = board.getBoundingClientRect();
+    const anchor = questionEl.querySelector("[data-answer-anchor]").getBoundingClientRect();
+    const box = answerBox.getBoundingClientRect();
+    const relative = (rect) => ({ left: Math.round(rect.left - boardRect.left), top: Math.round(rect.top - boardRect.top), width: Math.round(rect.width), height: Math.round(rect.height) });
+    return { anchor: relative(anchor), box: relative(box), inline: answerBox.classList.contains("inline-answer") };
+  });
+  if (!inlineBox.inline || JSON.stringify(inlineBox.anchor) !== JSON.stringify(inlineBox.box)) throw new Error(`Missing-number answer box is not aligned to the question blank: ${JSON.stringify(inlineBox)}`);  const candidatePolicy = await page.evaluate(() => answerChoicesFromRecognition({ text: "8", candidateTexts: ["5", "8"] }, 5));
   if (candidatePolicy.includes("7") || candidatePolicy.includes("9") || !candidatePolicy.includes("5") || !candidatePolicy.includes("8")) throw new Error(`Answer choices should come from handwriting candidates plus the correct answer: ${candidatePolicy.join(",")}`);
   await page.getByRole("button", { name: /Change timer style/i }).click();
   await page.getByRole("button", { name: /Mute sounds/i }).click();

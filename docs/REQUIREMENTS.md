@@ -23,7 +23,7 @@
 - [x] Mobile-first layout with touch and pen support.
 - [x] Writing works with one finger or pen only; two-finger gestures do not draw and remain available for browser zoom.
 - [x] Practice modes: addition, subtraction, multiplication, and division.
-- [x] Planned stages start with tiny one-digit addition before introducing counting, missing addends, subtraction, within-20 facts, two-digit practice, skip counting, multiplication, and division.
+- [x] Planned stages start with tiny one-digit addition before introducing counting, missing addends with the writable blank in the question, subtraction, within-20 facts, two-digit practice, skip counting, multiplication, and division.
 - [x] Easy, Medium, and Difficult choices start children at stages 1, 7, and 13.
 - [x] One random question shown at a time.
 - [x] Session question history avoids repeating recent questions until the current stage pool is mostly used.
@@ -199,4 +199,4 @@
 - [x] Require missing names before practice, add lock icons, brighter level nodes, kid-friendly time-left wording, and pencil/eraser cursors.
 - [x] Add handwriting-candidate answer-choice boxes and help overlays.
 
-- [x] Add settings-based name editing, expanded kid math stages, candidate-only answer choices, and centered solve layout.
+- [x] Add settings-based name editing, expanded kid math stages, candidate-only answer choices, centered solve layout, and inline writable missing-number blanks.

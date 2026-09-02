@@ -15,6 +15,7 @@ const closeFeedbackButton = document.querySelector("#close-feedback");
 const markCorrectButton = document.querySelector("#mark-correct");
 const markWrongButton = document.querySelector("#mark-wrong");
 const answerBox = document.querySelector("#answer-box");
+const problemCard = document.querySelector(".problem-card");
 const celebrationEl = document.querySelector("#celebration");
 const operationEl = document.querySelector("#operation");
 const difficultyEl = document.querySelector("#difficulty");
@@ -244,23 +245,41 @@ function combineCandidateDigits(candidateLists, limit = 6) {
     .filter((value, index, all) => all.indexOf(value) === index)
     .slice(0, limit);
 }
+function resetInlineAnswerBox() {
+  answerBox.classList.remove("inline-answer");
+  answerBox.style.removeProperty("left");
+  answerBox.style.removeProperty("top");
+}
+
+function positionInlineAnswerBox() {
+  const anchor = questionEl.querySelector("[data-answer-anchor]");
+  if (!anchor || !problemCard) return;
+  const anchorRect = anchor.getBoundingClientRect();
+  const cardRect = problemCard.getBoundingClientRect();
+  answerBox.style.left = `${anchorRect.left - cardRect.left}px`;
+  answerBox.style.top = `${anchorRect.top - cardRect.top}px`;
+}
+
 function renderAnswerDigitBoxes(expectedText = state.current ? String(state.current.answer) : "") {
   const text = String(expectedText || "");
   const digits = Math.max(1, text.length);
-  const resultDigits = Math.max(digits, Number(answerBox.style.getPropertyValue("--result-digits")) || digits);
+  const isInline = state.current?.kind === "missing-addend";
+  const resultDigits = isInline ? digits : Math.max(digits, Number(answerBox.style.getPropertyValue("--result-digits")) || digits);
   const start = resultDigits - digits;
+  answerBox.classList.toggle("inline-answer", isInline);
   answerBox.style.setProperty("--answer-digits", String(digits));
   answerBox.style.setProperty("--result-digits", String(resultDigits));
   [...answerBox.querySelectorAll(".answer-digit-slot")].forEach((slot) => slot.remove());
   for (let index = 0; index < digits; index += 1) {
     const slot = document.createElement("i");
     slot.className = "answer-digit-slot";
-    slot.style.gridColumn = String(2 + start + index);
+    slot.style.gridColumn = String(isInline ? index + 1 : 2 + start + index);
     slot.setAttribute("aria-hidden", "true");
     answerBox.appendChild(slot);
   }
+  if (isInline) positionInlineAnswerBox();
+  else resetInlineAnswerBox();
 }
-
 function answerDigitRects(expectedText = state.current ? String(state.current.answer) : "") {
   let slots = [...answerBox.querySelectorAll(".answer-digit-slot")];
   const expectedLength = Math.max(1, String(expectedText || "").length);
@@ -773,11 +792,19 @@ function renderSequenceQuestion(question) {
   return `<span class="sequence-title">${prompt}. What comes next?</span><span class="sequence-row">${question.terms.map((term) => `<b>${term}</b>`).join(" ")} <b class="blank-term">?</b></span>`;
 }
 function renderMissingAddendQuestion(question) {
-  questionEl.style.removeProperty("--result-digits");
-  answerBox.style.setProperty("--result-digits", String(Math.max(1, String(question.answer).length)));
-  return `<span class="fill-row"><b>${question.a}</b><b>+</b><b class="blank-term">?</b><b>=</b><b>${question.total}</b></span>`;
+  const resultDigits = Math.max(String(question.a).length, String(question.total).length, String(question.answer).length);
+  const answerDigits = Math.max(1, String(question.answer).length);
+  const start = resultDigits - answerDigits;
+  questionEl.style.setProperty("--result-digits", String(resultDigits));
+  answerBox.style.setProperty("--result-digits", String(answerDigits));
+  return `
+    ${renderNumberCells(question.a, 1, resultDigits, "top")}
+    ${renderOperator("+")}
+    <span class="inline-answer-anchor" data-answer-anchor style="grid-row:2;grid-column:${2 + start} / span ${answerDigits}">?</span>
+    <span class="bar"></span>
+    ${renderNumberCells(question.total, 4, resultDigits, "total-number")}
+  `;
 }
-
 function renderQuestion(question) {
   questionEl.classList.toggle("sequence-question", question.kind === "sequence");
   questionEl.classList.toggle("fill-question", question.kind === "missing-addend");
@@ -931,6 +958,7 @@ function resizeBoard() {
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
+  if (state.current?.kind === "missing-addend") positionInlineAnswerBox();
   if (snapshot) {
     const image = new Image();
     image.onload = () => ctx.drawImage(image, 0, 0, width, height);
