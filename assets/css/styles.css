@@ -366,7 +366,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 }
 .question .digit-cell { display: block; text-align: center; min-width: 0; }
 .question .operator { grid-row: 2; grid-column: 1; display: grid; place-items: center; align-self: center; width: var(--operator-cell); height: 0.82em; font-size: 0.82em; line-height: 1; }
-.question .division-symbol { position: relative; font-size: 0; }
+.question .division-symbol { position: relative; }
 .question .division-symbol i { width: 0.56em; height: 0.12em; border-radius: 999px; background: currentColor; }
 .question .division-symbol::before, .question .division-symbol::after { content: ""; position: absolute; left: 50%; width: 0.12em; height: 0.12em; border-radius: 50%; background: currentColor; transform: translateX(-50%); }
 .question .division-symbol::before { top: 0.13em; }
@@ -532,7 +532,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   .board-toolbar { top: 82px; gap: 7px; max-width: calc(100% - 24px); overflow-x: auto; }
   .pen-panel { top: 138px; }
   .palette, .pen-sizes { gap: 8px; }
-  .problem-card { top: 150px; width: calc(100% - 28px); --operator-cell: clamp(40px, 12vw, 52px); --digit-cell: clamp(74px, 24vw, 94px); }
+  .problem-card { top: 150px; width: calc(100% - 28px); --operator-cell: clamp(38px, 11vw, 48px); --digit-cell: clamp(70px, 22vw, 88px); }
   .question { font-size: clamp(4.6rem, 24vw, 6.8rem); }
   .feedback-panel { top: 506px; left: 22px; right: 22px; min-height: 0; }
   .action-stack { left: 22px; right: 22px; bottom: 16px; width: auto; }
@@ -541,7 +541,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 @media (max-height: 690px) {
   .board-toolbar { top: 72px; }
   .pen-panel { top: 126px; }
-  .problem-card { top: 134px; --operator-cell: clamp(36px, 11vw, 46px); --digit-cell: clamp(64px, 22vw, 82px); }
+  .problem-card { top: 134px; --operator-cell: clamp(34px, 10vw, 44px); --digit-cell: clamp(64px, 22vw, 80px); }
   .question { font-size: clamp(4rem, 22vw, 5.8rem); }
   .feedback-panel { top: 470px; min-height: 0; padding: 0; }
   .feedback { font-size: 0.84rem; margin-bottom: 8px; }
