@@ -52,20 +52,22 @@ test.describe('QuickMaths app', () => {
     expect(errors).toEqual([]);
     await expect(page).toHaveScreenshot('quickmaths-mobile-board.png', { maxDiffPixelRatio: 0.08, timeout: 15000 });
   });
-  test('loads TensorFlow model and keeps clear handwritten answers correct', async ({ page }) => {
+  test('loads ONNX model and keeps clear handwritten answers correct', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openStableStage(page);
 
     const result = await page.evaluate(async () => {
+      await loadOnnxDigitModel();
       await new Promise<void>((resolve) => {
         const started = Date.now();
-        const wait = () => (state.digitModelReady || Date.now() - started > 10000 ? resolve() : setTimeout(wait, 100));
+        const wait = () => (state.onnxModelReady || Date.now() - started > 20000 ? resolve() : setTimeout(wait, 100));
         wait();
       });
       state.current = { a: 3, b: 2, answer: 5, symbol: '+', plan: currentPlan() };
       questionEl.innerHTML = renderStackedQuestion(state.current);
+      renderAnswerDigitBoxes('5');
       clearBoard();
-      const rect = getAnswerRect();
+      const rect = answerDigitRects('5')[0];
       const width = rect.right - rect.left;
       const height = rect.bottom - rect.top;
       const points = [[0.6, 0.22], [0.42, 0.22], [0.39, 0.46], [0.57, 0.46], [0.7, 0.66], [0.43, 0.78]].map((point) => ({
@@ -87,14 +89,16 @@ test.describe('QuickMaths app', () => {
       state.paths.push({ color: '#1f2937', size: 5, erase: false, points });
 
       return {
-        modelReady: state.digitModelReady,
-        tensorflow: await recognizeWithTensorFlow('5'),
+        modelReady: state.onnxModelReady,
+        modelError: state.onnxModelError,
+        onnx: await recognizeWithOnnx('5'),
         combined: await recognizeWriting('5'),
       };
     });
 
+    expect(result.modelError || "").toBe("");
     expect(result.modelReady).toBe(true);
-    expect(result.tensorflow.status).toBe('tensorflow');
+    expect(result.onnx.status).toBe('onnx');
     expect(result.combined.text).toBe('5');
   });
 });

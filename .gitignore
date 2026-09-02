@@ -1,7 +1,10 @@
 # Dependencies
 node_modules/
 
-# Playwright output
+# Test output
+/tests/artifacts/
+
+# Legacy/default Playwright output
 /test-results/
 /playwright-report/
 /blob-report/
@@ -33,3 +36,7 @@ Desktop.ini
 *.tgz
 .model-*/
 model-tmp/
+
+# Local model/test archives
+assets/models/*.tar.gz
+assets/models/mnist-8/

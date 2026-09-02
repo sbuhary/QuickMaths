@@ -207,10 +207,10 @@ input.invalid, input:invalid:focus { border-color: var(--pink); box-shadow: 0 0 
 }
 
 canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; touch-action: pinch-zoom; }
-.topbar, .board-toolbar, .pen-panel, .problem-card, .answer-box, .action-stack, .feedback-panel { position: absolute; z-index: 2; }
+.topbar, .board-toolbar, .pen-panel, .problem-card, .action-stack, .feedback-panel { position: absolute; z-index: 2; }
 .topbar {
   top: 12px; left: 14px; right: 14px;
-  display: grid; grid-template-columns: 46px 1fr 42px auto; gap: 8px; align-items: start;
+  display: grid; grid-template-columns: 46px minmax(0, 1fr) 40px 74px; gap: 7px; align-items: start;
   pointer-events: none;
 }
 .game-stats, .timer {
@@ -221,9 +221,9 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-.game-stats { display: flex; gap: 7px; align-items: center; justify-content: center; padding: 8px; min-height: 58px; }
-.stat-pill { display: inline-flex; align-items: center; gap: 4px; min-width: 54px; justify-content: center; color: var(--ink); font-size: 0.98rem; font-weight: 900; }
-.stat-pill svg { width: 20px; height: 20px; stroke-width: 3; }
+.game-stats { display: flex; gap: 4px; align-items: center; justify-content: center; padding: 7px 6px; min-height: 54px; min-width: 0; overflow: hidden; }
+.stat-pill { display: inline-flex; align-items: center; gap: 2px; min-width: 0; justify-content: center; color: var(--ink); font-size: 0.84rem; font-weight: 900; line-height: 1; }
+.stat-pill svg { flex: 0 0 auto; width: 17px; height: 17px; stroke-width: 3; }
 .stat-pill:first-child svg { color: var(--yellow); fill: var(--yellow); }
 .stat-pill:nth-child(2) svg { color: var(--pink); fill: var(--pink); }
 .freeze-pill svg { color: var(--blue); fill: rgba(9, 132, 227, 0.18); }
@@ -342,21 +342,46 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   15% { opacity: 1; }
   100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1) rotate(var(--r)); }
 }
-.problem-card { top: 168px; left: 50%; width: min(72vw, 360px); transform: translateX(-50%); pointer-events: none; }
+.problem-card {
+  --operator-cell: clamp(44px, 12vw, 60px);
+  --digit-cell: clamp(78px, 24vw, 112px);
+  top: 164px;
+  left: 50%;
+  width: min(calc(100% - 36px), 420px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.question, .answer-box {
+  display: grid;
+  grid-template-columns: var(--operator-cell) repeat(var(--result-digits, 1), var(--digit-cell));
+  justify-content: center;
+  align-items: end;
+}
 .question {
-  display: grid; grid-template-columns: 1ch var(--digits, 2ch); justify-content: center; align-items: end;
-  font-family: "Courier New", monospace; font-size: clamp(5.2rem, 24vw, 8.4rem); font-weight: 900; line-height: 0.9; letter-spacing: 0;
+  font-family: "Courier New", monospace;
+  font-size: clamp(4.8rem, 24vw, 7.4rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: 0;
 }
-.question .top { grid-column: 1 / 3; text-align: right; }
-.question .operator { grid-column: 1; text-align: left; }
-.question .bottom-number { grid-column: 2; text-align: right; }
-.question .bar { grid-column: 1 / 3; height: 8px; margin-top: 8px; background: var(--ink); }
+.question .digit-cell { display: block; text-align: center; min-width: 0; }
+.question .operator { grid-row: 2; grid-column: 1; display: grid; place-items: center; align-self: center; width: var(--operator-cell); height: 0.82em; font-size: 0.82em; line-height: 1; }
+.question .division-symbol { position: relative; }
+.question .division-symbol i { width: 0.56em; height: 0.12em; border-radius: 999px; background: currentColor; }
+.question .division-symbol::before, .question .division-symbol::after { content: ""; position: absolute; left: 50%; width: 0.12em; height: 0.12em; border-radius: 50%; background: currentColor; transform: translateX(-50%); }
+.question .division-symbol::before { top: 0.13em; }
+.question .division-symbol::after { bottom: 0.13em; }
+.question .bar { grid-row: 3; grid-column: 1 / -1; height: 8px; margin-top: 8px; background: var(--ink); }
 .answer-box {
-  left: 50%; top: 410px; width: min(78vw, 440px); height: 118px; transform: translateX(-50%);
-  border: 4px dashed rgba(108, 92, 231, 0.66); border-radius: 8px; background: rgba(255, 255, 255, 0.22); pointer-events: none;
+  position: relative;
+  margin-top: 20px;
+  padding-top: 10px;
+  border: 0;
+  background: transparent;
 }
-.answer-box span { position: absolute; top: -28px; left: 10px; color: rgba(31, 41, 55, 0.48); font-size: 1rem; font-weight: 900; }
-.answer-box.active { border-color: var(--mint); background: rgba(0, 184, 148, 0.1); }
+.answer-box span { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); color: rgba(31, 41, 55, 0.48); font-size: 1rem; font-weight: 900; }
+.answer-box.active .answer-digit-slot { border-color: var(--mint); background: rgba(0, 184, 148, 0.08); }
+.answer-digit-slot { display: block; width: var(--digit-cell); aspect-ratio: 1; min-width: 0; border: 4px dashed rgba(108, 92, 231, 0.66); border-radius: 8px; background: rgba(255, 255, 255, 0.24); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.24); }
 .tool-button { background: #eef2ff; color: var(--ink); }
 .danger-tool { color: #be123c; }
 .action-stack {
@@ -377,7 +402,7 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 .feedback-panel {
   left: 22px;
   right: 22px;
-  top: 535px;
+  top: 620px;
   min-height: 0;
   padding: 0;
   text-align: left;
@@ -500,16 +525,15 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
   .start-card { padding: 20px 20px 146px; }
   .start-card::after { margin-left: -20px; margin-right: -20px; }
   .start-overlay { left: 28px; right: 28px; bottom: 18px; width: auto; }
-  .topbar { top: 18px; left: 18px; right: 18px; grid-template-columns: 42px 1fr 40px auto; gap: 7px; }
-  .game-stats { min-width: 0; padding: 8px; }
+  .topbar { top: 18px; left: 18px; right: 18px; grid-template-columns: 42px minmax(0, 1fr) 38px 70px; gap: 6px; }
+  .game-stats { min-width: 0; padding: 7px 5px; }
   .circle-button { width: 42px; height: 42px; }
   .sound-button { width: 40px; height: 40px; }
   .board-toolbar { top: 82px; gap: 7px; max-width: calc(100% - 24px); overflow-x: auto; }
   .pen-panel { top: 138px; }
   .palette, .pen-sizes { gap: 8px; }
-  .problem-card { top: 160px; width: 86vw; }
-  .question { font-size: clamp(5rem, 27vw, 7.2rem); }
-  .answer-box { top: 384px; width: calc(100% - 44px); height: 104px; }
+  .problem-card { top: 150px; width: calc(100% - 28px); --operator-cell: clamp(38px, 11vw, 48px); --digit-cell: clamp(70px, 22vw, 88px); }
+  .question { font-size: clamp(4.6rem, 24vw, 6.8rem); }
   .feedback-panel { top: 506px; left: 22px; right: 22px; min-height: 0; }
   .action-stack { left: 22px; right: 22px; bottom: 16px; width: auto; }
 }
@@ -517,10 +541,9 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 @media (max-height: 690px) {
   .board-toolbar { top: 72px; }
   .pen-panel { top: 126px; }
-  .problem-card { top: 146px; }
-  .question { font-size: clamp(4.2rem, 22vw, 6rem); }
-  .answer-box { top: 304px; height: 92px; }
-  .feedback-panel { top: 404px; min-height: 0; padding: 0; }
+  .problem-card { top: 134px; --operator-cell: clamp(34px, 10vw, 44px); --digit-cell: clamp(64px, 22vw, 80px); }
+  .question { font-size: clamp(4rem, 22vw, 5.8rem); }
+  .feedback-panel { top: 470px; min-height: 0; padding: 0; }
   .feedback { font-size: 0.84rem; margin-bottom: 8px; }
   .feedback-actions .action-button { min-height: 38px; }
 }
@@ -528,7 +551,9 @@ canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; 
 @media (max-width: 360px) {
   .topbar { gap: 6px; }
   .sound-button { width: 38px; height: 38px; }
-  .timer { min-width: 74px; }
+  .timer { min-width: 68px; }
+  .stat-pill { font-size: 0.78rem; }
+  .stat-pill svg { width: 15px; height: 15px; }
   .board-toolbar { gap: 5px; padding: 5px; }
   .pen-panel { max-width: calc(100% - 24px); }
   .palette, .pen-sizes { gap: 7px; }

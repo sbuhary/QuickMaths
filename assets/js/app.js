@@ -117,9 +117,10 @@ const state = {
   answerState: "ready",
   kidName: localStorage.getItem("quickmaths-kid-name") || "",
   pendingNameAction: null,
-  digitModel: null,
-  digitModelReady: false,
-  digitModelTried: false,
+  onnxModel: null,
+  onnxModelReady: false,
+  onnxModelTried: false,
+  onnxModelError: "",
 };
 
 function cleanKidName(value) {
@@ -209,6 +210,42 @@ function nearbyAnswerChoices(readText, correctAnswer) {
   const limited = sorted.slice(0, 4);
   if (!limited.includes(correctAnswer)) limited[limited.length - 1] = correctAnswer;
   return [...new Set(limited)].sort((a, b) => a - b);
+}
+
+function renderAnswerDigitBoxes(expectedText = state.current ? String(state.current.answer) : "") {
+  const text = String(expectedText || "");
+  const digits = Math.max(1, text.length);
+  const resultDigits = Math.max(digits, Number(answerBox.style.getPropertyValue("--result-digits")) || digits);
+  const start = resultDigits - digits;
+  answerBox.style.setProperty("--answer-digits", String(digits));
+  answerBox.style.setProperty("--result-digits", String(resultDigits));
+  [...answerBox.querySelectorAll(".answer-digit-slot")].forEach((slot) => slot.remove());
+  for (let index = 0; index < digits; index += 1) {
+    const slot = document.createElement("i");
+    slot.className = "answer-digit-slot";
+    slot.style.gridColumn = String(2 + start + index);
+    slot.setAttribute("aria-hidden", "true");
+    answerBox.appendChild(slot);
+  }
+}
+
+function answerDigitRects(expectedText = state.current ? String(state.current.answer) : "") {
+  let slots = [...answerBox.querySelectorAll(".answer-digit-slot")];
+  const expectedLength = Math.max(1, String(expectedText || "").length);
+  if (slots.length !== expectedLength) {
+    renderAnswerDigitBoxes(expectedText);
+    slots = [...answerBox.querySelectorAll(".answer-digit-slot")];
+  }
+  const boardRect = board.getBoundingClientRect();
+  return slots.map((slot) => {
+    const rect = slot.getBoundingClientRect();
+    return {
+      left: rect.left - boardRect.left,
+      top: rect.top - boardRect.top,
+      right: rect.right - boardRect.left,
+      bottom: rect.bottom - boardRect.top,
+    };
+  });
 }
 
 function showAnswerChoices(choices) {
@@ -608,13 +645,25 @@ function makeFreshQuestion() {
   }
   return unseen[randomInt(0, unseen.length - 1)];
 }
+function renderNumberCells(value, row, resultDigits, className) {
+  const text = String(value);
+  const start = resultDigits - text.length;
+  return [...text].map((digit, index) => `<span class="${className} digit-cell" style="grid-row:${row};grid-column:${2 + start + index}">${digit}</span>`).join("");
+}
+
+function renderOperator(symbol) {
+  if (symbol === "/") return `<span class="operator division-symbol" aria-label="divided by"><i></i></span>`;
+  return `<span class="operator">${symbol === "x" ? "x" : symbol}</span>`;
+}
+
 function renderStackedQuestion(question) {
-  const digits = Math.max(String(question.a).length, String(question.b).length);
-  questionEl.style.setProperty("--digits", `${digits}ch`);
+  const resultDigits = Math.max(String(question.a).length, String(question.b).length, String(question.answer).length);
+  questionEl.style.setProperty("--result-digits", String(resultDigits));
+  answerBox.style.setProperty("--result-digits", String(resultDigits));
   return `
-    <span class="top">${question.a}</span>
-    <span class="operator">${question.symbol}</span>
-    <span class="bottom-number">${question.b}</span>
+    ${renderNumberCells(question.a, 1, resultDigits, "top")}
+    ${renderOperator(question.symbol)}
+    ${renderNumberCells(question.b, 2, resultDigits, "bottom-number")}
     <span class="bar"></span>
   `;
 }
@@ -701,6 +750,7 @@ function showQuestion(question = null) {
   state.current = hasQuestion ? { plan: currentPlan(), ...question } : makeFreshQuestion();
   rememberQuestion(state.current);
   questionEl.innerHTML = renderStackedQuestion(state.current);
+  renderAnswerDigitBoxes(String(state.current.answer));
   hideFeedback();
   closePenPanel();
   clearBoard();
@@ -789,6 +839,10 @@ function getAnswerRect() {
 
 function pointInsideAnswer(point) {
   const rect = getAnswerRect();
+  return pointInsideRect(point, rect);
+}
+
+function pointInsideRect(point, rect) {
   return point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
 }
 
@@ -909,8 +963,8 @@ function scoreTemplate(grid, template) {
   const extraRate = extras / Math.max(1, ink);
   return recall * 0.68 + precision * 0.32 - extraRate * 0.34;
 }
-function answerInkComponents() {
-  const rect = getAnswerRect();
+function answerInkComponents(rectOverride = null) {
+  const rect = rectOverride || getAnswerRect();
   const scaleX = board.width / board.clientWidth;
   const scaleY = board.height / board.clientHeight;
   const sx = Math.max(0, Math.round(rect.left * scaleX));
@@ -967,6 +1021,23 @@ function answerInkComponents() {
   }).filter((box) => box.maxX - box.minX > 2 && box.maxY - box.minY > 8);
 }
 
+function mergeComponents(components) {
+  if (!components.length) return null;
+  return components.reduce((merged, component) => ({
+    ...merged,
+    minX: Math.min(merged.minX, component.minX),
+    maxX: Math.max(merged.maxX, component.maxX),
+    minY: Math.min(merged.minY, component.minY),
+    maxY: Math.max(merged.maxY, component.maxY),
+  }), { ...components[0] });
+}
+
+function expectedDigitComponents(expectedText = "") {
+  if (!/^\d+$/.test(expectedText)) return answerInkComponents();
+  const rects = answerDigitRects(expectedText);
+  const components = rects.map((rect) => mergeComponents(answerInkComponents(rect)));
+  return components.every(Boolean) ? components : answerInkComponents();
+}
 function cloneComponent(component, minX, maxX) {
   return { ...component, minX, maxX };
 }
@@ -1208,55 +1279,68 @@ function recognizeInkComponent(component) {
 
 
 /*
-  TensorFlow.js model setup:
-  1. Train or download an EMNIST/MNIST/math-symbol Keras model that classifies digits 0-9.
-  2. Install the converter locally in Python: pip install tensorflowjs
-  3. Convert the saved Keras model:
-     tensorflowjs_converter --input_format=keras path/to/digit_model.keras ./model
-     or:
-     tensorflowjs_converter --input_format=tf_saved_model path/to/saved_model ./model
-  4. Commit the generated ./model/model.json and shard .bin files.
-  5. Set window.QUICKMATHS_ENABLE_TF_MODEL = true after the model files are committed.
-  6. The app supports either a [1, 784] flat tensor or [1, 28, 28, 1] grayscale tensor with raw 0-255 pixel values and 10 digit probabilities.
+  ONNX Runtime Web digit model setup:
+  1. Download a browser-safe MNIST/EMNIST ONNX model and place it at ./assets/models/mnist-8.onnx.
+  2. Load ONNX Runtime Web in index.html from jsDelivr or unpkg.
+  3. The app preprocesses each answer digit slot into [1, 1, 28, 28] grayscale floats.
+  4. For a stronger child-handwriting model, train/fine-tune with QuickMaths samples, export to ONNX, and replace this file.
 */
-async function loadTensorFlowDigitModel() {
-  state.digitModelTried = true;
-  if (!window.QUICKMATHS_ENABLE_TF_MODEL) return null;
-  if (!window.tf?.loadLayersModel || window.location.protocol === "file:") return null;
+async function loadOnnxDigitModel() {
+  state.onnxModelTried = true;
+  if (!window.QUICKMATHS_ENABLE_ONNX_MODEL) return null;
+  if (!window.ort?.InferenceSession || window.location.protocol === "file:") return null;
   try {
-    state.digitModel = await window.tf.loadLayersModel("./model/model.json");
-    state.digitModelReady = true;
-    return state.digitModel;
-  } catch {
-    state.digitModel = null;
-    state.digitModelReady = false;
+    state.onnxModel = await window.ort.InferenceSession.create("./assets/models/mnist-8.onnx", { executionProviders: ["wasm"] });
+    state.onnxModelReady = true;
+    state.onnxModelError = "";
+    return state.onnxModel;
+  } catch (error) {
+    state.onnxModel = null;
+    state.onnxModelReady = false;
+    state.onnxModelError = error?.message || String(error || "Unknown ONNX load error");
     return null;
   }
 }
 
-function answerImageCanvas(size = 28) {
-  const rect = getAnswerRect();
-  const strokes = pathsInsideAnswerBox().filter((path) => !path.erase);
-  const points = strokes.flatMap((path) => path.points);
+function softmax(values) {
+  const max = Math.max(...values);
+  const exps = values.map((value) => Math.exp(value - max));
+  const total = exps.reduce((sum, value) => sum + value, 0) || 1;
+  return exps.map((value) => value / total);
+}
+
+function digitImageCanvasFromRect(rect, size = 28) {
+  const strokes = pathsInRect(rect).filter((path) => !path.erase);
+  const points = strokes.flatMap((path) => path.points.filter((point) => pointInsideRect(point, rect)));
   if (points.length < 2) return null;
+
+  const minX = Math.min(...points.map((point) => point.x));
+  const maxX = Math.max(...points.map((point) => point.x));
+  const minY = Math.min(...points.map((point) => point.y));
+  const maxY = Math.max(...points.map((point) => point.y));
+  const inkWidth = Math.max(1, maxX - minX);
+  const inkHeight = Math.max(1, maxY - minY);
+  const scale = Math.min(20 / inkWidth, 20 / inkHeight);
+  const offsetX = (size - inkWidth * scale) / 2;
+  const offsetY = (size - inkHeight * scale) / 2;
 
   const target = document.createElement("canvas");
   target.width = size;
   target.height = size;
-  const targetCtx = target.getContext("2d");
+  const targetCtx = target.getContext("2d", { willReadFrequently: true });
   targetCtx.fillStyle = "black";
   targetCtx.fillRect(0, 0, size, size);
   targetCtx.strokeStyle = "white";
   targetCtx.lineCap = "round";
   targetCtx.lineJoin = "round";
-  const width = Math.max(1, rect.right - rect.left);
-  const height = Math.max(1, rect.bottom - rect.top);
   strokes.forEach((path) => {
-    targetCtx.lineWidth = Math.max(2, Math.min(4, (path.size / height) * size));
+    const slotPoints = path.points.filter((point) => pointInsideRect(point, rect));
+    if (slotPoints.length < 2) return;
+    targetCtx.lineWidth = Math.max(2, Math.min(4, path.size * scale));
     targetCtx.beginPath();
-    path.points.forEach((point, index) => {
-      const x = ((point.x - rect.left) / width) * size;
-      const y = ((point.y - rect.top) / height) * size;
+    slotPoints.forEach((point, index) => {
+      const x = offsetX + (point.x - minX) * scale;
+      const y = offsetY + (point.y - minY) * scale;
       if (index) targetCtx.lineTo(x, y);
       else targetCtx.moveTo(x, y);
     });
@@ -1265,31 +1349,46 @@ function answerImageCanvas(size = 28) {
   return target;
 }
 
-async function recognizeWithTensorFlow(expectedText = "") {
-  if (!window.tf?.browser?.fromPixels) return { text: "", status: "tf-unavailable", confidence: 0 };
-  if (!state.digitModelTried) await loadTensorFlowDigitModel();
-  if (!state.digitModelReady || !state.digitModel) return { text: "", status: "tf-missing", confidence: 0 };
-  if (!/^\d$/.test(expectedText)) return { text: "", status: "tf-skipped", confidence: 0 };
-  const inputCanvas = answerImageCanvas(28);
-  if (!inputCanvas) return { text: "", status: "empty", confidence: 0 };
+function onnxTensorFromCanvas(canvas) {
+  const image = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, 28, 28);
+  const input = new Float32Array(28 * 28);
+  for (let index = 0; index < input.length; index += 1) {
+    const offset = index * 4;
+    input[index] = (0.299 * image.data[offset] + 0.587 * image.data[offset + 1] + 0.114 * image.data[offset + 2]) / 255;
+  }
+  return new window.ort.Tensor("float32", input, [1, 1, 28, 28]);
+}
+
+async function recognizeWithOnnx(expectedText = "") {
+  if (!/^\d+$/.test(expectedText)) return { text: "", status: "onnx-skipped", confidence: 0 };
+  if (!window.ort?.InferenceSession) return { text: "", status: "onnx-unavailable", confidence: 0 };
+  if (!state.onnxModelTried) await loadOnnxDigitModel();
+  if (!state.onnxModelReady || !state.onnxModel) return { text: "", status: "onnx-missing", confidence: 0 };
+
   try {
-    const prediction = window.tf.tidy(() => {
-      const pixels = window.tf.browser.fromPixels(inputCanvas, 1).toFloat();
-      const inputShape = state.digitModel.inputs?.[0]?.shape || [];
-      const size = inputCanvas.width;
-      const tensor = inputShape.length === 2 ? pixels.reshape([1, size * size]) : pixels.reshape([1, size, size, 1]);
-      return state.digitModel.predict(tensor);
-    });
-    const scores = Array.from(await prediction.data());
-    prediction.dispose();
-    const ranked = scores.map((score, digit) => ({ digit: String(digit), score })).sort((a, b) => b.score - a.score);
-    const top = ranked[0] || { digit: "", score: 0 };
-    const next = ranked[1] || { digit: "", score: 0 };
-    return { text: top.digit, status: "tensorflow", confidence: top.score, margin: top.score - next.score };
+    const rects = answerDigitRects(expectedText);
+    const digits = [];
+    const confidences = [];
+    const margins = [];
+    for (const rect of rects) {
+      const canvas = digitImageCanvasFromRect(rect, 28);
+      if (!canvas) return { text: "", status: "empty", confidence: 0 };
+      const inputName = state.onnxModel.inputNames?.[0] || "Input3";
+      const outputName = state.onnxModel.outputNames?.[0];
+      const outputMap = await state.onnxModel.run({ [inputName]: onnxTensorFromCanvas(canvas) });
+      const outputTensor = outputName ? outputMap[outputName] : Object.values(outputMap)[0];
+      const probabilities = softmax(Array.from(outputTensor.data));
+      const ranked = probabilities.map((score, digit) => ({ digit: String(digit), score })).sort((a, b) => b.score - a.score);
+      digits.push(ranked[0]?.digit || "");
+      confidences.push(ranked[0]?.score || 0);
+      margins.push((ranked[0]?.score || 0) - (ranked[1]?.score || 0));
+    }
+    return { text: digits.join(""), status: "onnx", confidence: Math.min(...confidences), margin: Math.min(...margins) };
   } catch {
-    return { text: "", status: "tf-error", confidence: 0 };
+    return { text: "", status: "onnx-error", confidence: 0 };
   }
 }
+
 function scoreExpected(components, expectedText) {
   const normalized = normalizeComponentsForExpected(components, expectedText);
   if (normalized.length !== expectedText.length) return null;
@@ -1299,7 +1398,7 @@ function scoreExpected(components, expectedText) {
 }
 
 function recognizeDigitsLocally(expectedText = "") {
-  const components = answerInkComponents();
+  const components = expectedDigitComponents(expectedText);
   const strokeScore = expectedText.length === 1 ? strokeDigitScore(expectedText) : 0;
   if (!components.length) {
     if (strokeScore > 0.82) return { text: expectedText, status: "local", confidence: strokeScore, strokeScore };
@@ -1338,14 +1437,17 @@ function recognizeDigitsLocally(expectedText = "") {
   return { text, status: text ? "local" : "unreadable", confidence: adjustedConfidence };
 }
 
-function pathsInsideAnswerBox() {
-  const rect = getAnswerRect();
+function pathsInRect(rect) {
   return state.paths
     .map((path) => ({
       ...path,
-      points: path.points.filter((point) => point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom),
+      points: path.points.filter((point) => pointInsideRect(point, rect)),
     }))
     .filter((path) => path.points.length > 1 && !path.erase);
+}
+
+function pathsInsideAnswerBox() {
+  return pathsInRect(getAnswerRect());
 }
 
 async function recognizeWithBrowserApi(paths) {
@@ -1369,20 +1471,31 @@ async function recognizeWithBrowserApi(paths) {
 async function recognizeWriting(expectedText) {
   if (!answerInkComponents().length && !pathsInsideAnswerBox().length) return { text: "", status: "empty", confidence: 0 };
   const local = recognizeDigitsLocally(expectedText);
-  if (local.text === expectedText && local.confidence >= 0.64) return local;
-  if (local.status === "ambiguous" && local.text && local.text !== expectedText) return local;
+  const expectedLocalScore = Number(local.expectedScore || 0);
+  if (local.text === expectedText && local.confidence >= 0.7) return local;
 
-  const tensorflow = await recognizeWithTensorFlow(expectedText);
-  if (tensorflow.text === expectedText && tensorflow.confidence >= 0.78 && tensorflow.margin >= 0.16 && (!local.text || (local.text === expectedText && local.status !== "ambiguous"))) return tensorflow;
-  if (tensorflow.text && local.text && tensorflow.text !== local.text) {
+  const onnx = await recognizeWithOnnx(expectedText);
+  const onnxTrusted = onnx.text === expectedText && onnx.confidence >= 0.62 && onnx.margin >= 0.1 && (local.text === expectedText || expectedLocalScore >= 0.48 || !local.text);
+  if (onnxTrusted) {
+    return {
+      text: expectedText,
+      status: "onnx",
+      confidence: Math.max(0.68, Math.min(0.92, onnx.confidence)),
+      margin: onnx.margin,
+      localText: local.text,
+      expectedScore: expectedLocalScore,
+    };
+  }
+  if (onnx.text && local.text && onnx.text !== local.text && onnx.confidence >= 0.52) {
     return {
       ...local,
       status: "ambiguous",
-      confidence: Math.min(0.56, local.confidence || tensorflow.confidence),
-      tensorflowText: tensorflow.text,
-      tensorflowConfidence: tensorflow.confidence,
+      confidence: Math.min(0.56, local.confidence || onnx.confidence),
+      onnxText: onnx.text,
+      onnxConfidence: onnx.confidence,
     };
   }
+  if (local.status === "ambiguous" && local.text && local.text !== expectedText) return local;
   if (local.status === "ambiguous") return local;
   if (local.text && local.confidence >= 0.64) return local;
   const browser = await recognizeWithBrowserApi(pathsInsideAnswerBox());
@@ -1608,7 +1721,6 @@ levelButtons.forEach((button) => {
   });
 });
 
-loadTensorFlowDigitModel();
 registerServiceWorker();
 updatePersonalGreeting();
 updateToolUi();
